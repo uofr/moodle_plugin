@@ -3,18 +3,14 @@
 
 # except our plugins':
 
-!mod/kalvidassign/**/*
-!mod/kalvidpres/**/*
-!mod/kalvidres/**/*
+!kalvidassign/**/*
+!kalvidpres/**/*
+!kalvidres/**/*
 
-!filter/kaltura/**/*
+!kaltura/**/*
+!mymedia/**/*
 
-!local/kaltura/**/*
-!local/kalturamediagallery/**/*
-!local/mymedia/**/*
-
-!lib/editor/atto/plugins/kalturamedia/**/*
-!lib/editor/tinymce/plugins/kalturamedia/**/*
+!kalturamedia/**/*
 
 !createPackage.sh
 !incrementVersion.sh
