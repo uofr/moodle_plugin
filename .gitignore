@@ -1,16 +1,1 @@
 # ignore all files
-*
-
-# except our plugins':
-
-!kalvidassign/**/*
-!kalvidpres/**/*
-!kalvidres/**/*
-
-!kaltura/**/*
-!mymedia/**/*
-
-!kalturamedia/**/*
-
-!createPackage.sh
-!incrementVersion.sh
