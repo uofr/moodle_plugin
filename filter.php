@@ -58,6 +58,7 @@ class filter_kaltura extends moodle_text_filter {
 
     /** @var string $player - the player id used to render embedded video in */
     public static $player = '';
+    public static $player_legacy = '23448572';
 
     /** @var int $courseid - the course id */
     public static $courseid = 0;
@@ -260,7 +261,14 @@ class filter_kaltura extends moodle_text_filter {
 
             // Exit the function if the video entries array is empty
             if (empty(self::$videos) && empty(self::$ks_matches) && empty(self::$plist_matches)) {
-                return $text;
+		        if (empty($newtext) || $newtext === $text) {
+		            // Error or not filtered.
+		            unset($newtext);
+		            return $text;
+		        } else {
+                	return $newtext;
+		        	
+		        }
             }
             //die(print_r(self::$videos,1));
             // Get the filter player ui conf id
@@ -278,16 +286,20 @@ class filter_kaltura extends moodle_text_filter {
 
             try {
                 // Create the the session for viewing of each video detected
-                self::$ksession = local_kaltura_generate_kaltura_session(self::$videos_other);
-
+                self::$ksession = local_kaltura_generate_legacy_kaltura_session(self::$videos_other);
+				
+				error_log('ks:'.print_r(self::$ksession,1));
+				
                 $kaltura    = new kaltura_connection();
-                $connection = $kaltura->get_connection(true, KALTURA_SESSION_LENGTH);
-
-                if (!$connection) {
+                $connection_ce = $kaltura->get_legacy_connection(true, KALTURA_SESSION_LENGTH);
+				
+				
+				//error_log('connection:'.print_r($connection_ce,1));
+				
+                if (!$connection_ce) {
                     throw new Exception("Unable to connect");
                 }
 				
-				//error_log('connection:'.print_r($connection,1));
 				
                 // Check if the repository plug-in exists.  Add Kaltura video to the Kaltura category
                 $enabled  = local_kaltura_kaltura_repository_enabled();
@@ -299,7 +311,7 @@ class filter_kaltura extends moodle_text_filter {
                     require_once($CFG->dirroot.'/repository/kaltura/locallib.php');
 
                    // Create the course category
-                   repository_kaltura_add_video_course_reference($connection, self::$courseid, self::$videos);
+                   repository_kaltura_add_video_course_reference($connection_ce, self::$courseid, self::$videos);
                 }
 
                 if (!empty(self::$videos)) $newtext = preg_replace_callback($search, 'filter_kaltura_legacy_callback', $newtext);
@@ -311,18 +323,35 @@ class filter_kaltura extends moodle_text_filter {
 					
 									require_once $CFG->dirroot."/local/kaltura/API/KalturaClient.php";
 					
-									$kconf = new KalturaConfiguration('104');
+									$kconf = \local_kaltura\kaltura_client::get_legacy_config();//new KalturaConfiguration('104');
 					
 									$kconf->serviceUrl = "https://urcourses-video.uregina.ca/";
 									$kclient = new KalturaClient($kconf);
+									
+									
+									/*
+							        $client_legacy = \local_kaltura\kaltura_client::get_client('ce');
+							        $session = \local_kaltura\kaltura_session_manager::get_user_session_legacy($client_legacy);
+							        $client_legacy->setKs($session);
+									*/
+									
+									
+									//$kclient = \local_kaltura\kaltura_client::get_client('ce','user');
+        							//$ksession = $kclient->setKs(\local_kaltura\kaltura_session_manager::get_user_session_legacy($kclient));
+									//$kclient->setKs($ksession);
+									
 									$ksession = $kclient->session->start('5797ccb7ce30a75213d7e049419663f5', $USER->username, KalturaSessionType::ADMIN, '104');
-
+									
 									if (!isset($ksession)) {
 										die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
 									}
 
 									$kclient->setKs($ksession);
-					
+									
+									self::$ksession = $ksession;
+									
+									error_log('client:'.print_r($kclient,1));
+									
 									if (!empty(self::$ks_matches)) {
 					
 				                    $newtext = str_replace('%7Bks%7D',$ksession,$newtext);
@@ -488,9 +517,12 @@ function filter_kaltura_legacy_callback($link) {
 		
 		//die('<pre>'.print_r(filter_kaltura::$id_map,1).'</pre>'.$link[4].'||'.$outlink);
 	
+		error_log('outlink:'.print_r($outlink,1));
 	
 	    $entry_obj = local_kaltura_get_ready_entry_object($outlink, false);
-	
+		
+		//error_log('entry:'.print_r($entry_obj,1));
+		
 		//die('<pre>'.print_r($entry_obj,1).'</pre>');
 	
 		//die('<pre>'.print_r($entry_obj,1).'________'."\n".print_r(filter_kaltura::$player,1).'</pre>');
@@ -498,7 +530,14 @@ function filter_kaltura_legacy_callback($link) {
 	    if (empty($entry_obj)) {
 	        return get_string('unable', 'filter_kaltura');
 	    }
-
+		
+		
+		error_log('player:'.print_r(filter_kaltura::$player,1));
+		error_log('player_legacy:'.print_r(filter_kaltura::$player_legacy,1));
+		error_log('courseid:'.print_r(filter_kaltura::$courseid,1));
+		error_log('ksession:'.print_r(filter_kaltura::$ksession,1));
+		
+		
 	    $config = get_config(KALTURA_PLUGIN_NAME);
 
 	    $width  = isset($config->filter_player_width) ? $config->filter_player_width : 0;
@@ -516,9 +555,9 @@ function filter_kaltura_legacy_callback($link) {
 	
 	
 	    if (!filter_kaltura::$mobilethemeused) {
-	        $markup  = local_kaltura_get_kdp_code($entry_obj, filter_kaltura::$player, filter_kaltura::$courseid, filter_kaltura::$ksession/*, $uid*/);
+	        $markup  = local_kaltura_get_kdp_code($entry_obj, filter_kaltura::$player_legacy, filter_kaltura::$courseid, filter_kaltura::$ksession/*, $uid*/);
 	    } else {
-	        $markup  = local_kaltura_get_kwidget_code($entry_obj, filter_kaltura::$player, filter_kaltura::$courseid, filter_kaltura::$ksession/*, $uid*/);
+	        $markup  = local_kaltura_get_kwidget_code($entry_obj, filter_kaltura::$player_legacy, filter_kaltura::$courseid, filter_kaltura::$ksession/*, $uid*/);
 	    }
     
 	    $attr = array('class'=>'flex-video');
