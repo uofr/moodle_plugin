@@ -170,11 +170,18 @@ class filter_kaltura extends moodle_text_filter {
         if (is_null(self::$kafuri) && is_null(self::$apiurl)) {
             return $text;
         }
-
-        // Performance shortcut.  All regexes bellow end with the </a> tag, if not present nothing can match.
-        if (false  === stripos($text, '</a>')) {
+		
+		
+		//legacy - check for script tags too
+        if (stripos($text, '</a>') === false && stripos($text, '</script>') === false) {
+            // performance shortcut - all regexes bellow end with the </a> or </script> tag, if not present nothing can match
             return $text;
         }
+
+        // Performance shortcut.  All regexes bellow end with the </a> tag, if not present nothing can match.
+        //if (false  === stripos($text, '</a>')) {
+        //    return $text;
+        //}
 
         // We need to return the original value if regex fails!
         $newtext = $text;
@@ -199,28 +206,17 @@ class filter_kaltura extends moodle_text_filter {
 		
         // Clear video list
         self::$videos = array();
-
-        if (!is_string($text) or empty($text)) {
-            // non string data can not be filtered anyway
-            return $text;
-        }
-
-        if (stripos($text, '</a>') === false && stripos($text, '</script>') === false) {
-            // performance shortcut - all regexes bellow end with the </a> or </script> tag, if not present nothing can match
-            return $text;
-        }
-
-        // we need to return the original value if regex fails!
-        $newtext = $text;
-
+		
         if (!empty($CFG->filter_kaltura_enable)) {
-            $uri = local_kaltura_get_host();
+            $uri = local_kaltura_get_legacy_host();
             $uri = rtrim($uri, '/');
             $uri = str_replace(array('.', '/', 'https'), array('\.', '\/', 'https?'), $uri);
 			
 			$old_uri = 'https?:\/\/kaltura\.cc\.uregina\.ca';
 			$new_uri = 'https?:\/\/urcourses-video\.uregina\.ca';
             
+			error_log('uri:'.$uri);
+			
             // HACK: cunnintr
             // not matching our urls; change format to match following url pattern
             // http://kaltura.cc.uregina.ca/index.php/kwidget/wid/_106/uiconf_id/11170236/entry_id/0_k0s5l05s
@@ -290,7 +286,9 @@ class filter_kaltura extends moodle_text_filter {
                 if (!$connection) {
                     throw new Exception("Unable to connect");
                 }
-
+				
+				//error_log('connection:'.print_r($connection,1));
+				
                 // Check if the repository plug-in exists.  Add Kaltura video to the Kaltura category
                 $enabled  = local_kaltura_kaltura_repository_enabled();
                 $category = false;
@@ -482,9 +480,12 @@ function filter_kaltura_legacy_callback($link) {
 		</p>
 		*/
 		//die(print_r($link[4],1));
-	
+		
+		error_log('legacy callback:'.print_r($link[4],1));
+		
+		
 		$outlink = (array_key_exists($link[4],filter_kaltura::$id_map)) ? filter_kaltura::$id_map[$link[4]] : $link[4];
-
+		
 		//die('<pre>'.print_r(filter_kaltura::$id_map,1).'</pre>'.$link[4].'||'.$outlink);
 	
 	
