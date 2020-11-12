@@ -206,6 +206,12 @@ class filter_kaltura extends moodle_text_filter {
         $search = $search = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafuri.')))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
         $newtext = preg_replace_callback($search, 'filter_kaltura_callback', $newtext);
 		
+		
+		$kaf_uri = 'https?:\/\/api.ca\.kaltura\.com';
+		$kaf_search = '/<a\s[^>]*href="('.$kaf_uri.')\/index\.php\/kwidget\/wid\/_([0-9]+)\/uiconf_id\/([0-9]+)\/entry_id\/([\d]+_([a-z0-9]+))[^>]*>([^>]*)<\/a>/is';
+		$newtext = preg_replace_callback($kaf_search, 'filter_kaltura_callback', $newtext);
+		
+		
 		// legacy processing
 		
         // Clear video list
@@ -218,6 +224,7 @@ class filter_kaltura extends moodle_text_filter {
 			
 			$old_uri = 'https?:\/\/kaltura\.cc\.uregina\.ca';
 			$new_uri = 'https?:\/\/urcourses-video\.uregina\.ca';
+			
             
 			error_log('uri:'.$uri);
 			
