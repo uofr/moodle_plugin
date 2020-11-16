@@ -76,7 +76,7 @@ class filter_kaltura extends moodle_text_filter {
     public static $kalturalocal = false;
 	
 	
-	public static $lulist = '0_ddjjlwnu,0_aqwhe2ha;0_8d4ytpkx,0_jp1aliei';
+	//public static $lulist = '';
 	
 	
 	// mapping from old server IDs to new
@@ -109,6 +109,10 @@ class filter_kaltura extends moodle_text_filter {
 		
 		
 		// minimal legacy setup
+		global $entryrefs;
+        require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
+		
+		
 		self::$kalturalocal = true;
 		
         $uiconf_id = local_kaltura_get_legacy_player_uiconf('player_filter');
@@ -123,8 +127,7 @@ class filter_kaltura extends moodle_text_filter {
 		
 		self::$kalturamobilejsinit = true;
 		
-		
-		$entryrefs = explode(';',filter_kaltura::$lulist);
+
 		foreach ($entryrefs as $entryref) {
 			$elms = explode(',',$entryref);
 			filter_kaltura::$id_map[$elms[1]] = $elms[0];
@@ -304,7 +307,7 @@ class filter_kaltura extends moodle_text_filter {
                 $connection_ce = $kaltura->get_legacy_connection(true, KALTURA_SESSION_LENGTH);
 				
 				
-				error_log('connection:'.print_r($connection_ce,1));
+				//error_log('connection:'.print_r($connection_ce,1));
 				
                 if (!$connection_ce) {
                     throw new Exception("Unable to connect");
