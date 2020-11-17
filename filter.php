@@ -463,6 +463,10 @@ function filter_kaltura_callback($link) {
         'class' => 'kaltura-player-container'
     ));
 
+    $iframeContainer = html_writer::tag('div', $iframeContainer, array(
+        'class' => 'flex-video'
+    ));
+
     return $iframeContainer;
 }
 
