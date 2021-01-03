@@ -751,3 +751,24 @@ function local_kaltura_build_kaf_uri($source_url) {
 
     return $source_url;
 }
+
+function local_kaltura_validate_entry_id($kalvidres) {
+	global $CFG;
+
+    require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
+    
+$lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0_c982ixg3,0_swjiqjzo';
+
+    $id_map = array();
+
+    $entryrefs = explode(';',$lulist);
+    foreach ($entryrefs as $entryref) {
+        $elms = explode(',',$entryref);
+        $id_map[$elms[1]] = $elms[0];
+    }
+
+    if (array_key_exists($kalvidres->entry_id, $id_map)) {
+        $kalvidres->entry_id = $id_map[$kalvidres->entry_id];
+        $kalvidres->uiconf_id = local_kaltura_get_player_uiconf('player_resource');
+    }
+}
