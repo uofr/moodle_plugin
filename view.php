@@ -22,6 +22,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/local/kaltura/locallib.php');
 
 $id = optional_param('id', 0, PARAM_INT);
 
@@ -67,6 +68,9 @@ $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
+
+// re-map old to new entry_ids from CE to PREM
+local_kaltura_validate_entry_id($kalvidres);
 
 $description = format_module_intro('kalvidres', $kalvidres, $cm->id);
 if (!empty($description)) {
