@@ -49,7 +49,7 @@ function xmldb_kalvidres_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2011110702, 'kalvidres');
     }
 
-    if ($oldversion < 2014013000) {
+    if ($oldversion < 2020070538) {
 
         // Define field source to be added to kalvidres.
         $table = new xmldb_table('kalvidres');
@@ -59,12 +59,6 @@ function xmldb_kalvidres_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-
-        // Kalvidres savepoint reached.
-        upgrade_mod_savepoint(true, 2014013000, 'kalvidres');
-    }
-
-    if ($oldversion < 2014023000.01) {
 
         // Define field metadata to be added to kalvidres.
         $table = new xmldb_table('kalvidres');
@@ -76,7 +70,7 @@ function xmldb_kalvidres_upgrade($oldversion) {
         }
 
         // Kalvidassign savepoint reached.
-        upgrade_mod_savepoint(true, 2014023000.01, 'kalvidres');
+        upgrade_mod_savepoint(true, 2020070538, 'kalvidres');
     }
 
     return true;
