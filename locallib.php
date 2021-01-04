@@ -757,7 +757,7 @@ function local_kaltura_validate_entry_id($kalvidres) {
 
     require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
     
-$lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0_c982ixg3,0_swjiqjzo';
+$lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0_c982ixg3,0_swjiqjzo;0_why5o7a7,0_5ar2t9ov';
 
     $id_map = array();
 
@@ -768,10 +768,12 @@ $lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0
     }
 
     if (array_key_exists($kalvidres->entry_id, $id_map)) {
+		// re-mapping entry if match exists
         $kalvidres->entry_id = $id_map[$kalvidres->entry_id];
-        $kalvidres->uiconf_id = local_kaltura_get_player_uiconf('player_resource');
+        //$kalvidres->uiconf_id = local_kaltura_get_player_uiconf('player_resource');
 		
 		//need to add source url?
-		$kalvidres->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$kalvidres->entry_id.'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/45985412/';
+		$kalvidres->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$kalvidres->entry_id;//'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/';
     }
+	return $kalvidres;
 }
