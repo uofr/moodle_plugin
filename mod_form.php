@@ -146,9 +146,13 @@ class mod_kalvidres_mod_form extends moodleform_mod {
 		if ($this->current->entry_id) {
 			// re-map old to new entry_ids from CE to PREM
 			$initver = $this->current->entry_id;
-			$this->current->entry_id = local_kaltura_validate_entry_id($this->current->entry_id);
-			if ($this->current->entry_id !== $initver) {
-				$this->current->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$this->current->entry_id;
+			$kalvidres = new stdClass();
+			$kalvidres->entry_id = $this->current->entry_id;
+			$kalvidres->source = '';
+			$kalvidres = local_kaltura_validate_entry_id($kalvidres);
+			if ($kalvidres->entry_id !== $initver) {
+				$this->current->entry_id = $kalvidres->entry_id;
+				$this->current->source = $kalvidres->source;
 			}
 		}
 		
