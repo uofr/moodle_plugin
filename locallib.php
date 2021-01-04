@@ -29,6 +29,8 @@ if (!defined('MOODLE_INTERNAL')) {
 
 global $CFG; // should be defined in config.php
 
+$lulist = ''; // add as global for migration lookups
+
 require_once($CFG->dirroot.'/mod/lti/locallib.php');
 
 define('KALTURA_PLUGIN_NAME', 'local_kaltura');
@@ -753,11 +755,9 @@ function local_kaltura_build_kaf_uri($source_url) {
 }
 
 function local_kaltura_validate_entry_id($kalvidres) {
-	global $CFG;
+	global $CFG, $lulist;
 
     require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
-    
-$lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0_c982ixg3,0_swjiqjzo;0_why5o7a7,0_5ar2t9ov';
 
     $id_map = array();
 

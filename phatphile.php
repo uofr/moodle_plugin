@@ -6,6 +6,8 @@ $lulist = '0_9tkzsbkb,0_qm2ivp5q;0_18kmm4gw,0_lo9chlel;0_i0msnjmq,0_134ylr87;0_p
 
 $lulist .= ';0_moo22plf,0_8bnse4yg;0_s16ot3og,0_l65xd7ne;0_pxe83kg1,0_q96nwwcv;0_tnpdz13h,0_c4ftgwb5;0_7udhn0ax,0_unh8r5w3;0_5zttwx5a,0_m7muo0h3;0_n3qve3ig,0_s89s3no8;0_yspm4nu9,0_1ddeu6ka;0_snk9y2dr,0_yk4o743s;0_6mjv6pif,0_sj6mzmol;0_k7rzcmfr,0_m5wg104o;0_0n0npl4g,0_tfeg8w8r';
 
+$lulist .= ';0_962ysmt7,0_1pxwdaaq;0_k6ckufyo,0_ozubq19h;0_81hipfee,0_ik5c2osx;0_c982ixg3,0_swjiqjzo;0_why5o7a7,0_5ar2t9ov';
+
 $entryrefs = explode(';',$lulist);
 
 error_log('lulist loaded');
