@@ -274,7 +274,7 @@ class submissions_table extends table_sql {
 			
 			if ($kalvidres->entry_id !== $initver) {
 				$metadata  = new stdClass();
-				$metadata->thumbnailurl = 'https://vodcdn.ca.kaltura.com/p/103/sp/10300/thumbnail/entry_id/'.$data->entry_id.'/version/100002/width/400/height/255';
+				$metadata->thumbnailurl = 'https://vodcdn.ca.kaltura.com/p/103/sp/10300/thumbnail/entry_id/'.$data->entry_id.'/version/100002';
 			}
 			
             // Check if the metadata thumbnailurl property is empty.  If not then display the thumbnail.  Otherwise display a text link.
