@@ -239,6 +239,8 @@ class submissions_table extends table_sql {
      * @return string HTML markup.
      */
     public function col_timemodified($data) {
+		global $CFG, $lulist;
+		
         $data->source = local_kaltura_add_kaf_uri_token($data->source);
         $attr = array('name' => 'media_submission');
         $output = html_writer::start_tag('div', $attr);
@@ -254,15 +256,32 @@ class submissions_table extends table_sql {
 
         // If the metadata property is empty only display an anchor tag.  Otherwise display a thumbnail image.
         if (!empty($data->entry_id)) {
-
+			
+			$initver = $data->entry_id;
+			$kalvidres = new stdClass();
+			$kalvidres->entry_id = $data->entry_id;
+			$kalvidres->source = '';
+			$kalvidres = local_kaltura_validate_entry_id($kalvidres);
+			
+			if ($kalvidres->entry_id !== $initver) {
+				$data->entry_id = $kalvidres->entry_id;
+				$data->source = $kalvidres->source;
+				$data->metadata = '';
+			}
+			
             // Decode the additional video metadata.
             $metadata = local_kaltura_decode_object_for_storage($data->metadata);
-
+			
+			if ($kalvidres->entry_id !== $initver) {
+				$metadata  = new stdClass();
+				$metadata->thumbnailurl = 'https://vodcdn.ca.kaltura.com/p/103/sp/10300/thumbnail/entry_id/'.$data->entry_id.'/version/100002/width/400/height/255';
+			}
+			
             // Check if the metadata thumbnailurl property is empty.  If not then display the thumbnail.  Otherwise display a text link.
             if (!empty($metadata->thumbnailurl) && !is_null($metadata->thumbnailurl)) {
 
                 $output .= html_writer::start_tag('center');
-                $metadata = local_kaltura_decode_object_for_storage($data->metadata);
+                if ($kalvidres->entry_id == $initver) $metadata = local_kaltura_decode_object_for_storage($data->metadata);
 
                 $attr = array('src' => $metadata->thumbnailurl, 'class' => 'kalsubthumb');
                 $thumbnail = html_writer::empty_tag('img', $attr);
