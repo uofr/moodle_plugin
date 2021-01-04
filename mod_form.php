@@ -143,6 +143,15 @@ class mod_kalvidres_mod_form extends moodleform_mod {
      * @param MoodleQuickForm $mform An instance of MoodleQuickForm used to add elements to the form.
      */
     private function add_video_definition($mform) {
+		if ($this->current->entry_id) {
+			// re-map old to new entry_ids from CE to PREM
+			$initver = $this->current->entry_id;
+			$this->current->entry_id = local_kaltura_validate_entry_id($this->current->entry_id);
+			if ($this->current->entry_id !== $initver) {
+				$this->current->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$this->current->entry_id;
+			}
+		}
+		
         $addinstance = empty($this->current->entry_id) ? true : false;
 
         $thumbnail = $this->get_thumbnail_markup(!$addinstance);
