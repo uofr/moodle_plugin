@@ -70,7 +70,7 @@ $completion->set_module_viewed($cm);
 echo $OUTPUT->header();
 
 // re-map old to new entry_ids from CE to PREM
-local_kaltura_validate_entry_id($kalvidres);
+$kalvidres = local_kaltura_validate_entry_id($kalvidres);
 
 $description = format_module_intro('kalvidres', $kalvidres, $cm->id);
 if (!empty($description)) {
@@ -91,6 +91,8 @@ $params = array(
 );
 $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));
+
+echo print_r($kalvidres,1);
 
 echo $renderer->display_iframe($kalvidres, $course->id);
 
