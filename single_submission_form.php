@@ -65,7 +65,7 @@ class kalvidassign_singlesubmission_form extends moodleform {
         $timemodified   = '';
 		
 		// check if this an old CE entry, as it may not have a source
-		if (!empty($submission->entry_id) {
+		if (!empty($submission->entry_id)) {
 			$initver = $submission->entry_id;
 			$kalvidres = new stdClass();
 			$kalvidres->entry_id = $submission->entry_id;
@@ -76,6 +76,8 @@ class kalvidassign_singlesubmission_form extends moodleform {
 				$submission->entry_id = $kalvidres->entry_id;
 				$submission->source = $kalvidres->source;
 				$submission->metadata = '';
+		        $submission->width = 485;
+		        $submission->height = 450;
 			}
 		}
 		
