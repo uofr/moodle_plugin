@@ -63,7 +63,22 @@ class kalvidassign_singlesubmission_form extends moodleform {
         $gradinginfo   = $this->_customdata->grading_info;
         $entryobject    = '';
         $timemodified   = '';
-
+		
+		// check if this an old CE entry, as it may not have a source
+		if (!empty($submission->entry_id) {
+			$initver = $submission->entry_id;
+			$kalvidres = new stdClass();
+			$kalvidres->entry_id = $submission->entry_id;
+			$kalvidres->source = '';
+			$kalvidres = local_kaltura_validate_entry_id($kalvidres);
+			
+			if ($kalvidres->entry_id !== $initver) {
+				$submission->entry_id = $kalvidres->entry_id;
+				$submission->source = $kalvidres->source;
+				$submission->metadata = '';
+			}
+		}
+		
         if (!empty($submission->entry_id) && !empty($submission->source)) {
             $attr = array(
                 'src' => $this->_generateLtiLaunchLink($submission->source, $submission),
