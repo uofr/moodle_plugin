@@ -55,6 +55,7 @@ define('KALTURA_REPO_NAME', 'kaltura');
 // 2. Moodle cleans up urls that look like relative links into complete urls by inserting $CFG->wwwroot
 define('KALTURA_URI_TOKEN', 'kaltura-kaf-uri.com');
 
+define('KALTURA_SESSION_LENGTH', 10800); // Three hours.
 /**
  * This function validates whether a requested KAF module is valid.
  * @param string $module The name of the module.
@@ -764,9 +765,13 @@ function local_kaltura_validate_entry_id($kalvidres) {
     $entryrefs = explode(';',$lulist);
     foreach ($entryrefs as $entryref) {
         $elms = explode(',',$entryref);
-        $id_map[$elms[1]] = $elms[0];
+		if (isset($elms[1])) {
+			$id_map[$elms[1]] = $elms[0];
+		} else {
+			error_log('$elms[1] !isset =>'.print_r($elms,1).'|entryref:'.$entryref);
+		}
     }
-
+	
     if (array_key_exists($kalvidres->entry_id, $id_map)) {
 		// re-mapping entry if match exists
         $kalvidres->entry_id = $id_map[$kalvidres->entry_id];
@@ -776,4 +781,706 @@ function local_kaltura_validate_entry_id($kalvidres) {
 		$kalvidres->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$kalvidres->entry_id;//'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/';
     }
 	return $kalvidres;
+}
+
+
+function local_kaltura_get_legacy_player_uiconf($type = 'player') {
+
+    $uiconf = 0;
+
+    switch ($type) {
+        case 'player':
+        case 'player_resource':
+        case 'res_uploader':
+        case 'pres_uploader':
+        case 'presentation':
+        case 'mymedia_uploader':
+        case 'mymedia_screen_recorder':
+        case 'assign_uploader':
+        case 'player_filter':
+        case 'simple_uploader';
+
+            $uiconf = '23448572';//get_config(KALTURA_PLUGIN_NAME, $type);
+
+            if (empty($uiconf)) {
+                $uiconf = get_config(KALTURA_PLUGIN_NAME, "{$type}_custom");
+            }
+            break;
+        default:
+            break;
+    }
+
+    return $uiconf;
+}
+
+
+function local_kaltura_legacy_htm5_javascript_url($uiconf_id) {
+
+    $host       = local_kaltura_get_legacy_host();
+    $partner_id = '104';
+
+    return "{$host}/p/{$partner_id}/sp/{$partner_id}00/embedIframeJs/uiconf_id/{$uiconf_id}/partner_id/{$partner_id}";
+
+}
+
+/**
+ * Return the host URI and removes trailing slash
+ *
+ * @return string - host URI
+ */
+function local_kaltura_get_legacy_host() {
+
+    $uri = 'https://urcourses-video.uregina.ca';
+
+    // Remove trailing slash
+    $trailing_slash = strrpos($uri, '/') + 1;
+    $length         = strlen($uri);
+
+    if ($trailing_slash == $length) {
+        $uri = rtrim($uri, '/');
+    }
+
+    return $uri;
+}
+
+/**
+ * This function is refactored code from login(). It only generates and
+ * returns a user Kaltura session. The session value returned is mainly used for
+ * inclusion into the video markup flashvars query string.
+ *
+ * @param string $medialist - privilege string.
+ * @return array - an array of Kaltura media entry ids
+ */
+function local_kaltura_generate_legacy_kaltura_session($video_list = array()) {
+    global $USER;
+
+    $config_obj = local_kaltura_get_legacy_configuration_obj();
+	/*
+    if (empty($config_obj) || !($config_obj instanceof KalturaConfiguration)) {
+        return false;
+    }
+*/
+    $client_obj = new KalturaClient($config_obj);
+
+    if (empty($client_obj) || empty($video_list)) {
+        return false;
+    }
+
+    $privilege  = 'sview:' . implode(',sview:', $video_list);
+
+    $secret     = get_config(KALTURA_PLUGIN_NAME, 'adminsecret_legacy');
+    $partner_id = '104';
+
+    if (isloggedin()) {
+        $username = $USER->username;
+    } else {
+        $username = null;
+    }
+    $session = $client_obj->generateSession($secret, $username, KalturaSessionType::USER,
+                                            $partner_id, KALTURA_SESSION_LENGTH, $privilege);
+											//error_log('session:'.$session);
+    return $session;
+}
+
+function local_kaltura_get_legacy_configuration_obj() {
+    global $CFG;
+	
+
+    require_once($CFG->dirroot.'/local/kaltura/classes/kaltura_config.php');
+	
+    $partner_id = '104';
+
+    if (empty($partner_id)) {
+        return false;
+    }
+
+    $config_obj = new KalturaConfiguration($partner_id);
+    $config_obj->serviceUrl = 'https://urcourses-video.uregina.ca';
+    $config_obj->cdnUrl = 'https://urcourses-video.uregina.ca';
+    $config_obj->clientTag = 'moodle_kaltura_legacy';
+
+    if (!empty($CFG->proxyhost)) {
+        $config_obj->proxyHost = $CFG->proxyhost;
+        $config_obj->proxyPort = $CFG->proxyport;
+        $config_obj->proxyType = $CFG->proxytype;
+        $config_obj->proxyUser = ($CFG->proxyuser) ? $CFG->proxyuser : null;
+        $config_obj->proxyPassword = ($CFG->proxypassword && $CFG->proxyuser) ? $CFG->proxypassword : null;
+    }
+    return $config_obj;
+}
+
+class kaltura_connection {
+
+    /** @var object - kaltura connection object */
+    private static $connection  = null;
+    /** @var object - kaltura ce connection object */
+    private static $connection_ce  = null;
+    /** @var int - time length until session is expired. */
+    private static $timeout = 0;
+    /** @var int - start time of Kaltura session. */
+    private static $timestarted = 0;
+    /** @var int - time length until ce session is expired. */
+    private static $timeout_ce = 0;
+    /** @var int - start time of Kaltura ce session. */
+    private static $timestarted_ce = 0;
+
+    /**
+     * Constructor for Kaltura connection class.
+     *
+     * @param int $timeout - Length of timeout for Kaltura session in minutes
+     */
+    public function __construct($timeout = KALTURA_SESSION_LENGTH) {
+        self::$connection_ce = local_kaltura_legacy_login(true, '', $timeout);
+        if (!empty(self::$connection_ce)) {
+            self::$timestarted_ce = time();
+            self::$timeout_ce = $timeout;
+        }
+    }
+
+    /**
+     * Get the connection object.  Pass true to renew the connection
+     *
+     * @param bool $admin if true, get connection as admin, otherwise, as user.
+     * @param int $timeout seconds to keep the session alive, if zero is passed the
+     * last time out value will be used
+     * @return object A Kaltura KalturaClient object
+     */
+    public function get_connection($admin, $timeout = 0) {
+        self::$connection = local_kaltura_login($admin, '', $timeout);
+        return self::$connection;
+    }
+	
+	
+	public function get_legacy_connection($admin, $timeout = 0) {
+        self::$connection_ce = local_kaltura_legacy_login($admin, '', $timeout);
+        return self::$connection_ce;
+    }
+    /**
+     * Return the number of seconds the session is alive for
+     * @return int - number of seconds the session is set to live
+     */
+    public function get_timeout() {
+
+        return self::$timeout;
+    }
+
+    /**
+     * Return the time the session started
+     * @return int - unix timestamp
+     */
+    public function get_timestarted() {
+        return self::$timestarted;
+    }
+
+    /**
+     * Descruct connnection instance.
+     */
+    public function __destruct() {
+        global $SESSION;
+
+        $SESSION->kaltura_con             = serialize(self::$connection);
+        $SESSION->kaltura_con_timeout     = self::$timeout;
+        $SESSION->kaltura_con_timestarted = self::$timestarted;
+
+    }
+
+}
+
+/**
+ * Log in with the user's credentials.  General a kaltura session locally
+ *
+ * @param boolean $admin - true to login as an administrator or false to login as user.
+ * @param string $privileges - privleges give to the user.
+ * @param int $expiry - number of seconds to keep the session alive.
+ * @param boolean $testconn - use of test connection.
+ *
+ * @return obj - KalturaClient
+ */
+function local_kaltura_legacy_login($admin = false, $privileges = '', $expiry = 10800, $test_conn = false) {
+    global $USER;
+
+    list($login, $password) = local_kaltura_get_legacy_credentials();
+
+    if (empty($login) || empty($password)) {
+        return false;
+    }
+
+    $config_obj = local_kaltura_get_legacy_configuration_obj();
+
+    if (empty($config_obj) || !($config_obj instanceof KalturaConfiguration)) {
+        return false;
+    }
+
+    $client_obj = new KalturaClient($config_obj);
+
+    if (empty($client_obj)) {
+        return false;
+    }
+
+    $partner_id = '104';
+    $secret     = get_config(KALTURA_PLUGIN_NAME, 'adminsecret_legacy');
+
+    if (isloggedin()) {
+        $username = $USER->username;
+    } else {
+        $username = null;
+    }
+
+    if ($admin) {
+
+        $session = $client_obj->generateSession($secret, $username, KalturaSessionType::ADMIN,
+                                     $partner_id, $expiry, $privileges);
+    } else {
+
+        $session = $client_obj->generateSession($secret, $username, KalturaSessionType::USER,
+                                     $partner_id, $expiry, $privileges);
+    }
+
+    if (!empty($session)) {
+
+        $client_obj->setKs($session);
+
+        if ($test_conn) {
+            $result = local_kaltura_test_connection($client_obj);
+
+            if (empty($result)) {
+                return false;
+            }
+        }
+
+        return $client_obj;
+
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Returns an array with the login and password as values respectively
+ *
+ * @return array - login, password or an array of false values if none were found.
+ */
+function local_kaltura_get_legacy_credentials() {
+
+    $login = false;
+    $password = false;
+
+    $login = get_config(KALTURA_PLUGIN_NAME, 'login_legacy');
+    $password = get_config(KALTURA_PLUGIN_NAME, 'password_legacy');
+
+    return array($login, $password);
+}
+
+/**
+ * Retrieves an entry object and cache the object only if the entry status is
+ * set to 'ready'.  If the second parameter is set to true, this function will
+ * only return an entry object if the status is set to true.  Otherwise it will
+ * return false.
+ *
+ * @param string $entryid - entry id of Kaltura Media.
+ * @param bool $readyonly - true if this function is the only return an entry object
+ * when the entry status is set to 'ready'.
+ * False, to return the entry object regardless of it's status.
+ *
+ * @return mixed - entry object, or false (depending on the entry status and the
+ * second prameter
+ */
+function local_kaltura_get_ready_entry_object($entry_id, $ready_only = true) {
+
+    try {
+        $client_obj = local_kaltura_legacy_login(true, '');
+		//error_log('client:'.print_r($client_obj,1));
+        if (empty($client_obj)) {
+            return false;
+        }
+		
+        // Check if the entry object is cached
+        $entries = new KalturaStaticEntries();
+        $entry_obj = KalturaStaticEntries::getEntry($entry_id, $client_obj->baseEntry, false);
+
+		//error_log('$entry_obj:'.print_r($entry_obj,1));
+        if (!empty($entry_obj)) {
+            return $entry_obj;
+        }
+
+        // Check if the entry object is ready, by making an API call
+        $entry_obj = $client_obj->baseEntry->get($entry_id);
+
+		//error_log('$entry_obj2:'.print_r($entry_obj,1));
+        // If the entry object is ready then return it
+        if (KalturaEntryStatus::READY == $entry_obj->status) {
+
+            KalturaStaticEntries::addEntryObject($entry_obj);
+
+            return $entry_obj;
+
+        } else {
+        // If it's not ready, check if the request is for a ready only object
+
+            if (true === $ready_only) {
+                $entry_obj = false;
+            }
+        }
+
+        return $entry_obj;
+
+    } catch (Exception $ex) {
+        // Connection failed for some reason.  Maybe proxy settings?
+        /*
+		$errormessage = 'check conversion(' . $ex->getMessage() . ')';
+        print_error($errormessage, 'local_kaltura');
+        */
+		error_log('connection failed? '.$ex->getMessage());
+		
+		return false;
+    }
+}
+
+/**
+ * Kaltura static entries class.
+ *
+ * @package local_yukaltura
+ * @copyright  (C) 2016-2017 Yamaguchi University <gh-cc@mlex.cc.yamaguchi-u.ac.jp>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class KalturaStaticEntries {
+
+    private static $_entries = array();
+
+    /**
+     * Retrieve all entry objects that have been seralized and stored in the
+     * session global
+     */
+    public function __construct() {
+
+        global $SESSION;
+
+        if (!isset($SESSION->kaltura_entries)) {
+
+            $SESSION->kaltura_entries = array();
+        } else {
+
+            foreach ($SESSION->kaltura_entries as $entry_id => $data) {
+
+                if (!array_key_exists($entry_id, self::$_entries)) {
+                    self::$_entries[$entry_id] = unserialize($data);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add an entry object directory to the array
+     *
+     * @param object $entryobj - an entry object
+     * @return nothing
+     */
+    public static function addEntryObject($entry_obj) {
+        if (!array_key_exists($entry_obj->id, self::$_entries)) {
+            $key = $entry_obj->id;
+            self::$_entries[$key] = $entry_obj;
+        }
+    }
+
+    /**
+     * Retrieve an entry object.  First verify if the object has already been
+     * cached.  If not, retreive the object via API calls.  Else just return the
+     * object
+     * @param string $entryid - entry id to retrieve
+     * @param object $baseentryservice - a KalturaBaseEntryService object
+     * @param bool $fetch - true to make an API call if the entry object doesn't exist.
+     * @return mixed - entry object or false if it was not found
+     */
+    public static function getEntry($entryId, $base_entry_service, $fetch = true) {
+
+        if (!array_key_exists($entryId, self::$_entries)) {
+            if ($fetch) {
+                self::getEntryFromApi($entryId, $base_entry_service);
+            } else {
+                return false;
+            }
+
+        }
+
+        return self::$_entries[$entryId];
+    }
+
+    /**
+     * Makes an API call to retrieve an entry object and store the object in the
+     * static entries list.
+     * @param string $entryid - id of kaltura media entry.
+     * @param object $baseentryservice - a KalturaBaseEntryService object.
+     * @return - nothing.
+     */
+    private static function getEntryFromApi($entryId, $base_entry_service) {
+
+        $entryObj = $base_entry_service->get($entryId);
+
+        // put entry object in array:
+        self::$_entries[$entryId] = $entryObj;
+        
+
+    }
+
+    /**
+     * Return a list of entry objects
+     * @param array $entryids an entry id
+     * @param object $baseentryservice a KalturaBaseEntryService object
+     * @return array array of entry objects with the entry id as the key
+     */
+    public static function listEntries($entryIds = array(), $base_entry_service) {
+
+        $returnedEntries = array();
+        $fetchEntriesFromApi = array();
+
+        foreach($entryIds as $key => $entryid) {
+
+            if (array_key_exists($entryid, self::$_entries)) {
+                $returnedEntries[$key] = self::$_entries[$entryid];
+            } else {
+                $fetchEntriesFromApi[$key] = $entryid;
+            }
+        }
+
+        self::listEntriesFromApi($fetchEntriesFromApi, $base_entry_service);
+
+        // populate the “blanks” in $returnedEntries with the results from the API
+        foreach($fetchEntriesFromApi as $key => $id) {
+
+            if (array_key_exists($id, self::$_entries)) {
+                $returnedEntries[$key] = self::$_entries[$id];
+            }
+        }
+
+        return $returnedEntries;
+    }
+
+
+    /**
+     * Retrieve a list of entry objects; and store the objects in the static
+     * array.
+     *
+     * @param array $entryids array of entry ids to retreive
+     * @param object $baseentryservice a KalturaBaseEntryService object
+     * @return nothing
+     */
+    private static function listEntriesFromApi($entryIds = array(), $base_entry_service) {
+
+        // Perform baseEntry->listAction() call.
+        $filter = new KalturaBaseEntryFilter();
+        $filter->idIn = implode(',', $entryIds);
+        $result = $base_entry_service->listAction($filter);
+
+        // Put entry objects in array.
+        foreach ($result->objects as $entry) {
+            self::$_entries[$entry->id] = $entry;
+        }
+    }
+
+
+    /**
+     * Remove an entry from cache.
+     *
+     * @param string $entryid - id of Kaltura Media entry
+     * @return nothing
+     */
+    public static function removeEntry($entry_id) {
+        global $SESSION;
+        
+        if (array_key_exists($entry_id, self::$_entries)) {
+            unset(self::$_entries[$entry_id]);
+            
+            if (array_key_exists($entry_id, $SESSION->kaltura_entries)) {
+                unset($SESSION->kaltura_entries[$entry_id]);
+            }
+        }
+    }
+
+
+    /**
+     * All stored entry objects will be serialized and stored in the PHP session
+     * global.
+     */
+    public function __destruct() {
+        global $SESSION;
+
+        foreach (self::$_entries as $entry_id => $data) {
+
+            if (!array_key_exists($entry_id, $SESSION->kaltura_entries)) {
+                $SESSION->kaltura_entries[$entry_id] = serialize($data);
+            }
+
+        }
+    }
+}
+
+/**
+ * This functions returns the HTML markup for the Kaltura dynamic player.
+ *
+ * @param obj $entryobj - KalturaMedia object
+ * @param int $uiconfid - player ui_conf_id (optional).  If no value is specified the
+ * default player will be used.
+ * @param int - Moodle course id (optional).  This parameter is required in
+ * order to generate Kaltura analytics data.
+ * @param string $session - A kaltura session string
+ * @param int $uid - a unique identifier, this value is appented to 'kaltura_player_'
+ * and is used as the id of the object tag
+ * @param bool $autoplay - whether we should autoplay this entry if possible
+ *
+ * @return string - HTML markup
+ */
+function local_kaltura_get_kdp_code($entryobj, $uiconf_id = 0, $courseid = 0, $session = '', $uid = 0, $autoplay = 0) {
+
+    if (!local_kaltura_is_valid_entry_object($entryobj)) {
+        return 'Unable to play video ('. $entryobj->id . ') please contact your site administrator.';
+    }
+
+    if (0 == $uid) {
+        $uid  = floor(microtime(true));
+        $uid .= '_' . mt_rand();
+    }
+
+    $host = local_kaltura_get_legacy_host();
+    $flashvars = local_kaltura_get_kdp_flashvars($courseid, $session);
+    if (KalturaMediaType::IMAGE == $entryobj->mediaType) {
+        $varstr = '&amp;IframeCustomPluginCss1=' .  new moodle_url('/local/kaltura/css/hiddenPlayButton.css');
+        $flashvars .= $varstr;
+    }
+		
+		if ($autoplay == 1) {
+			$flashvars .= '&amp;autoPlay=1';
+		}
+
+    if (empty($uiconfid)) {
+        $uiconf = local_kaltura_get_legacy_player_uiconf('player');
+    } else {
+        $uiconf = $uiconfid;
+    }
+
+    $originalurl = $entryobj->thumbnailUrl;
+
+    $httppattern = '/^http:\/\/[A-Za-z0-9\-\.]{1,61}\//';
+    $httpspattern = '/^https:\/\/[A-Za-z0-9\-\.]{1,61}\//';
+
+    $replace = 'https://urcourses-video.uregina.ca/';
+
+    $modifiedurl = preg_replace($httpspattern, $replace, $originalurl, 1, $count);
+    if ($count != 1) {
+        $modifiedurl = preg_replace($httppattern, $replace, $originalurl, 1, $count);
+        if ($count != 1) {
+            $modifiedurl = $originalurl;
+        }
+    }
+
+    $output = '';
+
+    $output .= "<object id=\"kaltura_player_{$uid}\" name=\"kaltura_player_{$uid}\" ";
+    $output .= "type=\"application/x-shockwave-flash\" allowFullScreen=\"true\" allowNetworking=\"all\" ";
+    $output .= "allowScriptAccess=\"always\"";
+    $output .= "xmlns:dc=\"http://purl.org/dc/terms/\" xmlns:media=\"http://search.yahoo.com/searchmonkey/media/\" ";
+    $output .= "rel=\"media:{$entryobj->mediaType}\" ";
+    $output .= "resource=\"{$host}/index.php/kwidget/wid/_{$entryobj->partnerId}/uiconf_id/{$uiconf}/entry_id/{$entryobj->id}\" ";
+    $output .= "data=\"{$host}/index.php/kwidget/wid/_{$entryobj->partnerId}/uiconf_id/{$uiconf}";
+    $output .= "/entry_id/{$entryobj->id}\"> " . PHP_EOL;
+    $output .= "<param name=\"allowFullScreen\" value=\"true\" />" . PHP_EOL;
+    $output .= "<param name=\"allowNetworking\" value=\"all\" />" . PHP_EOL;
+    $output .= "<param name=\"allowScriptAccess\" value=\"always\" />" . PHP_EOL;
+    $output .= "<param name=\"bgcolor\" value=\"#000000\" /> " . PHP_EOL;
+    $output .= "<param name=\"flashvars\" value=\"{$flashvars}\" /> " . PHP_EOL;
+    $output .= "<param name=\"wmode\" value=\"opaque\" /> " . PHP_EOL;
+
+    $output .= "<param name=\"movie\" value=\"{$host}/index.php/kwidget/wid/_{$entryobj->partnerId}";
+    $output .= "/uiconf_id/{$uiconf}/entry_id/{$entryobj->id}\" />" . PHP_EOL;
+
+    $output .= "<a rel=\"media:thumbnail\" href=\"{$modifiedurl}/width/120/height/90/bgcolor/000000/type/2\"></a>". PHP_EOL;
+    $output .= "<span property=\"dc:description\" content=\"{$entryobj->description}\"></span>" . PHP_EOL;
+    $output .= "<span property=\"media:title\" content=\"{$entryobj->name}\"></span>" . PHP_EOL;
+    $output .= "<span property=\"media:width\" content=\"{$entryobj->width}\"></span>" . PHP_EOL;
+    $output .= "<span property=\"media:height\" content=\"{$entryobj->height}\"></span>" . PHP_EOL;
+    $output .= "<span property=\"media:type\" content=\"application/x-shockwave-flash\"></span>" . PHP_EOL;
+    $output .= "<span property=\"media:duration\" content=\"{$entryobj->duration}\"></span>". PHP_EOL;
+    $output .= "</object>" . PHP_EOL;
+
+    return $output;
+}
+
+/**
+ * This function returns a string of flash variables required for Kaltura
+ * analytics
+ *
+ * @param courseid
+ * @param string - Kaltura session string
+ * @return string - query string of flash variables
+ *
+ */
+function local_kaltura_get_kdp_flashvars($courseid = 0, $session = '') {
+    global $USER;
+
+    if (isloggedin()) {
+        $flash_vars = "userId={$USER->username}";
+    } else {
+        $flash_vars = '';
+    }
+    if (!empty($session)) {
+       $flash_vars .= '&amp;ks='.$session;
+    }
+
+    $application_name = get_config(KALTURA_PLUGIN_NAME, 'mymedia_application_name');
+
+    $application_name = empty($application_name) ? 'Moodle' : $application_name;
+
+    $flash_vars .= '&amp;applicationName='.$application_name;
+
+    $enabled = local_kaltura_kaltura_repository_enabled();
+
+    if (!$enabled && 0 != $courseid) {
+        return $flash_vars;
+    }
+
+    // Require the Repository library for category information
+    require_once(dirname(dirname(dirname(__FILE__))) . '/repository/kaltura/locallib.php');
+
+    $kaltura = new kaltura_connection();
+    $connection = $kaltura->get_legacy_connection(true, KALTURA_SESSION_LENGTH);
+
+    if (!$connection) {
+        return '';
+    }
+
+    $category = repository_kaltura_create_course_category($connection, $courseid);
+
+    if ($category) {
+        $flash_vars .= '&amp;playbackContext=' . $category->id;
+    }
+
+    return $flash_vars;
+}
+
+/**
+ * This function checks for the existance of required entry object
+ * properties.  See KALDEV-28 for details.
+ *
+ * @param object $entryobj - entry object
+ * @return bool - true if valid, else false
+ */
+function local_kaltura_is_valid_entry_object($entry_obj) {
+    if (isset($entry_obj->mediaType)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * This function checks to see if the Kaltura repository plugin is enabled.
+ * Because there is not easy wasy of verifying in the database and it would
+ * require instanciating multiple classes, we're only going to check if the
+ * required values are set in the database.
+ *
+ * @param none
+ * @return bool - true if it exists and is enabled, otherwise false
+ */
+function local_kaltura_kaltura_repository_enabled() {
+    return false;
+	
 }
