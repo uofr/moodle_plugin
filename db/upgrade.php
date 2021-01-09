@@ -39,7 +39,7 @@ function xmldb_kalvidassign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2011091301, 'kalvidassign');
     }
 
-    if ($oldversion < 2014013000) {
+    if ($oldversion < 2020070538) {
 
         // Define field source to be added to kalvidassign_submission.
         $table = new xmldb_table('kalvidassign_submission');
@@ -66,12 +66,6 @@ function xmldb_kalvidassign_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Kalvidassign savepoint reached.
-        upgrade_mod_savepoint(true, 2014013000, 'kalvidassign');
-    }
-
-    if ($oldversion < 2014023000.01) {
-
         // Define field metadata to be added to kalvidassign_submission.
         $table = new xmldb_table('kalvidassign_submission');
         $field = new xmldb_field('metadata', XMLDB_TYPE_TEXT, null, null, null, null, null, 'timemarked');
@@ -82,7 +76,7 @@ function xmldb_kalvidassign_upgrade($oldversion) {
         }
 
         // Kalvidassign savepoint reached.
-        upgrade_mod_savepoint(true, 2014023000.01, 'kalvidassign');
+        upgrade_mod_savepoint(true, 2020070538, 'kalvidassign');
     }
 
     return true;
