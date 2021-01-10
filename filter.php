@@ -108,7 +108,6 @@ class filter_kaltura extends moodle_text_filter {
 		
 		// minimal legacy setup
 		global $entryrefs;
-        require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
 		
 		
 		self::$kalturalocal = true;
@@ -118,18 +117,13 @@ class filter_kaltura extends moodle_text_filter {
         $js_url_frame = new moodle_url('/local/kaltura/js/frameapi.js');
 		
 		
-		error_log('js:'.$js_url_legacy);
+		//error_log('js:'.$js_url_legacy);
 		
         $page->requires->js($js_url_legacy, false);
         $page->requires->js($js_url_frame, false);
 		
 		self::$kalturamobilejsinit = true;
 		
-
-		foreach ($entryrefs as $entryref) {
-			$elms = explode(',',$entryref);
-			filter_kaltura::$id_map[$elms[1]] = $elms[0];
-		}
     }
 
     /**
