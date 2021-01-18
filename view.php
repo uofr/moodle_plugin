@@ -86,8 +86,9 @@ $params = array(
     'bodyclass' => $pageclass,
     'lastheight' => null,
     'padding' => 15,
-    'width' => $kalvidres->width,
-    'height' => $kalvidres->height
+	'style' => 'height: 988.75px;',
+    'width' => '100%',//$kalvidres->width,
+    'height' => '600px'//$kalvidres->height
 );
 $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));

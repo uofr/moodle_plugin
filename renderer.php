@@ -64,8 +64,9 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
         $attr = array(
             'id' => 'contentframe',
             'class' => 'kaltura-player-iframe',
-            'height' => '100%',
-            'width' => $kalvidres->width,
+            'height' => '600px',
+            'width' => '100%',//$kalvidres->width,
+            'style' => 'height: 988.75px;',
             'src' => $url->out(false),
             'allowfullscreen' => 'true',
             'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;',
