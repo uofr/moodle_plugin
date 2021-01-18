@@ -392,8 +392,9 @@ function filter_kaltura_callback($link) {
     $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
 
     $iframe = html_writer::tag('iframe', '', array(
-        'width' => $width,
-        'height' => $height,
+        'style' => 'height: 988.75px;',
+        'width' => '100%',//$width,
+        'height' => '600px',//$height,
         'class' => 'kaltura-player-iframe',
         'allowfullscreen' => 'true',
         'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;',
