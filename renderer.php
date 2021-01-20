@@ -74,7 +74,8 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
 
         $iframe = html_writer::tag('iframe', '', $attr);
         $iframeContainer = html_writer::tag('div', $iframe, array(
-            'class' => 'kaltura-player-container'
+            'class' => 'kaltura-player-container',
+            'style' => 'margin-top:5%;'
         ));
 
         return $iframeContainer;
