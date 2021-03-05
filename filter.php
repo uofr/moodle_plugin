@@ -114,13 +114,13 @@ class filter_kaltura extends moodle_text_filter {
 		
         $uiconf_id = local_kaltura_get_legacy_player_uiconf('player_filter');
 		$js_url_legacy = new moodle_url(local_kaltura_legacy_htm5_javascript_url($uiconf_id));
-        $js_url_frame = new moodle_url('/local/kaltura/js/frameapi.js');
+        //$js_url_frame = new moodle_url('/local/kaltura/js/frameapi.js');
 		
 		
 		//error_log('js:'.$js_url_legacy);
 		
         $page->requires->js($js_url_legacy, false);
-        $page->requires->js($js_url_frame, false);
+        //$page->requires->js($js_url_frame, false);
 		
 		self::$kalturamobilejsinit = true;
 		
