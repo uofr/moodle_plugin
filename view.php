@@ -93,8 +93,6 @@ $params = array(
 $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));
 
-echo print_r($kalvidres,1);
-
 echo $renderer->display_iframe($kalvidres, $course->id);
 
 echo $OUTPUT->footer();
