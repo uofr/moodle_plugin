@@ -269,6 +269,9 @@ function kalvidassign_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:
             return true;
             break;
+		case FEATURE_SHOW_DESCRIPTION:
+			return true;
+			break;
         default:
             return null;
             break;
