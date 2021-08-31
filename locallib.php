@@ -29,6 +29,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 global $CFG; // should be defined in config.php
 
+// uofr - needed to initialize before we load the full value from locallib.php
+$lulist = ''; // add as global for migration lookups
+
 require_once($CFG->dirroot.'/mod/lti/locallib.php');
 
 define('KALTURA_PLUGIN_NAME', 'local_kaltura');
@@ -750,4 +753,33 @@ function local_kaltura_build_kaf_uri($source_url) {
     }
 
     return $source_url;
+}
+
+// UofR - restore old links to CE withtheir matches on Premium, if found
+function local_kaltura_validate_entry_id($kalvidres) {
+	global $CFG, $lulist;
+
+    require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
+
+    $id_map = array();
+
+    $entryrefs = explode(';',$lulist);
+    foreach ($entryrefs as $entryref) {
+        $elms = explode(',',$entryref);
+		//if (isset($elms[1])) {
+			$id_map[$elms[1]] = $elms[0];
+			//} else {
+			//error_log('$elms[1] !isset =>'.print_r($elms,1).'|entryref:'.$entryref);
+			//}
+    }
+	
+    if (array_key_exists($kalvidres->entry_id, $id_map)) {
+		// re-mapping entry if match exists
+        $kalvidres->entry_id = $id_map[$kalvidres->entry_id];
+        //$kalvidres->uiconf_id = local_kaltura_get_player_uiconf('player_resource');
+		
+		//need to add source url?
+		$kalvidres->source = 'http://kaltura-kaf-uri.com/browseandembed/index/media/entryid/'.$kalvidres->entry_id;//'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/';
+    }
+	return $kalvidres;
 }
