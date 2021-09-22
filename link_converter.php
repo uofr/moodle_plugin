@@ -35,10 +35,14 @@ if ( (!isloggedin()) ) {
 $admins = get_admins();
 $isadmin = false;
 foreach($admins as $admin) {
-    if ($USER->id != $admin->id) {
-        print_error("You need to be an admin to access this page."); 
-        exit;
+    if ($USER->id == $admin->id) {
+        $isadmin=TRUE;
     }
+}
+
+if(!$isadmin){
+    print_error("You need to be an admin to access this page."); 
+    exit;
 }
 
 $PAGE->set_title("Kaltura CC Link Converter");
