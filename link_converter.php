@@ -143,7 +143,7 @@ if ($mform->is_cancelled()) {
                 SET ".$location[$i]." = '".$fromform->converter["text"]."'
                 WHERE id = ".$fromform->modid;
 
-                $completed = $DB->update_record($table[$i], array("id"=>$fromform->modid, "$location[$i]"=> "$fromform->converter['text']" ));
+                $completed = $DB->update_record($table[$i], array("id"=>$fromform->modid, "$location[$i]"=> $fromform->converter['text'] ));
             }
         }
 
