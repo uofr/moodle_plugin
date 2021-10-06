@@ -24,15 +24,20 @@ class link_converter_form extends moodleform {
             '.$result->shortname.': '.$result->activity.' '.$result->name. 
           '</a></div>');
 
-           $converter =  $mform->addElement('editor','converter', "Kaltura CC Link" );
-           $converter->setValue(array('text' => ""));
-           $converter->setValue(array('text' => $result->url));
+          if($this->_customdata['type']=="url"){
+            $mform->addElement('textarea', 'converter', "Kaltura CC Link",'wrap="virtual" rows="20" cols="50"');
+            $mform->setDefault('converter', $result->url);
+          }else{
+            $converter =  $mform->addElement('editor','converter', "Kaltura CC Link" );
+            $converter->setValue(array('text' => ""));
+            $converter->setValue(array('text' => $result->url));
             $mform->setType('converter', PARAM_RAW);   
-             
+          }
         
             $mform->addElement('hidden', 'activity', $result->activity);
             $mform->addElement('hidden', 'cid', $result->cid);
             $mform->addElement('hidden', 'modid', $result->id);
+            $mform->addElement('hidden', 'pageoffset', $this->_customdata['pageoffset']);
         }
           //normally you use add_action_buttons instead of this code
           $buttonarray=array();

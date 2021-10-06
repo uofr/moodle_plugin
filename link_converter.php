@@ -104,16 +104,30 @@ if($categoryoffset !=0){
 }
 
 //init form & pass offset to form
-$mform = new link_converter_form(null, array('offset'=>$categoryoffset, 'type'=>$type ));
+$mform = new link_converter_form(null, array('offset'=>$categoryoffset, 'type'=>$type , 'pageoffset'=>$offset));
 
 //do is cancelled and submit checks
 if ($mform->is_cancelled()) {
     //Handle form cancel operation, if cancel button is present on form
     $returnurl = new moodle_url('/my');
     redirect($returnurl);
-   
+
 } else if ($fromform = $mform->get_data()) {
   //In this case you process validated data. $mform->get_data() returns data posted in form.
+
+        $offset = $fromform->pageoffset;
+
+        if ($offset == -1) {
+            if ($total > $pagesize) {
+                $offset = $offset+1;
+                //$offset = floor($offsetcount / $pagesize);
+            } else {
+                $offset = 0;
+            }
+        }
+        if ($offset * $pagesize >= $total && $total > 0) {
+            $offset = floor(($total-1) / $pagesize);
+        }
 
         $type = [
             "book",
@@ -136,21 +150,168 @@ if ($mform->is_cancelled()) {
             "url"
         ];
 
-        for($i=0; $i<count($type); $i++){
-            if($type[$i]== $fromform->activity){
-
-                $sql = "UPDATE mdl_".$table[$i]."
-                SET ".$location[$i]." = '".$fromform->converter["text"]."'
-                WHERE id = ".$fromform->modid;
-
-                $completed = $DB->update_record($table[$i], array("id"=>$fromform->modid, "$location[$i]"=> $fromform->converter['text'] ));
-            }
+        $input ="";
+        if($fromform->activity =="url"){
+            $input = $fromform->converter;
+        }else{
+            $input = $fromform->converter["text"];
         }
 
+        for($i=0; $i<count($type); $i++){
+            if($type[$i]== $fromform->activity){
+                $completed = $DB->update_record($table[$i], array("id"=>$fromform->modid, "$location[$i]"=> $input ));
+            }
+        }
+      
         if($completed){
             echo '<div class="alert alert-success" role="alert">
                 Link update successfull.
             </div>';
+
+            //send up rootcategory and course id
+            $kafuri = get_config(KALTURA_PLUGIN_NAME, 'kaf_uri');
+          
+            if(empty($kafuri)||!$kafuri ){
+                echo '<div class="alert alert-warning" role="alert">
+                Context could not be set, video may not be accessible.
+                </div>';
+            }else{
+
+                if (strpos($kafuri, 'dev')) {
+                    $rootcategory = "Moodle-Dev";
+                    $rootcategoryid = 45;
+                    $categoryparent = 48;
+                }else if(strpos($kafuri, 'cce')){
+                    $rootcategory = "Moodle-CCE";
+                    $rootcategoryid = 3116;
+                    $categoryparent = 3119;
+                }else{
+                    $rootcategory = "Moodle";
+                    $rootcategoryid = 37;
+                    $categoryparent = 40;
+                }
+
+                $cid = $fromform->cid;
+                $catname = $rootcategory.">site>channels>".$cid.">InContext";
+
+                $pattern = "/\/entryid\/\s*[^\n\r]*/";
+                preg_match_all($pattern, $fromform->converter["text"], $entryidsholder );
+
+                $entryids=[];
+
+                foreach($entryidsholder as $entryid){
+                    foreach($entryid as $eid){
+                        $split = explode("/",$eid);
+                        $entryids[] = $split[2];
+                    }
+                }
+
+                //check if category with certain full name exists
+
+                // Your Kaltura partner credentials
+                define("PARTNER_ID", "");
+                define("ADMIN_SECRET", "");
+                define("USER_SECRET",  "");
+
+                require_once "API/KalturaClient.php";
+
+                $user = ""; 
+                $kconf = new KalturaConfiguration(PARTNER_ID);
+                // If you want to use the API against your self-hosted CE,
+                // go to your KMC and look at Settings -> Integration Settings to find your partner credentials
+                // and add them above. Then insert the domain name of your CE below.
+                $kconf->serviceUrl = "https://api.ca.kaltura.com";
+                $kclient = new KalturaClient($kconf);
+                $ksession = $kclient->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
+
+                if (!isset($ksession)) {
+                    die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
+                }
+
+                $kclient->setKs($ksession);
+
+                $kconf->format = KalturaClientBase::KALTURA_SERVICE_FORMAT_PHP;
+
+                $kfilter = new KalturaCategoryFilter();
+                $kfilter->fullNameEqual = $catname;
+                $kalturaPager = new KalturaFilterPager();
+
+                $result = $kclient->category->listAction($kfilter, $kalturaPager);
+
+                if($result->totalCount > 0){
+                    //if so get add and update the media entry with it
+                    //should only be one result
+                    foreach ($result->objects as $category) {
+                        //check if category exists in media entry
+                        foreach($entryids as $entryid){
+                            $entry = $kclient->media->get($entryid, -1);
+                            $categoryids = explode(",",$entry->categoriesIds);
+
+                            $mediaEntry = new KalturaMediaEntry();
+
+                            if(!in_array ( $category->id, $categoryids)){
+                                $mediaEntry->categoriesIds = $entry->categoriesIds.",".$category->id;
+                                $mediaEntry->categories = $entry->categories.",".$category->fullName;
+                            }
+
+                            $result = $kclient->media->update($entryid, $mediaEntry);
+                        }
+                    }
+                }else{
+
+                    //check if course category exists
+                    $kfilter = new KalturaCategoryFilter();
+                    $kfilter->fullNameEqual = $rootcategory.">site>channels>".$cid;
+                    $kalturaPager = new KalturaFilterPager();
+                    $coursecat = $kclient->category->listAction($kfilter, $kalturaPager);
+
+                    //does not exist so we need to create course category and then incontext category
+                    if($result->totalCount <= 0){
+                        
+                        //if not add new category get add and then update 
+                        $category = new KalturaCategory();
+                        $category->parentId = $categoryparent;
+                        $category->name = $cid;
+                        $category->appearInList = 1;
+                        $category->privacy = 1;
+                        $category->inheritanceType = 2;
+                        $category->defaultPermissionLevel = 3;
+                        $category->contributionPolicy = 1;
+                        $category->moderation = 1;
+                    
+                        $pcategory = $kclient->category->add($category);
+                        $categoryparent= $pcategory->id;
+                    }
+
+                    //if not add new category get add and then update 
+                    $category = new KalturaCategory();
+                    $category->parentId = $categoryparent;
+                    $category->name = "InContext";
+                    $category->appearInList = 1;
+                    $category->privacy = 1;
+                    $category->inheritanceType = 2;
+                    $category->defaultPermissionLevel = 3;
+                    $category->contributionPolicy = 1;
+                    $category->moderation = 1;
+                
+                    $category = $kclient->category->add($category);
+
+                    foreach($entryids as $entryid){
+                        
+                        $entry = $kclient->media->get($entryid, -1);
+                        $categoryids = explode(",",$entry->categoriesIds);
+
+                        $mediaEntry = new KalturaMediaEntry();
+
+                        if(!in_array ( $category->id, $categoryids)){
+                            $mediaEntry->categoriesIds = $entry->categoriesIds.",".$category->id;
+                            $mediaEntry->categories = $entry->categories.",".$category->fullName;
+                        }
+
+                        $result = $kclient->media->update($entryid, $mediaEntry);
+                    }
+                }  
+            }
         }else{
             echo '<div class="alert alert-danger" role="alert">
                 Oops! Something went wrong with the link update.
