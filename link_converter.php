@@ -209,7 +209,7 @@ if ($mform->is_cancelled()) {
                 //check if category with certain full name exists
 
                 // Your Kaltura partner credentials
-                define("PARTNER_ID", "");
+               /* define("PARTNER_ID", "");
                 define("ADMIN_SECRET", "");
                 define("USER_SECRET",  "");
 
@@ -230,7 +230,9 @@ if ($mform->is_cancelled()) {
 
                 $kclient->setKs($ksession);
 
-                $kconf->format = KalturaClientBase::KALTURA_SERVICE_FORMAT_PHP;
+                $kconf->format = KalturaClientBase::KALTURA_SERVICE_FORMAT_PHP;*/
+
+                $kclient = $mform->create_session();
 
                 $kfilter = new KalturaCategoryFilter();
                 $kfilter->fullNameEqual = $catname;

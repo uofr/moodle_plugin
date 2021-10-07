@@ -17,12 +17,17 @@ class link_converter_form extends moodleform {
             No CC Kaltura urls found in the book, label, hvp and url resources.
           </div>');
         }
+
         //should only be one
         foreach($results as $result){
             $mform->addElement('html', '<div class="alert alert-primary" role="alert">
             <a href="'.new moodle_url('/course/view.php', array('id' => $result->cid)) .'" target="_blank">
             '.$result->shortname.': '.$result->activity.' '.$result->name. 
           '</a></div>');
+
+            //suggested link styling
+            $suggestion = $this->generate_suggestion($result);
+            $mform->addElement('html', '<div style = "word-wrap: break-word;" class="alert alert-primary" role="alert"> <b> Suggest replacements: </b>'.$suggestion.'</div>');
 
           if($this->_customdata['type']=="url"){
             $mform->addElement('textarea', 'converter', "Kaltura CC Link",'wrap="virtual" rows="20" cols="50"');
@@ -112,4 +117,98 @@ class link_converter_form extends moodleform {
         }
         return $results;
     }
+
+    function create_session(){
+        require_once "API/KalturaClient.php";
+        // Your Kaltura partner credentials
+        define("PARTNER_ID", "");
+        define("ADMIN_SECRET", "");
+        define("USER_SECRET",  "");
+        $user = ""; 
+        $kconf = new KalturaConfiguration(PARTNER_ID);
+        $kconf->serviceUrl = "https://api.ca.kaltura.com";
+        $kclient = new KalturaClient($kconf);
+        $ksession = $kclient->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
+       
+        if (!isset($ksession)) {
+            die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
+        }
+       
+        $kclient->setKs($ksession);       
+        $kconf->format = KalturaClientBase::KALTURA_SERVICE_FORMAT_PHP;
+        return $kclient;
+    }
+
+    function generate_suggestion($result){
+        global $CFG, $lulist;
+
+        require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
+
+        $kclient = $this->create_session();
+        $id_map = array();
+        $text ="";
+
+         //send up rootcategory and course id
+         $kafuri = get_config(KALTURA_PLUGIN_NAME, 'kaf_uri');
+          
+         if(empty($kafuri)||!$kafuri ){
+             return '<div class="alert alert-warning" role="alert">
+             Context could not be set, video may not be accessible.
+             </div>';
+         }else{
+
+             if (strpos($kafuri, 'dev')) {
+                 $source = "http://regina-moodle-dev.kaf.ca.kaltura.com";
+             }else if(strpos($kafuri, 'cce')){
+                 $source = "http://regina-moodle-cce.kaf.ca.kaltura.com";
+             }else{
+                 $source = "http://kaf.urcourses.uregina.ca";
+             }
+         }
+
+        $pattern1 = "/\/entryid\/\s*[^\n\r]*/";
+        $pattern1 = "/\/entry_id\/\s*[^\n\r]*/";
+        preg_match_all($pattern1, $result->url, $entryidsholder1 );
+        preg_match_all($pattern2, $result->url, $entryidsholder2 );
+
+        $entryids=[];
+
+        foreach($entryidsholder1 as $entryid){
+            foreach($entryid as $eid){
+                $split = explode("/",$eid);
+                $entryids[] = $split[2];
+            }
+        }
+
+        foreach($entryidsholder2 as $entryid){
+            foreach($entryid as $eid){
+                $split = explode("/",$eid);
+                $entryids[] = $split[2];
+            }
+        }
+      
+        $entryrefs = explode(';',$lulist);
+        foreach ($entryrefs as $entryref) {
+            $elms = explode(',',$entryref);
+            $id_map[$elms[1]] = $elms[0];
+        }
+
+        foreach($entryids as $entryid){
+            
+            if (array_key_exists($entryid, $id_map)) {
+                // re-mapping entry if match exists
+                $newentryid = $id_map[$entryid];
+                $result = $kclient->media->get($newentryid, -1);
+
+                $text .= '&lt;a href="'.$source.'/browseandembed/index/media/entryid/'.$newentryid.
+                '/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x373/playerSkin/23449221/">';
+                $text .= "tinymce-kalturamedia-embed||".$result->name." ".gmdate("H:i:s", $result->duration)."||608||373 &lt;/a&gt;<br><br>";
+            }else{
+                $text= "Old entry id could not be mapped to new id";
+            }
+        }   
+        return $text;
+    }
 }
+
+
