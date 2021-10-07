@@ -140,12 +140,14 @@ class link_converter_form extends moodleform {
     }
 
     function generate_suggestion($result){
-        global $CFG, $lulist;
+        global $CFG, $lulist, $lulist2;
 
         require_once($CFG->dirroot.'/local/kaltura/phatphile.php');
+        require_once($CFG->dirroot.'/local/kaltura/oldphatphile.php');
 
         $kclient = $this->create_session();
         $id_map = array();
+        $oldid_map = array();
         $text ="";
 
          //send up rootcategory and course id
@@ -204,7 +206,37 @@ class link_converter_form extends moodleform {
                 '/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x373/playerSkin/23449221/">';
                 $text .= "tinymce-kalturamedia-embed||".$result->name." ".gmdate("H:i:s", $result->duration)."||608||373 &lt;/a&gt;<br><br>";
             }else{
-                $text= "Old entry id could not be mapped to new id";
+
+
+                //check if old id
+
+                $oldentryrefs = explode(';',$lulist2);
+                foreach ($oldentryrefs as $entryref) {
+                    $elms = explode(',',$entryref);
+                    $oldid_map[$elms[1]] = $elms[0];
+                }
+
+                if (array_key_exists($entryid, $oldid_map)) {
+                    // re-mapping entry if match exists
+                    $midentryid = $oldid_map[$entryid];
+                    if (array_key_exists($midentryid, $id_map)) {
+
+
+                        // re-mapping entry if match exists
+                        $newentryid = $id_map[$midentryid];
+                        $result = $kclient->media->get($newentryid, -1);
+
+                        $text .= '&lt;a href="'.$source.'/browseandembed/index/media/entryid/'.$newentryid.
+                        '/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x373/playerSkin/23449221/">';
+                        $text .= "tinymce-kalturamedia-embed||".$result->name." ".gmdate("H:i:s", $result->duration)."||608||373 &lt;/a&gt;<br><br>";
+                    }else{
+                        $text.= "Old entry id: ".$entryid." could not be mapped to new id";
+                    }
+                }else{
+                    $text.= "Old entry id: ".$entryid." could not be mapped to new id";
+                }
+
+                
             }
         }   
         return $text;
