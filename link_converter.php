@@ -194,7 +194,8 @@ if ($mform->is_cancelled()) {
                 $cid = $fromform->cid;
                 $catname = $rootcategory.">site>channels>".$cid.">InContext";
 
-                $pattern = "/\/entryid\/\s*[^\n\r]*/";
+                //$pattern = "/\/entryid\/\s*[^\n\r]*/";
+                $pattern = "/entry_id\/?\s*.{10}/i";
                 preg_match_all($pattern, $fromform->converter["text"], $entryidsholder );
 
                 $entryids=[];
@@ -202,35 +203,9 @@ if ($mform->is_cancelled()) {
                 foreach($entryidsholder as $entryid){
                     foreach($entryid as $eid){
                         $split = explode("/",$eid);
-                        $entryids[] = $split[2];
+                        $entryids[] = $split[1];
                     }
                 }
-
-                //check if category with certain full name exists
-
-                // Your Kaltura partner credentials
-               /* define("PARTNER_ID", "");
-                define("ADMIN_SECRET", "");
-                define("USER_SECRET",  "");
-
-                require_once "API/KalturaClient.php";
-
-                $user = ""; 
-                $kconf = new KalturaConfiguration(PARTNER_ID);
-                // If you want to use the API against your self-hosted CE,
-                // go to your KMC and look at Settings -> Integration Settings to find your partner credentials
-                // and add them above. Then insert the domain name of your CE below.
-                $kconf->serviceUrl = "https://api.ca.kaltura.com";
-                $kclient = new KalturaClient($kconf);
-                $ksession = $kclient->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
-
-                if (!isset($ksession)) {
-                    die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
-                }
-
-                $kclient->setKs($ksession);
-
-                $kconf->format = KalturaClientBase::KALTURA_SERVICE_FORMAT_PHP;*/
 
                 $kclient = $mform->create_session();
 

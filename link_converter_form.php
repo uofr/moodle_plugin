@@ -27,7 +27,7 @@ class link_converter_form extends moodleform {
 
             //suggested link styling
             $suggestion = $this->generate_suggestion($result);
-            $mform->addElement('html', '<div style = "word-wrap: break-word;" class="alert alert-primary" role="alert"> <b> Suggest replacements: </b>'.$suggestion.'</div>');
+            $mform->addElement('html', '<div style = "word-wrap: break-word;" class="alert alert-primary" role="alert"> <b> Suggest replacements: </b><br>'.$suggestion.'</div>');
 
           if($this->_customdata['type']=="url"){
             $mform->addElement('textarea', 'converter', "Kaltura CC Link",'wrap="virtual" rows="20" cols="50"');
@@ -168,24 +168,30 @@ class link_converter_form extends moodleform {
              }
          }
 
-        $pattern1 = "/\/entryid\/\s*[^\n\r]*/";
-        $pattern1 = "/\/entry_id\/\s*[^\n\r]*/";
+        //$pattern1 = "/\/entryid\/\s*[^\n\r]*/";
+        //$pattern2 = "/\/entry_id\/\s*[^\n\r]*/"; 
+        $pattern1 = "/entry_id\/?\s*.{10}/i";
+        $pattern2 = "/entryid\/?\s*.{10}/i";
         preg_match_all($pattern1, $result->url, $entryidsholder1 );
         preg_match_all($pattern2, $result->url, $entryidsholder2 );
+
+        error_log(print_r("ENTRY IDS ",TRUE));
+        error_log(print_r($entryidsholder1,TRUE));
+        error_log(print_r($entryidsholder2,TRUE));
 
         $entryids=[];
 
         foreach($entryidsholder1 as $entryid){
             foreach($entryid as $eid){
                 $split = explode("/",$eid);
-                $entryids[] = $split[2];
+                $entryids[] = $split[1];
             }
         }
 
         foreach($entryidsholder2 as $entryid){
             foreach($entryid as $eid){
                 $split = explode("/",$eid);
-                $entryids[] = $split[2];
+                $entryids[] = $split[1];
             }
         }
       
@@ -216,24 +222,31 @@ class link_converter_form extends moodleform {
                     $oldid_map[$elms[1]] = $elms[0];
                 }
 
+ 
                 if (array_key_exists($entryid, $oldid_map)) {
+
+                    error_log(print_r("MADE IT ",TRUE));
                     // re-mapping entry if match exists
                     $midentryid = $oldid_map[$entryid];
+                    error_log(print_r($midentryid,TRUE));
                     if (array_key_exists($midentryid, $id_map)) {
 
+                        error_log(print_r("MADE IT2 ",TRUE));
 
                         // re-mapping entry if match exists
                         $newentryid = $id_map[$midentryid];
+
+                        error_log(print_r($newentryid,TRUE));
                         $result = $kclient->media->get($newentryid, -1);
 
                         $text .= '&lt;a href="'.$source.'/browseandembed/index/media/entryid/'.$newentryid.
                         '/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x373/playerSkin/23449221/">';
                         $text .= "tinymce-kalturamedia-embed||".$result->name." ".gmdate("H:i:s", $result->duration)."||608||373 &lt;/a&gt;<br><br>";
                     }else{
-                        $text.= "Old entry id: ".$entryid." could not be mapped to new id";
+                        $text.= "Old entry id: ".$entryid." could not be mapped to new id <br>";
                     }
                 }else{
-                    $text.= "Old entry id: ".$entryid." could not be mapped to new id";
+                    $text.= "Old entry id: ".$entryid." could not be mapped to new id <br>";
                 }
 
                 
