@@ -27,7 +27,7 @@ class link_converter_form extends moodleform {
 
             //suggested link styling
             $suggestion = $this->generate_suggestion($result);
-            $mform->addElement('html', '<div style = "word-wrap: break-word;" class="alert alert-primary" role="alert"> <b> Suggest replacements: </b><br>'.$suggestion.'</div>');
+            $mform->addElement('html', '<div style = "word-wrap: break-word;" class="alert alert-primary" role="alert"> <b> Suggest replacements: </b> <br>'.$suggestion.'</div>');
 
           if($this->_customdata['type']=="url"){
             $mform->addElement('textarea', 'converter', "Kaltura CC Link",'wrap="virtual" rows="20" cols="50"');
@@ -41,6 +41,8 @@ class link_converter_form extends moodleform {
         
             $mform->addElement('hidden', 'activity', $result->activity);
             $mform->addElement('hidden', 'cid', $result->cid);
+            $mform->addElement('hidden', 'shortname', $result->shortname);
+            $mform->addElement('hidden', 'name', $result->name);
             $mform->addElement('hidden', 'modid', $result->id);
             $mform->addElement('hidden', 'pageoffset', $this->_customdata['pageoffset']);
         }
@@ -222,7 +224,6 @@ class link_converter_form extends moodleform {
                     $oldid_map[$elms[1]] = $elms[0];
                 }
 
- 
                 if (array_key_exists($entryid, $oldid_map)) {
 
                     error_log(print_r("MADE IT ",TRUE));

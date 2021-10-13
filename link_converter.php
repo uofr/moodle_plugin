@@ -164,9 +164,38 @@ if ($mform->is_cancelled()) {
         }
       
         if($completed){
-            echo '<div class="alert alert-success" role="alert">
+
+            $text = '<div class="alert alert-success" role="alert">
                 Link update successfull.
-            </div>';
+
+                See video here: ';
+
+            if($fromform->activity == 'url'||$fromform->activity=='label'){
+               $text.=' <a href="'.new moodle_url('/course/view.php', array('id' => $fromform->cid)) .'" target="_blank">
+                '.$fromform->shortname.': '.$fromform->activity.' '.$fromform->name. 
+              '</a>';
+            }else if($fromform->activity == 'book'){
+               
+                $book = $DB->get_record('book_chapters', array('id'=>$fromform->modid));
+                $mod = $DB->get_record('modules', array("name"=>'book'));
+                $cm = $DB->get_record('course_modules', array('course'=>$fromform->cid, 'module'=>$mod->id, 'instance'=>$book->bookid));
+
+                $text.=' <a href="'.new moodle_url('/mod/book/view.php', array('id' => $cm->id, 'chapterid'=>$fromform->modid)) .'" target="_blank">
+                '.$fromform->shortname.': '.$fromform->activity.' '.$fromform->name. 
+              '</a>';
+            }else{
+
+                $mod = $DB->get_record('modules', array("name"=>'hvp'));
+                $cm = $DB->get_record('course_modules', array('course'=>$fromform->cid, 'module'=>$mod->id, 'instance'=>$fromform->modid));
+
+                $text.=' <a href="'.new moodle_url('/mod/hvp/view.php', array('id' => $cm->modid)) .'" target="_blank">
+                '.$fromform->shortname.': '.$fromform->activity.' '.$fromform->name. 
+              '</a>';
+            }
+
+            $text .= '</div>';
+
+            echo $text;
 
             //send up rootcategory and course id
             $kafuri = get_config(KALTURA_PLUGIN_NAME, 'kaf_uri');
@@ -294,7 +323,7 @@ if ($mform->is_cancelled()) {
                 Oops! Something went wrong with the link update.
             </div>';
         }
-        $mform->display();
+        //$mform->display();
 
 } else{
     $mform->display();
