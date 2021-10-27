@@ -29,6 +29,10 @@
     left: 12px;
 }
 
+.kaltura-player-container {
+    text-align: center;
+}
+
 #id_video #video_thumbnail {
     float: left;
 }
