@@ -90,9 +90,9 @@ function local_kaltura_migration_log_data($method, $data = null) {
  * This function validates that a root category and a profile id have set.  The root category is then queried to find a category id.
  */
 function local_kaltura_retrieve_repository_settings() {
-    local_kaltura_migration_log_data(__FUNCTION__, array(
-        'getting repository settings',
-    ));
+   // local_kaltura_migration_log_data(__FUNCTION__, array(
+       // 'getting repository settings',
+    //));
     $rootcategoryid = get_config(KALTURA_PLUGIN_NAME, 'migration_source_category');
     $metadataprofileid = get_config(KALTURA_PLUGIN_NAME, 'migration_metadata_profile_id');
 
