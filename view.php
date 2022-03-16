@@ -86,6 +86,7 @@ $params = array(
     'bodyclass' => $pageclass,
     'lastheight' => null,
     'padding' => 15,
+    'kalvidwidth' => $kalvidres->width,
     'width' => $kalvidres->width,
     'height' => $kalvidres->height
 );
