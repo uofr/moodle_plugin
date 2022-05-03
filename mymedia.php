@@ -66,8 +66,15 @@ $attr = array(
     'target' => 'contentframe',
 );
 echo html_writer::tag('a', 'URLs for H5P', $attr);
-
+//hide zoom importer button  for students role
+$roleass = $DB->get_record('role_assignments', array('userid' => $USER->id), '*', MUST_EXIST);
+?>
+<input  type="hidden" value ="<?php echo $roleass->roleid; ?>" >
+<?php
 // Request the launch content with an iframe tag.
+if ($roleass->roleid != 5) {
+    # code...
+
 $attr = array(
     'href' => 'get_zoom_url.php',
 	'class' => 'btn btn-secondary',
@@ -75,8 +82,7 @@ $attr = array(
     'target' => 'contentframe',
 );
 echo html_writer::tag('a', 'Import Zoom Recordings', $attr);
-
-
+}
 // Request the launch content with an iframe tag.
 $attr = array(
     'id' => 'contentframe',
