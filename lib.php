@@ -27,7 +27,7 @@
  * @return void
  */
 function local_mymedia_extend_navigation($navigation) {
-    global $USER, $CFG;
+    global $USER, $DB, $PAGE, $CFG;
 
     if (empty($USER->id)) {
         return;
@@ -39,28 +39,6 @@ function local_mymedia_extend_navigation($navigation) {
         return;
     }
 
-    $menuHeaderStr = get_string('nav_mymedia', 'local_mymedia');
-
-    if (strpos($CFG->custommenuitems, $menuHeaderStr) !== false) {
-        // My Media is already part of the config, no need to add it again.
-        return;
-    }
-
-    $myMediaStr = "\n$menuHeaderStr|/local/mymedia/mymedia.php";
-    $CFG->custommenuitems .= $myMediaStr;
-
-    $url = new moodle_url('/local/mymedia/mymedia.php');
-    $node = navigation_node::create(
-        'My Media',
-        $url,
-        navigation_node::NODETYPE_LEAF,
-        'local_mymedia',
-        'local_mymedia',
-        new pix_icon('icon', 'local_mymedia')
-    );
-    $navigation->add_node($node);
-
-   
-    
-    
+	$myMediaStr = "\nMy Media|/local/mymedia/mymedia.php";
+	$CFG->custommenuitems .= $myMediaStr;
 }
