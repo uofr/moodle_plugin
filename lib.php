@@ -39,6 +39,12 @@ function local_mymedia_extend_navigation($navigation) {
         return;
     }
 
+    if (strpos($CFG->custommenuitems,'My Media') !== false)
+	{
+		//My Media is already part of the config, no need to add it again.
+		return;
+	}
+
 	$myMediaStr = "\nMy Media|/local/mymedia/mymedia.php";
 	$CFG->custommenuitems .= $myMediaStr;
 }
