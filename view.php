@@ -22,7 +22,6 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(dirname(dirname(__FILE__))) . '/local/kaltura/locallib.php');
 
 $id = optional_param('id', 0, PARAM_INT);
 
@@ -69,9 +68,6 @@ $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
 
-// UofR re-map old to new entry_ids from CE to PREM
-$kalvidres = local_kaltura_validate_entry_id($kalvidres);
-
 $description = format_module_intro('kalvidres', $kalvidres, $cm->id);
 if (!empty($description)) {
     echo $OUTPUT->box_start('generalbox');
@@ -86,7 +82,6 @@ $params = array(
     'bodyclass' => $pageclass,
     'lastheight' => null,
     'padding' => 15,
-    'kalvidwidth' => $kalvidres->width,
     'width' => $kalvidres->width,
     'height' => $kalvidres->height
 );
