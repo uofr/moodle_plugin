@@ -1190,4 +1190,212 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         return html_writer::table($table);
     }
+
+ 
+    /**
+     * Display student gallery teaser
+     *
+     * This default method prints a container holding three teaser videos and a view more button
+     * User can click individual video to view it, or view more button to 
+     * go to student gallery
+     *
+     * @global object
+     * @global object
+     */
+    public function display_student_gallery_container($kalvidassign, $context, $cm) {
+
+        global $PAGE, $COURSE, $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/local/kaltura/locallib.php');
+    
+        $configsettings = local_kaltura_get_config();
+
+        $kafuri = $configsettings->kaf_uri;
+
+        if (!empty($configsettings->uri)) {
+            $apiurl = $configsettings->uri;
+        }
+
+        $module = local_kaltura_get_endpoint(KAF_BROWSE_EMBED_MODULE);
+        $entries = [];
+
+        //get three top newest videos
+        $sql = "
+            SELECT * FROM ". $CFG->prefix."kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id DESC LIMIT 3
+         ";
+
+        $videos = $DB->get_records_sql($sql);
+
+        //display gallery teaser
+        $teaserurl = new moodle_url('/mod/kalvidassign/student_gallery.php', array('id' => $cm->id));
+
+        //using entryid get video thumbnails
+        foreach($videos as $video){
+
+            $entry = kalvidassign_get_media($video->entry_id);
+            if($entry){
+                
+                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
+
+                $params = array(
+                    'courseid' => $COURSE->id,
+                    'height' => $entry->height,
+                    'width' => $entry->width,
+                    'withblocks' => 0,
+                    'source' => $entry->source
+                );
+        
+                $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
+
+                //get name of creator based on username
+                $creator = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
+
+                //get total likes from DB
+                $totallikes = $DB->count_records('kalvidassign_userfeedback', array('itemid' => $video->id, 'liked' => 1));
+                //get if current user has liked the video
+                $liked = $DB->get_record('kalvidassign_userfeedback', array('itemid' => $video->id, 'userid' => $USER->id));
+
+                $cmtopt = new \stdClass();
+                $cmtopt->area = 'gallery';
+                $cmtopt->context = $context;
+                $cmtopt->itemid = $video->id;
+                $cmtopt->showcount = true;
+                $cmtopt->component = 'mod_kalvidassign';
+                $cmtopt->cm = $cm;
+                $cmtopt->autostart = true;
+                $cmtopt->course = $COURSE->id;
+                $comments= new \comment($cmtopt);
+                \comment::init();
+                
+                $entries[]=array(
+                                "id" => $entry->id,
+                                "itemid" => $video->id,
+                                "name" => $entry->name,
+                                "creator"=>fullname($creator, true),
+                                "description" => $entry->description,
+                                "thumbnailUrl" => $entry->thumbnailUrl,
+                                "url"=> $url,
+                                "width"=> $entry->width,
+                                "height"=> $entry->height,
+                                "liked"=>$liked,
+                                "totallikes"=>$totallikes,
+                                "context"=>$context->id,
+                                "commentid"=>$comments->get_cid(),
+                                "course"=>$COURSE->id,
+                ); 
+            } 
+        }
+    
+        $data =[];
+        $data = array(
+            "entries"=>$entries,
+            "preview"=> false,
+            "vidassignid"=> $vidassignid,
+            "teaser"=>true,
+            "teaserurl"=>$teaserurl,
+            "allowlikes"=> $kalvidassign->allowcomments,
+            "allowcomments"=>$kalvidassign->allowlikes,
+        );      
+
+        echo $this->render_from_template('mod_kalvidassign/studentgallery', $data);
+        $PAGE->requires->js('/mod/mediagallery/js/screenfull.min.js');
+    }
+
+     /**
+     * Display full student gallery
+     *
+     * This default method prints thumbnails of all submitted videos 
+     * User can click individual video to view it
+     *
+     * @global object
+     * @global object
+     */
+    public function display_student_gallery_grid($videos, $vidassignid, $context, $cm, $kalvidassign) {
+
+        global $PAGE, $COURSE, $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/local/kaltura/locallib.php');
+    
+        $configsettings = local_kaltura_get_config();
+
+        $kafuri = $configsettings->kaf_uri;
+
+        if (!empty($configsettings->uri)) {
+            $apiurl = $configsettings->uri;
+        }
+
+        $module = local_kaltura_get_endpoint(KAF_BROWSE_EMBED_MODULE);
+   
+        $entries = [];
+
+        foreach($videos as $video){
+            $entry = kalvidassign_get_media($video->entry_id);
+
+            if($entry){
+
+                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
+
+                $params = array(
+                    'courseid' => $COURSE->id,
+                    'height' => $entry->height,
+                    'width' => $entry->width,
+                    'withblocks' => 0,
+                    'source' => $entry->source
+                );
+        
+                $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
+
+                //get name of creator based on username
+                $creator = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
+
+                //get total likes from DB
+                $totallikes = $DB->count_records('kalvidassign_userfeedback', array('itemid' => $video->id, 'liked' => 1));
+                //get if current user has liked the video
+                $liked = $DB->get_record('kalvidassign_userfeedback', array('itemid' => $video->id, 'userid' => $USER->id));
+
+                //if ($gallery->can_comment()) {
+                    $cmtopt = new \stdClass();
+                    $cmtopt->area = 'gallery';
+                    $cmtopt->context = $context;
+                    $cmtopt->itemid = $video->id;
+                    $cmtopt->showcount = true;
+                    $cmtopt->component = 'mod_kalvidassign';
+                    $cmtopt->cm = $cm;
+                    $cmtopt->autostart = true;
+                    $cmtopt->course = $COURSE->id;
+                    $comments= new \comment($cmtopt);
+                    \comment::init();
+           
+                $entries[]=array(
+                    "id" => $entry->id,
+                    "itemid" => $video->id,
+                    "name" => $entry->name,
+                    "creator"=>fullname($creator, true),
+                    "description" => $entry->description,
+                    "thumbnailUrl" => $entry->thumbnailUrl,
+                    "url"=> $url,
+                    "width"=> $entry->width,
+                    "height"=> $entry->height,
+                    "liked"=>$liked,
+                    "totallikes"=>$totallikes,
+                    "context"=>$context->id,
+                    "commentid"=>$comments->get_cid(),
+                    "course"=>$COURSE->id,
+                );
+            }
+        }
+
+        $data =[];
+        $data = array(
+            "entries"=>$entries,
+            "preview"=> false,
+            "vidassignid"=> $vidassignid,
+            "allowlikes"=> $kalvidassign->allowcomments,
+            "allowcomments"=>$kalvidassign->allowlikes,
+        );
+
+        $html = $this->render_from_template('mod_kalvidassign/studentgallery', $data);
+        $PAGE->requires->js('/mod/mediagallery/js/screenfull.min.js');
+       
+        return $html;
+        
+    } 
 }

@@ -30,7 +30,13 @@ $string['availabledate'] = 'Available from';
 $string['duedate'] = 'Due Date';
 $string['preventlate'] = 'Prevent late submissions';
 $string['allowdeleting'] = 'Allow resubmitting';
-$string['allowdeleting_help'] = 'If enabled, students may replace submitted videos. Whether it is possible to submit after the due date is controlled by the \'Prevent late submissions\' setting';
+$string['allowdeleting_help'] = 'If enabled, students may replace submitted videos. Whether it is possible to submit after the due date is controlled by the \'Prevent late submissions\' setting';$string['allowdeleting'] = 'Allow resubmitting';
+$string['allowlikes'] = 'Allow likes in video gallery';
+$string['allowlikes_help'] = 'If enabled students can like/favorite videos in video gallery';
+$string['allowcomments'] = 'Allow comments in video gallery';
+$string['allowcomments_help'] = 'If enabled students can comment on other videos in video gallery';
+$string['enablegallery'] = 'Enable student video gallery';
+$string['enablegallery_help'] = 'If enabled all student submissions will be displayed in a gallery view for everyone to view';
 $string['emailteachers'] = 'Email alerts to teachers';
 $string['emailteachers_help'] = 'If enabled, teachers receive email notification whenever students add or update an assignment submission. Only teachers who are able to grade the particular assignment are notified. So, for example, if the course uses separate groups, teachers restricted to particular groups won\'t receive notification about students in other groups.';
 $string['invalidid'] = 'Invalid ID';
@@ -49,6 +55,7 @@ $string['emptyentryid'] = 'Video assignment was not submitted correctly.  Please
 $string['deleteallsubmissions'] = 'Delete all video submissions';
 $string['fullname'] = 'Name';
 $string['grade'] = 'Grade';
+$string['gallery'] = 'Student Submission Gallery';
 $string['submissioncomment'] = 'Comment';
 $string['timemodified'] = 'Last modified (Submission)';
 $string['grademodified'] = 'Last modified (Grade)';
@@ -141,3 +148,11 @@ $string['privacy:metadata:kalvidassignperpage'] = 'Number of assignment submissi
 $string['privacy:metadata:kalvidassignquickgrade'] = 'Quick grading preference for assignment submissions.';
 $string['privacy:markedsubmissionspath'] = 'markedsubmissions';
 $string['privacy:submissionpath'] = 'submission';
+
+//Gallery Strings
+$string['allowcomments'] = 'Allow comments';
+$string['allowcomments_help'] = 'Allow users to comment on items and galleries.';
+$string['allowlikes'] = 'Allow likes';
+$string['allowlikes_help'] = 'Allow users to \'like\' items in a gallery.';
+$string['enablegallery'] = 'Enable Student Gallery';
+$string['enablegallery_help'] = 'Student submissions will be entered into a gallery view for other students to see after they have submitted their assignments';

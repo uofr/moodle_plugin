@@ -50,6 +50,10 @@ class backup_kalvidassign_activity_structure_step extends backup_activity_struct
                 'preventlate',
                 'resubmit',
                 'emailteachers',
+                'enablegallery',
+                'allowcomments',
+                'allowlikes',
+                'studentdisable',
                 'grade',
                 'timecreated',
                 'timemodified'

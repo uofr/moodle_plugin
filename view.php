@@ -141,4 +141,16 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
     echo $renderer->display_instructor_buttons($cm, $USER->id);
 }
 
+//Added for Student submitted Gallery 
+//check if submission exists
+if(isset($submission->width) && isset($submission->height))
+{
+    //check if studentgallery is enabled 
+    //logic is there should alway be a submission since we are checking if student has submitted
+    if($kalvidassign->enablegallery){
+        //render student gallery preview container
+        echo $renderer->display_student_gallery_container($kalvidassign, $context, $cm);
+    }
+}
+
 echo $OUTPUT->footer();

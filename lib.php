@@ -26,6 +26,12 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 require_once($CFG->dirroot.'/calendar/lib.php');
+require_once($CFG->dirroot.'/local/kaltura/API/KalturaClient.php');
+
+// Your Kaltura partner credentials
+define("PARTNER_ID", "103");
+define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
+define("USER_SECRET",  "d8027e262988b996b7ed8b3eacc23295");
 
 /**
  * Given an object containing all the necessary data,
@@ -404,3 +410,84 @@ function kalvidassign_grade_item_delete($kalvidassign) {
 function kalvidassign_cron () {
     return false;
 }
+
+/**
+ * Function get media on id
+ *
+ * Uses Kaltura API to fetch media for display
+ * @return bool Returns media object
+ */
+function kalvidassign_get_media ($entryid) {
+    
+
+    $config = new KalturaConfiguration(PARTNER_ID);
+    $config->serviceUrl = "https://api.ca.kaltura.com";
+
+
+    $client = new KalturaClient($config);
+    $ks = $client->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
+    $client->setKS($ks);
+
+    try {
+      $result = $client->media->get($entryid, 1);
+      return $result;
+    } catch (Exception $e) {
+      return false;
+    }
+}
+
+/**
+ * Validate comment parameter before perform other comments actions
+ *
+ * @param stdClass $commentparam {
+ *              context  => context the context object
+ *              courseid => int course id
+ *              cm       => stdClass course module object
+ *              commentarea => string comment area
+ *              itemid      => int itemid
+ * }
+ * @return boolean
+ */
+function kalvidassign_comment_validate($commentparam) {
+    if ($commentparam->commentarea != 'gallery' && $commentparam->commentarea != 'item') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if ($commentparam->itemid == 0) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    return true;
+}
+
+/**
+ * Running addtional permission check on plugins
+ *
+ * @package  mod_mediagallery
+ * @category comment
+ *
+ * @param stdClass $args
+ * @return array
+ */
+function kalvidassign_comment_permissions($args) {
+    return array('post' => true, 'view' => true);
+}
+
+/**
+ * Validate comment data before displaying comments
+ *
+ * @package  mod_mediagallery
+ * @category comment
+ *
+ * @param stdClass $comments
+ * @param stdClass $args
+ * @return boolean
+ */
+function kalvidassign_comment_display($comments, $args) {
+    if ($args->commentarea != 'gallery' && $args->commentarea != 'item') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if ($args->itemid == 0) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    return $comments;
+}
+

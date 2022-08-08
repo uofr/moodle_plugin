@@ -46,3 +46,28 @@
     margin-right: auto;
     margin-bottom: 5px;
 }
+
+#mediabox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: black;
+    display: none;
+}
+
+.mod-kalvidassign-viewmore:hover{
+    background-color: #5d666e !important;
+    color:#f2f3f4;
+}
+
+.mod-kalvidassign-feature:hover,  .kalvidassign_videocards:hover{
+    background-color: #5d666e !important;
+    color:#f2f3f4;
+}
+
+.mod-kalvidassign-sidebar-shrink{
+    right: 0;
+    position: fixed;
+    width: 25px;
+}

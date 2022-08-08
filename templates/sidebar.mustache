@@ -1,0 +1,75 @@
+<div id="mediabox-overlay"></div>
+
+<div id="mediabox">
+    <div id="mediabox-content-wrap">
+        <div id="mediabox-content"></div>
+    </div>
+    <div id="mediabox-sidebar" style="top:0px;"class="d-flex flex-column flex-shrink-0 p-3 bg-dark">
+        <div class="mb-3 mr-3" id="sidebar-actions">
+            <i class="fa fa-minus sidebartoggle m-3 text-light" aria-hidden="true"></i>
+            <i class="fa fa-chevron-left m-3 text-light" id="previous" aria-hidden="true"></i>
+            <i class="fa fa-chevron-right m-3 text-light" id="next" aria-hidden="true"></i>
+            <i class="fa fa-times mbclose m-3 text-light" aria-hidden="true"></i>
+        </div>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto ps-0 justify-content-end bg-dark">
+            <li class="mb-1 text-light " id="mediabox-metainfo">
+                <a class="collapsed text-decoration-none text-light" data-toggle="collapse" href="#info-collapse" aria-expanded="false" aria-controls="info-collapse">
+                   <i class="fa fa-caret-right text-light" aria-hidden="true"></i>
+                    Media Info
+                </a>
+                <div class="collapse text-wrap  " id="info-collapse" style="">
+                    <span id="creators" class="text-wrap">Creator: {{creator}} </span>
+                    <br><br>
+                    <span id="caption" class="text-wrap">Caption: {{title}} </span>
+                </div>
+            </li>
+            <hr>
+            {{#allowlikes}}
+            <li class="nav-item text-light" id="mediabox-social">
+                <i id = "liked" class="fa {{#liked}}fa-heart-o{{/liked}} {{#unliked}} fa-heart {{/unliked}}"  aria-hidden="true"></i>
+                <span id="liketally">
+                    Liked by:
+                    {{#liked}}you,{{/liked}}
+                    {{totallikes}} others 
+                </span>
+            </li>
+            {{/allowlikes}}
+            <hr>
+
+            {{#allowcomments}}
+            <li class="mb-1 text-light" id="mediabox-comments">    
+
+
+                <!--<a id="comment-link" class="collapsed text-decoration-none text-light" data-toggle="collapse" href="#comments-collapse" aria-expanded="false" aria-controls="comments-collapse">
+                    <span id="comment-link-text">
+                        <i class="fa fa-caret-right text-light" aria-hidden="true"></i>
+                        Comments
+                    </span>
+                </a>
+                <div class="collapse" id="comments-collapse" style="">
+                   
+                    <div id="comment-ctrl" class="comment-ctrl" style="display: block;">
+                        <ul id="comment-list" class="comment-list comments-loaded">
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>-->
+        <hr>
+        <div class="dropdown ">
+            <div class="comment-area ">
+                <div class="db">
+                    <textarea name="content" rows="2" id="dlg-content" aria-label="Add a comment..." cols="20" style="color: grey;"></textarea>
+                </div>
+                <div class="fd" id="comment-action">
+                    <button type="button" id="comment-action-post" class="btn btn-primary">Save Comment</button>
+                </div>
+            </div>
+        </div>
+        {{/allowcomments}}
+    </div>
+    <div id="mediabox-navbar">
+        <div id="mediabox-navbar-container"></div>
+    </div>
+</div>

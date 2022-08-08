@@ -85,5 +85,60 @@ function xmldb_kalvidassign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014023000.01, 'kalvidassign');
     }
 
+    if ($oldversion < 2022032402) {
+
+        // Define field allowcomments to be added to kalvidassign.
+        $table = new xmldb_table('kalvidassign');
+        $field = new xmldb_field('enablegallery', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'emailteachers');
+
+        // Conditionally launch add field allowcomments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field allowcomments to be added to kalvidassign.
+        $table = new xmldb_table('kalvidassign');
+        $field = new xmldb_field('allowcomments', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'enablegallery');
+
+        // Conditionally launch add field allowcomments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field allowlikes to be added to kalvidassign_submission.
+        $table = new xmldb_table('kalvidassign');
+        $field = new xmldb_field('allowlikes', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'allowcomments');
+
+        // Conditionally launch add field allowlikes.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field studentdisable to be added to kalvidassign_submission.
+        $table = new xmldb_table('kalvidassign');
+        $field = new xmldb_field('studentdisable', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'allowlikes');
+
+        // Conditionally launch add field studentdisable.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+         // Define field gallerysubmit to be added to kalvidassign_submission.
+         $table = new xmldb_table('kalvidassign_submission');
+         $field = new xmldb_field('gallerysubmit', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'metadata');
+ 
+         // Conditionally launch add field gallerysubmit.
+         if (!$dbman->field_exists($table, $field)) {
+             $dbman->add_field($table, $field);
+         }
+
+        // Kalvidassign savepoint reached.
+        upgrade_mod_savepoint(true, 2022032402.02, 'kalvidassign');
+    }
+    if ($oldversion < 2022032406) {
+        $dbman->install_one_table_from_xmldb_file($CFG->dirroot.'/mod/kalvidassign/db/install.xml', 'kalvidassign_userfeedback');
+        upgrade_mod_savepoint(true, 2022032406, 'kalvidassign');
+    }
+
     return true;
 }

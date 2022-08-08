@@ -1,0 +1,46 @@
+<div id = "mod_kalvidassign_gallery" class="container" data-vid = {{{vidassignid}}}>
+
+    {{#teaser}}
+    <h2 class="pb-2 border-bottom">Submission Gallery</h2>
+    {{/teaser}}
+
+    <div class="row">
+ 
+        {{#preview}}
+            </div>
+            <div class="row">
+        {{/preview}}
+
+        
+        {{#entries}}
+        
+            <div id="{{itemid}}" class="card m-3 kalvidassign_videocards" style="width: 15rem;">
+                <img id="{{{id}}}" class = "card-img-top kalvidassign_thumbnail" src='{{{thumbnailUrl}}}'>
+                <div class="hide url" data-course ="{{course}}" data-context ="{{context}}" data-comment="{{commentid}}" data-totallikes={{totallikes}} data-liked={{liked}} data-value = {{{url}}} data-width = {{{width}}} data-height ={{{height}}}> </div>
+                    
+                <div class="card-body">
+                    <p id = "thumbcreator">Creator: {{creator}}<p>
+                    <h5 id="thumbtitle" class="card-title"> <b>{{{name}}}</b></h5>
+                </div>
+            </div>
+        {{/entries}}
+        {{#teaser}}
+             <a class="  feature col text-center" href="{{teaserurl}}">
+                <div class="card mb-3 mod-kalvidassign-viewmore p-5">
+                    <div class="feature-icon fs-2">
+                        <i class="fa fa-plus-circle fa-3x" aria-hidden="true"></i>
+                    </div>
+                    <br> <h4 >View More </h4>
+                </div>
+            </a>
+        {{/teaser}}
+   </div>
+</div>
+{{#js}}
+require(['mod_kalvidassign/fullscreen', 'mod_kalvidassign/lazyload'], function(fullscreen, lazyload) {
+    
+    fullscreen.init({{allowcomments}}, {{allowlikes}});
+    {{^teaser}} lazyload.init();{{/teaser}}
+});
+
+{{/js}}

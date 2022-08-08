@@ -69,6 +69,29 @@ class mod_kalvidassign_mod_form extends moodleform_mod {
         $mform->addHelpButton('emailteachers', 'emailteachers', 'kalvidassign');
         $mform->setDefault('emailteachers', 0);
 
+        $mform->addElement('header', 'general', get_string('gallery', 'kalvidassign'));
+
+        //dropdown for student work enable/disable gallery
+        $mform->addElement('selectyesno', 'enablegallery', get_string('enablegallery', 'kalvidassign'));
+        $mform->setDefault('enablegallery', 0);
+        $mform->addHelpButton('enablegallery', 'enablegallery', 'kalvidassign');
+
+        //allow comments
+        $mform->addElement('selectyesno', 'allowcomments', get_string('allowcomments', 'kalvidassign'));
+        $mform->setDefault('allowcomments', 0);
+        $mform->addHelpButton('allowcomments', 'allowcomments', 'kalvidassign');
+
+        //allow likes
+        $mform->addElement('selectyesno', 'allowlikes', get_string('allowlikes', 'kalvidassign'));
+        $mform->setDefault('allowlikes', 0);
+        $mform->addHelpButton('allowlikes', 'allowlikes', 'kalvidassign');
+
+        //allow students the option to decline
+       /* $mform->addElement('selectyesno', 'studentdisable', get_string('studentdisable', 'kalvidres'));
+        $mform->setDefault('studentdisable', 0);
+        $mform->addHelpButton('studentdisable', 'studentdisable', 'kalvidres');
+
+*/
         $this->standard_grading_coursemodule_elements();
 
         $this->standard_coursemodule_elements();
