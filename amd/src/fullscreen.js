@@ -138,11 +138,6 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                 changeitem(e.currentTarget.getAttribute('data-id'));
             }, '#mediabox-navbar', '.navitem');
 
-
-            console.log("likes and comments");
-            console.log(_allowlikes);
-            console.log(_allowcomments);
-
             if(_allowlikes){
                 // Like action.
                 $('#liked').click(function(){
@@ -309,10 +304,6 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                 var template =  await render('mod_kalvidassign/comment_area', data);
                 $(commentbox).html(template);
                 $(commentbox).find(".comment-ctrl").show();
-
-                console.log( $( ".comment-link a" ));
-                console.log( $( "#mediabox-comments" ));
-                console.log( $( "#mediabox-comments div a" ));
                 $( ".comment-link" ).click(function() {
                     if($(this).find("i").hasClass("fa-caret-right")){
                         $(this).find("i").addClass('fa-caret-down').removeClass('fa-caret-right');
@@ -560,8 +551,6 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
     };
 
     var init = function(allowcomments, allowlikes) {
-
-        console.log(allowcomments+ allowlikes);
         return new MEDIABOX(allowcomments, allowlikes);
     };
 
