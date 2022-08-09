@@ -1331,25 +1331,11 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
             if($entry){
 
-
-
-              
-
                 $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height./*'/playerSkin/'.$entry->skin.'*/'';
 
 
-                error_log(print_r($source,TRUE));
-                error_log(print_r($entry,TRUE));
-
                // $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
                 //$source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$link[3];
-
-
-
-
-
-
-
                 //$source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
 
                 $params = array(
