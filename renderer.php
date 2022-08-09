@@ -1234,17 +1234,18 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             $entry = kalvidassign_get_media($video->entry_id);
             if($entry){
                 
-                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
+                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cm->id;
 
                 $params = array(
                     'courseid' => $COURSE->id,
                     'height' => $entry->height,
                     'width' => $entry->width,
-                    'withblocks' => 0,
-                    'source' => $entry->source
+                    'withblocks' => 1,
+                    'source' => $source,
+                    'cmid'=>$cm->id
                 );
         
-                $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
+                $url = new moodle_url('/mod/kalvidassign/lti_launch.php', $params);
 
                 //get name of creator based on username
                 $creator = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
@@ -1273,7 +1274,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                                 "creator"=>fullname($creator, true),
                                 "description" => $entry->description,
                                 "thumbnailUrl" => $entry->thumbnailUrl,
-                                "url"=> $url,
+                                "url"=> $url->out(false),
                                 "width"=> $entry->width,
                                 "height"=> $entry->height,
                                 "liked"=>$liked,
@@ -1309,7 +1310,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
      * @global object
      * @global object
      */
-    public function display_student_gallery_grid($videos, $vidassignid, $context, $cm, $kalvidassign) {
+    public function display_student_gallery_grid($videos, $vidassignid, $context, $cm, $kalvidassign, $cmid) {
 
         global $PAGE, $COURSE, $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/local/kaltura/locallib.php');
@@ -1331,22 +1332,18 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
             if($entry){
 
-                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height./*'/playerSkin/'.$entry->skin.'*/'';
-
-
-               // $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
-                //$source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$link[3];
-                //$source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
+                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cmid;
 
                 $params = array(
                     'courseid' => $COURSE->id,
                     'height' => $entry->height,
                     'width' => $entry->width,
-                    'withblocks' => 0,
-                    'source' => $entry->source
+                    'withblocks' => 1,
+                    'source' => $source,
+                    'cmid'=>$cmid
                 );
         
-                $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
+                $url = new moodle_url('/mod/kalvidassign/lti_launch.php', $params);
 
                 //get name of creator based on username
                 $creator = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
@@ -1376,7 +1373,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                     "creator"=>fullname($creator, true),
                     "description" => $entry->description,
                     "thumbnailUrl" => $entry->thumbnailUrl,
-                    "url"=> $url,
+                    "url"=> $url->out(false),
                     "width"=> $entry->width,
                     "height"=> $entry->height,
                     "liked"=>$liked,
@@ -1404,7 +1401,3 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         
     } 
 }
-
-
-
-

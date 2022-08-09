@@ -246,8 +246,8 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             width= $(playerinfo).data("width");
             height = $(playerinfo).data("height");
 
-            var player = '<div class = "kaltura-player-container">'
-            +'<iframe src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;"  height="100%" width="608" style="height: '+height+'; width: '+width+';"></iframe>'
+            var player = '<div class = "kaltura-player-container" >'
+            +'<iframe class="kaltura-player-iframe" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0" height="402" width="608" ></iframe>'
             +'</div>';
 
             //add player to mediabox
@@ -451,7 +451,7 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
 
 
             var player = '<div class = "kaltura-player-container">'
-            +'<iframe src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;"  height="100%" width="608" style="height: '+height+'; width: '+width+';"></iframe>'
+            +'<iframe  class="kaltura-player-iframe" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0"  height="402" width="608" ></iframe>'
             +'</div>';
 
             //add player to mediabox

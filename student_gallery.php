@@ -68,6 +68,6 @@ $videos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
 
 if($kalvidassign->enablegallery){
     //render thumbnail grid
-    echo $renderer->display_student_gallery_grid($videos,$kalvidassign->id, $context, $cm, $kalvidassign  );
+    echo $renderer->display_student_gallery_grid($videos,$kalvidassign->id, $context, $cm, $kalvidassign, $id  );
 }
 echo $OUTPUT->footer();

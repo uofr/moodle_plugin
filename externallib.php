@@ -68,15 +68,15 @@ class mod_kalvidassign_external extends external_api {
 
             $entry = kalvidassign_get_media($video->entry_id);
 
-
-            $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/';
+            $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cmid;
 
             $params = array(
                 'courseid' => $COURSE->id,
                 'height' => $entry->height,
                 'width' => $entry->width,
-                'withblocks' => 0,
-                'source' => $entry->source
+                'withblocks' => 1,
+                'source' => $source,
+                'cmid'=>$cmid
             );
         
             $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
@@ -90,7 +90,8 @@ class mod_kalvidassign_external extends external_api {
                 "creator"=>fullname($user, true),
                 "description" => $entry->description,
                 "thumbnailUrl" => $entry->thumbnailUrl,
-                "url"=> $url->__toString(),
+                //"url"=> $url->__toString(),
+                "url"=> $url->out(false),
                 "width"=> $entry->width,
                 "height"=> $entry->height,
             );
