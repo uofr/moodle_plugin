@@ -1279,9 +1279,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                                 "height"=> $entry->height,
                                 "liked"=>$liked,
                                 "totallikes"=>$totallikes,
-                                "context"=>$context->id,
                                 "commentid"=>$comments->get_cid(),
-                                "course"=>$COURSE->id,
                 ); 
             } 
         }
@@ -1295,6 +1293,9 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             "teaserurl"=>$teaserurl,
             "allowlikes"=> $kalvidassign->allowcomments,
             "allowcomments"=>$kalvidassign->allowlikes,
+            "course"=>$COURSE->id,
+            "context"=>$context->id,
+            "cmid"=>$cmid
 
         );      
 

@@ -238,7 +238,6 @@ class mod_kalvidassign_external extends external_api {
     public static function get_comments_parameters() {
         return new external_function_parameters(array(
             'itemid' => new external_value(PARAM_INT),
-            'contextid' => new external_value(PARAM_INT),
             'clientid' => new external_value(PARAM_TEXT),
             'courseid' => new external_value(PARAM_INT),
         ));
@@ -250,12 +249,11 @@ class mod_kalvidassign_external extends external_api {
      * @param string $url 
      */
 
-    public static function get_comments($itemid, $contextid, $clientid, $courseid) {
+    public static function get_comments($itemid, $clientid, $courseid) {
         global $DB, $CFG, $USER, $OUTPUT;
 
         $params = self::validate_parameters(self::get_comments_parameters(), array(
             'itemid' => $itemid,
-            'contextid' => $contextid,
             'clientid' => $clientid,
             'courseid' => $courseid,
         ));
@@ -288,7 +286,7 @@ class mod_kalvidassign_external extends external_api {
                        c.itemid = :itemid AND
                        c.component= 'mod_kalvidassign'
               ORDER BY c.timecreated $sortdirection, c.id $sortdirection";
-        $params['contextid'] = $contextid;
+        $params['contextid'] = $context->id;
         $params['commentarea'] = "item";
         $params['itemid'] = $itemid;
 
