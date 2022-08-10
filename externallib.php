@@ -131,7 +131,7 @@ class mod_kalvidassign_external extends external_api {
                         "url"=> $url->out(false),
                         "width"=> $entry->width,
                         "height"=> $entry->height,
-                        "liked"=>$liked,
+                        "liked"=>$liked->liked,
                         "totallikes"=>$totallikes,
                         "commentid"=>$comments->get_cid(),
                     );
@@ -204,7 +204,7 @@ class mod_kalvidassign_external extends external_api {
 
         if ($entry) {
             $entry->liked = $params['liked'];
-            $DB->update_record('kalvidassign_userfeedback', $fb);
+            $DB->update_record('kalvidassign_userfeedback', $entry);
         } else {
             $fb = (object) array(
                 'itemid' => $params['vidid'],
