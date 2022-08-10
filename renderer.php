@@ -1278,7 +1278,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                                 "width"=> $entry->width,
                                 "height"=> $entry->height,
                                 "liked"=>$liked->liked,
-                                "totallikes"=>$totallikes,
+                                "totallikes"=>$totallikes-$liked->liked,
                                 "commentid"=>$comments->get_cid(),
                 ); 
             } 
@@ -1379,7 +1379,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                     "width"=> $entry->width,
                     "height"=> $entry->height,
                     "liked"=>$liked->liked,
-                    "totallikes"=>$totallikes,
+                    "totallikes"=>$totallikes-$liked->liked,
                     "commentid"=>$comments->get_cid(),
                 );
             }

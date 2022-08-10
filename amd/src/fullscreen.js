@@ -281,14 +281,19 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             $("#caption").text("Caption: "+title);
             $("#liketally").empty();
 
+            var totaltext= " others";
+            if(totallikes==1){
+                totaltext = " other";
+            }
+
             if(liked==0){
                 $("#liked").removeClass("fa-heart");
                 $("#liked").addClass("fa-heart-o");
-                $("#liketally").text(' Liked by: '+totallikes+" others");
+                $("#liketally").text(' Liked by: '+totallikes+totaltext);
             }else{
                 $("#liked").removeClass("fa-heart-o");
                 $("#liked").addClass("fa-heart");
-                $("#liketally").text('Liked by: you, '+totallikes+" others");
+                $("#liketally").text('Liked by: you, '+totallikes+totaltext);
             }
             $("#caption").text("Caption: "+title);
 
