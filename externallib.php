@@ -132,7 +132,7 @@ class mod_kalvidassign_external extends external_api {
                         "width"=> $entry->width,
                         "height"=> $entry->height,
                         "liked"=>$liked->liked,
-                        "totallikes"=>$totallikes,
+                        "totallikes"=>$totallikes-$liked->liked,
                         "commentid"=>$comments->get_cid(),
                     );
                     $videocount++;
