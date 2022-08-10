@@ -354,10 +354,9 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
 
         var fetchcomments = async function(itemid, commentid){
             //send ajax request
-
-            console.log(_courseid);
             var args = {
                 itemid: itemid,
+                contextid: _contextid,
                 clientid: commentid,
                 courseid: _courseid,
             };

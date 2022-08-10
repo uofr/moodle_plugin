@@ -1263,7 +1263,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                 $cmtopt->component = 'mod_kalvidassign';
                 $cmtopt->cm = $cm;
                 $cmtopt->autostart = true;
-                $cmtopt->course = $COURSE->id;
+                $cmtopt->course = $COURSE;
                 $comments= new \comment($cmtopt);
                 \comment::init();
                 
@@ -1364,7 +1364,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                     $cmtopt->component = 'mod_kalvidassign';
                     $cmtopt->cm = $cm;
                     $cmtopt->autostart = true;
-                    $cmtopt->course = $COURSE->id;
+                    $cmtopt->course = $COURSE;
                     $comments= new \comment($cmtopt);
                     \comment::init();
            
