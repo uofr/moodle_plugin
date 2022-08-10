@@ -32,6 +32,8 @@ class mod_kalvidassign_external extends external_api {
         return new external_function_parameters(array(
             'count' => new external_value(PARAM_INT),
             'vidassignid' => new external_value(PARAM_INT),
+            'courseid' => new external_value(PARAM_INT),
+            'cmid' => new external_value(PARAM_INT),
         ));
     }
 
@@ -40,71 +42,110 @@ class mod_kalvidassign_external extends external_api {
      *
      * @param string $url 
      */
-    public static function fetch_videos($count, $vidassignid) {
-        global $DB, $CFG, $COURSE;
-
-        require_once($CFG->dirroot.'/local/kaltura/locallib.php');
-        require_once($CFG->dirroot.'/mod/kalvidassign/lib.php');
+    public static function fetch_videos($count, $vidassignid, $courseid, $cmid) {
+        global $PAGE, $COURSE, $CFG, $DB, $USER;
     
-        $configsettings = local_kaltura_get_config();
-        $kafuri = $configsettings->kaf_uri;
-
-        $params = self::validate_parameters(self::fetch_videos_parameters(), array(
-            'count' => $count,
-            'vidassignid' => $vidassignid,
-        ));
-
-        $sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid']." ORDER BY id LIMIT 10 OFFSET ".$params['count'];
-
-        $rawvideos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
-
-        $sql= "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid'];
-        ///$maxcount = $DB->count_records_sql($sql);
-        $maxcount = $DB->count_records("kalvidassign_submission",["vidassignid"=>$params['vidassignid']]);
-
-        $videos=[];
-        $videocount =0;
-        foreach($rawvideos as $video){
-
-            $entry = kalvidassign_get_media($video->entry_id);
-
-            $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cmid;
-
-            $params = array(
-                'courseid' => $COURSE->id,
-                'height' => $entry->height,
-                'width' => $entry->width,
-                'withblocks' => 1,
-                'source' => $source,
-                'cmid'=>$cmid
-            );
+            require_once($CFG->dirroot.'/local/kaltura/locallib.php');
+            require_once($CFG->dirroot.'/mod/kalvidassign/lib.php');
+            require_once($CFG->dirroot.'/comment/lib.php');
         
-            $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
+            $configsettings = local_kaltura_get_config();
+        
+            $kafuri = $configsettings->kaf_uri;
+    
+            $params = self::validate_parameters(self::fetch_videos_parameters(), array(
+                'count' => $count,
+                'vidassignid' => $vidassignid,
+                'courseid' => $courseid,
+                'cmid' => $cmid,
+            ));
 
-            //get name of creator based on username
-            $user = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
+            self::validate_context(context_course::instance($params['courseid']));
+            $context = context_course::instance($params['courseid']);
 
-            $videos[]=array(
-                "id" => $entry->id,
-                "name" => $entry->name,
-                "creator"=>fullname($user, true),
-                "description" => $entry->description,
-                "thumbnailUrl" => $entry->thumbnailUrl,
-                //"url"=> $url->__toString(),
-                "url"=> $url->out(false),
-                "width"=> $entry->width,
-                "height"=> $entry->height,
+            $cm = get_coursemodule_from_id('kalvidassign', $params['cmid']);
+            
+            $course = $DB->get_record("course", ["id"=>$params['courseid']]);
+
+
+            //$context = $DB->get_record("context", ["id"=>$params['contextid']], '*', IGNORE_MISSING);
+    
+            $sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid']." ORDER BY id LIMIT 10 OFFSET ".$params['count'];
+    
+            $rawvideos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
+    
+            $sql= "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid'];
+            ///$maxcount = $DB->count_records_sql($sql);
+            $maxcount = $DB->count_records("kalvidassign_submission",["vidassignid"=>$params['vidassignid']]);
+    
+            $videos=[];
+            $videocount =0;
+            foreach($rawvideos as $video){
+    
+                $entry = kalvidassign_get_media($video->entry_id, $video->userid);
+    
+                if($entry){
+                    $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$params['cmid'];
+    
+                    $params = array(
+                        'courseid' => $COURSE->id,
+                        'height' => $entry->height,
+                        'width' => $entry->width,
+                        'withblocks' => 1,
+                        'source' => $source,
+                        'cmid'=>$params['cmid']
+                    );
+            
+                    $url = new moodle_url('/mod/kalvidassign/lti_launch.php', $params);
+    
+                    //get name of creator based on username
+                    $user = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
+    
+                    //get total likes from DB
+                    $totallikes = $DB->count_records('kalvidassign_userfeedback', array('itemid' => $video->id, 'liked' => 1));
+                    //get if current user has liked the video
+                    $liked=0;
+                    $liked = $DB->get_record('kalvidassign_userfeedback', array('itemid' => $video->id, 'userid' => $USER->id));
+                   
+    
+                    //if ($gallery->can_comment()) {
+                        $cmtopt = new \stdClass();
+                        $cmtopt->area = 'gallery';
+                        $cmtopt->context = $context;
+                        $cmtopt->itemid = $video->id;
+                        $cmtopt->showcount = true;
+                        $cmtopt->component = 'mod_kalvidassign';
+                        $cmtopt->cm = $cm;
+                        $cmtopt->autostart = true;
+                        $cmtopt->course = $course;
+                        $comments= new \comment($cmtopt);
+                        \comment::init();
+    
+                    $videos[]=array(
+                        "id" => $entry->id,
+                        "itemid" => $video->id,
+                        "name" => $entry->name,
+                        "creator"=>fullname($user, true),
+                        "description" => $entry->description,
+                        "thumbnailUrl" => $entry->thumbnailUrl,
+                        "url"=> $url->out(false),
+                        "width"=> $entry->width,
+                        "height"=> $entry->height,
+                        "liked"=>$liked,
+                        "totallikes"=>$totallikes,
+                        "commentid"=>$comments->get_cid(),
+                    );
+                    $videocount++;
+                }
+            }
+    
+            return array(
+                'videos' => $videos,
+                'videocount' => $videocount,
+                'maxcount' => $maxcount,
             );
-            $videocount++;
         }
-
-        return array(
-            'videos' => $videos,
-            'videocount' => $videocount,
-            'maxcount' => $maxcount,
-        );
-    }
-
+    
     /**
      * Returns description of get_guide_page return value.
      *
@@ -114,6 +155,7 @@ class mod_kalvidassign_external extends external_api {
         return new external_single_structure(array(
             'videos' => new external_multiple_structure(new external_single_structure(array(
                 'id' => new external_value(PARAM_TEXT),
+                'itemid' => new external_value(PARAM_INT),
                 'name' => new external_value(PARAM_TEXT),
                 'creator' => new external_value(PARAM_TEXT),
                 'description' => new external_value(PARAM_TEXT),
@@ -121,6 +163,10 @@ class mod_kalvidassign_external extends external_api {
                 'url'=> new external_value(PARAM_RAW),
                 'width'=> new external_value(PARAM_INT),
                 'height'=> new external_value(PARAM_INT),
+                "liked"=>new external_value(PARAM_RAW),
+                "totallikes"=>new external_value(PARAM_RAW),
+                "commentid"=>new external_value(PARAM_TEXT),
+
             ))),
             'videocount' => new external_value(PARAM_INT),
             'maxcount' => new external_value(PARAM_INT),

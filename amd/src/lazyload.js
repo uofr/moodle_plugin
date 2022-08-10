@@ -23,8 +23,11 @@ define(['jquery','core/ajax','core/notification'], function($, ajax,notification
             //get current count of videos
             var count = $('.kalvidassign_videocards').length;
             var vidassignid = $("#mod_kalvidassign_gallery").data("vid");
+            var course = $('#mod_kalvidassign_gallery').data("course");
+            var cmid = $('#mod_kalvidassign_gallery').data("cmid");
+
             //send ajax request
-            var args = {count: count, vidassignid: vidassignid};
+            var args = {count: count, vidassignid: vidassignid, courseid:course, cmid:cmid};
 
             // set ajax call
             var ajaxCall = {
@@ -47,9 +50,10 @@ define(['jquery','core/ajax','core/notification'], function($, ajax,notification
                     //create each video template and
                     //append to end of video section
                     $.each(response.videos, function(index, value) {
+
                         var videocard = '<div class="card m-3 kalvidassign_videocards" style="width: 15rem;">'+
                                         '<img id="'+value.id+'" class = "card-img-top kalvidassign_thumbnail" src="'+value.thumbnailUrl+'">'+
-                                        '<div class="hide url" data-value = '+value.url+' data-width = '+value.width+' data-height = '+value.height+'></div>'+
+                                        '<div class="hide url" data-comment="'+value.commentid+'" data-totallikes="'+value.totallikes+'" data-liked="'+value.liked+'" data-value = '+value.url+' data-width = '+value.width+' data-height = '+value.height+'></div>'+
                                         '<div class="card-body">'+
                                         ' <p>Creator: '+value.creator+'<p>'+
                                             '<h5 class="card-title"> <b>'+value.name+'</b></h5>'+

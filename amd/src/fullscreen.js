@@ -23,6 +23,9 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             currentitem : null,
             _allowcomments: true,
             _allowlikes: true,
+            _contextid: 0,
+            _cmid: 0,
+            _courseid: 0,
         };
 
         /*
@@ -36,8 +39,13 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
         * Constructor
         */
         this.construct = function(allowcomments, allowlikes){
+
             _allowlikes=allowlikes;
             _allowcomments=allowcomments;
+            _contextid= $('#mod_kalvidassign_gallery').data("context");
+            _cmid= $('#mod_kalvidassign_gallery').data("cmid");
+            _courseid= $('#mod_kalvidassign_gallery').data("course");
+
             enable();
             build();
         };
@@ -70,6 +78,7 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                 }
                 stop();
             });
+
 
             //for lazy load to catch all newly added videos
             $(window).scroll(function() {
@@ -203,6 +212,13 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                 stop();
                 return false;
             });
+
+            //if more videos are added via lazyload then update alum and click events
+            $("#mod_kalvidassign_gallery").bind("DOMNodeInserted",function(){
+                root.album = $(".kalvidassign_videocards");
+                enable();
+            });
+
         };
 
        var updatenavbarselection = function(itemnumber) {
@@ -260,8 +276,6 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             var totallikes = $(playerinfo).data("totallikes");
             var commentid = $(playerinfo).data("comment");
             var commentbox = $("#mediabox-comments");
-            var contextid = $(playerinfo).data("context");
-            var courseid = $(playerinfo).data("course");
 
             $("#creators").text(creator);
             $("#caption").text("Caption: "+title);
@@ -280,12 +294,12 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
 
             //Fetch Comments
             if(_allowcomments){
-                await fetchcomments($(root.album[itemnumber]).attr('id'), contextid, commentid, courseid);
+                await fetchcomments($(root.album[itemnumber]).attr('id'), commentid);
 
                 var data = {
                     linktext: "Comments",
                     cid : commentid,
-                    contextid: contextid,
+                    contextid: _contextid,
                     notoggle:false,
                     pix:true,
                     displaytotalcount:true,
@@ -327,8 +341,8 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                             itemid: data.itemid,
                             area:'item',
                             page: 0,
-                            courseid: courseid,
-                            contextid: data.contextid,
+                            courseid: _courseid,
+                            contextid: _contextid,
                             component: data.component,
                             notoggle: false,
                             autostart: true
@@ -338,13 +352,13 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             }
         };
 
-        var fetchcomments = async function(itemid, contextid, commentid, courseid){
+        var fetchcomments = async function(itemid, commentid){
             //send ajax request
             var args = {
                 itemid: itemid,
-                contextid: contextid,
+                contextid: _contextid,
                 clientid: commentid,
-                courseid: courseid,
+                courseid: _courseid,
             };
 
              // set ajax call

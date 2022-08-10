@@ -1231,7 +1231,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         //using entryid get video thumbnails
         foreach($videos as $video){
 
-            $entry = kalvidassign_get_media($video->entry_id);
+            $entry = kalvidassign_get_media($video->entry_id, $video->userid);
             if($entry){
                 
                 $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cm->id;
@@ -1295,6 +1295,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             "teaserurl"=>$teaserurl,
             "allowlikes"=> $kalvidassign->allowcomments,
             "allowcomments"=>$kalvidassign->allowlikes,
+
         );      
 
         echo $this->render_from_template('mod_kalvidassign/studentgallery', $data);
@@ -1328,7 +1329,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $entries = [];
 
         foreach($videos as $video){
-            $entry = kalvidassign_get_media($video->entry_id);
+            $entry = kalvidassign_get_media($video->entry_id, $video->userid);
 
             if($entry){
 
@@ -1378,9 +1379,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                     "height"=> $entry->height,
                     "liked"=>$liked,
                     "totallikes"=>$totallikes,
-                    "context"=>$context->id,
                     "commentid"=>$comments->get_cid(),
-                    "course"=>$COURSE->id,
                 );
             }
         }
@@ -1392,6 +1391,9 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             "vidassignid"=> $vidassignid,
             "allowlikes"=> $kalvidassign->allowcomments,
             "allowcomments"=>$kalvidassign->allowlikes,
+            "course"=>$COURSE->id,
+            "context"=>$context->id,
+            "cmid"=>$cmid
         );
 
         $html = $this->render_from_template('mod_kalvidassign/studentgallery', $data);

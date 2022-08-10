@@ -417,7 +417,7 @@ function kalvidassign_cron () {
  * Uses Kaltura API to fetch media for display
  * @return bool Returns media object
  */
-function kalvidassign_get_media ($entryid) {
+function kalvidassign_get_media ($entryid, $user) {
     
 
     $config = new KalturaConfiguration(PARTNER_ID);
