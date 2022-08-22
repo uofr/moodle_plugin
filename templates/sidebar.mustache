@@ -27,8 +27,14 @@
             <hr>
             {{#allowlikes}}
             <li class="nav-item text-light" id="mediabox-social">
-                <i id = "liked" class="fa {{#liked}}fa-heart-o{{/liked}} {{#unliked}} fa-heart {{/unliked}}"  aria-hidden="true"></i>
-                <span id="liketally">
+                <span id="likebutton" type="button" class="btn btn-outline-light">
+                    <i id = "liked" class="fa {{#liked}}fa-heart-o{{/liked}} {{#unliked}} fa-heart {{/unliked}}"  aria-hidden="true"></i>
+                    <span id="liketext">
+                        {{#liked}}Like{{/liked}}
+                        {{#unliked}} Unlike {{/unliked}}
+                    </span>
+                </span>
+                <span id="liketally" class="ml-2">
                     Liked by:
                     {{#liked}}you,{{/liked}}
                     {{totallikes}} others 

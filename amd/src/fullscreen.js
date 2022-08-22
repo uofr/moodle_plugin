@@ -134,7 +134,7 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             });
 
             for (var i = 0; i < root.album.length; i++) {
-                var navitem = Y.Node.create('<div class="navitem"></div>');
+                var navitem = Y.Node.create('<div class="navitem" style="opacity:0.7;"></div>');
                 navitem.setAttribute('data-id', i);
                 var item = Y.Node.create('<img/>');
                 item.setAttribute('src', root.album[i].children[0].getAttribute('src'));
@@ -149,15 +149,17 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
 
             if(_allowlikes){
                 // Like action.
-                $('#liked').click(function(){
+                $('#likebutton').click(function(){
                     if ($('#liked').hasClass('fa-heart')) {
                         likedbyme = 0;
                         $('#liked').removeClass('fa-heart');
                         $('#liked').addClass('fa-heart-o');
+                        $('#liketext').text("Like");
                     }else{
                         var likedbyme = 1;
                         $('#liked').removeClass('fa-heart-o');
                         $('#liked').addClass('fa-heart');
+                        $('#liketext').text("Unlike");
                     }
 
                     //send ajax request
@@ -289,11 +291,13 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             if(liked==0){
                 $("#liked").removeClass("fa-heart");
                 $("#liked").addClass("fa-heart-o");
+                $("#liketext").text("Like");
                 $("#liketally").text(' Liked by: '+totallikes+totaltext);
             }else{
                 $("#liked").removeClass("fa-heart-o");
                 $("#liked").addClass("fa-heart");
-                $("#liketally").text('Liked by: you, '+totallikes+totaltext);
+                $("#liketext").text("Unlike");
+                $("#liketally").text('Liked by: '+totallikes+totaltext);
             }
             $("#caption").text("Caption: "+title);
 

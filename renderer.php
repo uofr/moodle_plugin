@@ -1350,6 +1350,12 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                 //get name of creator based on username
                 $creator = $DB->get_record("user", ["username"=>$entry->creatorId], '*', IGNORE_MISSING);
 
+                if(!$creator){
+                    $creatorname = $entry->creatorId;
+                }else{
+                    $creatorname = fullname($creator, true);
+                }
+
                 //get total likes from DB
                 $totallikes = $DB->count_records('kalvidassign_userfeedback', array('itemid' => $video->id, 'liked' => 1));
                 //get if current user has liked the video
@@ -1372,7 +1378,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                     "id" => $entry->id,
                     "itemid" => $video->id,
                     "name" => $entry->name,
-                    "creator"=>fullname($creator, true),
+                    "creator"=>$creatorname,
                     "description" => $entry->description,
                     "thumbnailUrl" => $entry->thumbnailUrl,
                     "url"=> $url->out(false),
