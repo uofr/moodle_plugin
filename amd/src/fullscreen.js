@@ -265,7 +265,7 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             height = $(playerinfo).data("height");
 
             var player = '<div class = "kaltura-player-container" >'
-            +'<iframe class="kaltura-player-iframe" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0" height="402" width="608" ></iframe>'
+            +'<iframe class="" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0" height="402" width="608" ></iframe>'
             +'</div>';
 
             //add player to mediabox
@@ -449,8 +449,13 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             innercontent.css('width', newwidth);
             innercontent.css('height', newheight);
 
-            content.css('top', offsetTop + 'px');
-            content.css('left', offsetLeft + 'px');
+            if(winwidth >500){
+                content.css('top', offsetTop + 'px');
+                content.css('left', offsetLeft + 'px');
+            }else{
+                content.css('top', '0 px');
+                content.css('left', '0 px');
+            }
         };
 
         var resizeoverlay = function() {
@@ -474,7 +479,7 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
 
 
             var player = '<div class = "kaltura-player-container">'
-            +'<iframe  class="kaltura-player-iframe" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0"  height="402" width="608" ></iframe>'
+            +'<iframe  class="" src="'+url+'" allowfullscreen="true" allow="autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;" frameborder="0"  height="402" width="608" ></iframe>'
             +'</div>';
 
             //add player to mediabox

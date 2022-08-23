@@ -60,7 +60,16 @@ echo $OUTPUT->header();
 
 $renderer = $PAGE->get_renderer('mod_kalvidassign');
 
+$backtocourseurl = new moodle_url('/mod/kalvidassign/view.php', array('id' => $id));
+
+echo $OUTPUT->single_button($backtocourseurl,
+"Back to submission", 'get',
+array('class' => 'float-right'));
+
 echo $OUTPUT->heading($kalvidassign->name);
+
+
+
 
 //get list of submissions for assignment
 $sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id LIMIT 10";
