@@ -141,6 +141,85 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
     echo $renderer->display_instructor_buttons($cm, $USER->id);
 }
 
+?>
+
+<script src="simple/resumable.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+ <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+ <div class="container mt-5">
+ <h5>Alternate Uploader</h5>
+  <p>If you are having Trouble Uploading your media. Please use our Alternate uploader option. </p>
+
+    <div id="accordion" class="accordion">
+        <div class="card mb-0">
+            <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne">
+            <i class="fa fa-angle-right"></i><a class="card-title">
+                    Trouble Uploading?
+                </a>
+            </div>
+                <div id="collapseOne" class="card-body collapse" data-parent="#accordion" >
+                   
+                    <p>
+                   <strong> Note:</strong> When the media upload is complete click <strong>Add media submission</strong> button to embed your media to the media assignment, then click <strong> Submit media</strong> button.
+                    </p>
+                        
+                    <button type="button" class="btn btn-primary openBtn">
+                    Upload
+                    </button>
+                </div>
+                
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function(){
+ 
+$( ".card-header" ).click(function() {
+    $(this).find('i').toggleClass('fa-angle-right').toggleClass('fa-angle-down');
+  
+}); 
+
+
+$('.openBtn').on('click',function(){
+    $('.modal-body').load('simple_uploader.php',function(){
+        $('#myModal').modal('show');
+    });
+});
+        
+
+    });
+</script>
+
+ 
+      <!-- The Modal -->
+ <div class="">     
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header modal-radius-border ">
+                <h5 class="modal-title">Upload to My Media</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+          </div>
+     
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary rounded btn-simple-color" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+<?php
 //Added for Student submitted Gallery 
 //check if submission exists
 if(isset($submission->width) && isset($submission->height))
