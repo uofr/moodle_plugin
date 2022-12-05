@@ -114,7 +114,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	          <div class="col-sm|md|lg m-2 p-2 mx-auto">
              
                 <h3>Upload to My Media</h3>
-                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 8 mbps.</p>
+                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 3 mbps.</p>
                 <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p>
                 <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
           
