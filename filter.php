@@ -152,7 +152,13 @@ class filter_kaltura extends moodle_text_filter {
         }
 
         $newtext = preg_replace_callback($search, 'filter_kaltura_callback', $newtext);
+		
+		$kafprev = 'http://regina-moodle-prod.kaf.ca.kaltura.com';
+        $kafprev = str_replace(array('http://', 'https://', '.', '/'), array('https?://', 'https?://', '\.', '\/'), $kafprev);
 
+        $searchagn = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafprev.')))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
+        $newtext = preg_replace_callback($searchagn, 'filter_kaltura_callback', $newtext);
+		
         if (empty($newtext) || $newtext === $text) {
             // Error or not filtered.
             unset($newtext);
