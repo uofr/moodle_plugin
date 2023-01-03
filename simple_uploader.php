@@ -213,7 +213,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	  </div>
 
     <script>
-
+      var entry_Id = null;
       var kalturaSessionKey = null;
 	    var kalturaPartnerId = null;
 	    var kalturaUserId = null;
@@ -277,7 +277,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         xhr.open("POST", url, true);
         xhr.send();
       }
-
+    
       function kAddUploadToNewMedia(server, ks, uploadToken, name, report) {
             
         kDoJSONRequest(server, ks, "/service/media/action/addFromUploadedFile", 
@@ -292,7 +292,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             status_msg ="Last fully uploaded entry ID: <b>"+response.id + "</b>, Entry Name: <b>"+response.name+"</b>"; 
             report['entry_id']=kalturaEntryId;
             is_success = true;
-
+              entry_Id = response.id;
             var iscategory = document.getElementById("category").value;
             //set category
             if(iscategory){
@@ -322,7 +322,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             is_success = false;
             $('.upload-speed').hide();
           }
-
+        
 		      //console.log('entry ID is '+kalturaEntryId);
 		      reportDiv.innerHTML=status_msg;
 		      report['last_status']=status_msg;
@@ -333,7 +333,21 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 		      return is_success;
         });
       }
-        
+      // embed video from simple uploader to kaltura  media assignment
+      function embedVideo() {
+         
+         var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+entry_Id+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+         document.getElementById("entry_id").value = entry_Id;
+         document.getElementById("width").value = 600;
+         document.getElementById("height").value = 450;
+         document.getElementById("source").value = src;
+          // Close the modal
+          $('#myModal').modal('hide');
+          var submitButton = document.getElementById('submit_video');
+          submitButton.removeAttribute('disabled');
+         alert(src);
+      }
+
       function kUpload(server, ks, fileName, fileUniqueIdentifier, fileSize, resumable, report) {
 
         resumable.opts.target = server + "/service/uploadToken/action/upload";
@@ -451,13 +465,13 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           // Hide pause/resume when the upload has completed
           $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
         });
+       
         r.on('fileSuccess', function(file,message){
           var duration = (Date.now() - lastUploadStartTime)/1000;
           var mbSize = file.size/1024/1024;
           var speed = mbSize/duration;
-          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s');
-	      
-          // add upload to new media
+          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s <button id="embedmedia" type="button" onclick="embedVideo()" class="btn btn-primary">Embed</button>');
+                          // add upload to new media
           var report = {
                   user_id: kalturaUserId, 
                   token_id: uploadToken[file.uniqueIdentifier], 
