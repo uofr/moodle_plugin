@@ -109,7 +109,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
               <fieldset>
               
                 <p>This alternate uploader is intended to improve performance for users with upload speeds less than 8 mbps.</p>
-                <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p>
+               <!-- <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p> -->
                 <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
           
                 <script >
@@ -213,6 +213,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	  </div>
 
     <script>
+     var user = <?php echo json_encode($user); ?>;
+      var newEntryId;
+     var  is_update;
       var entry_Id = null;
       var kalturaSessionKey = null;
 	    var kalturaPartnerId = null;
@@ -221,6 +224,19 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	    var uploadToken = new Array();
       var lastUploadToken = null;
 
+      var input = document.getElementById("file");
+
+        input.addEventListener("change", function() {
+            if (input.files.length > 1) {
+                // more than one file is selected
+                alert("You can only select one file!");
+                input.value = ""; // clear the selected files
+            } else if(input.files.length == 1){
+                console.log("File selected:", input.files[0].name);
+            } else {
+                console.log("No file selected");
+            }
+        });
 	    // if you wish to report the stats to an SQLITE DB, set this to where you host process_upload_stats.php
       // you also need to create the SQLITE DB from the chunked_upload.sql schema and ensure the web server user has write permissions to it and the directory in which it resides	
 	    var statsReportingEndpoint = null;
@@ -277,8 +293,20 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         xhr.open("POST", url, true);
         xhr.send();
       }
-    
+
+      function generateNewUploadToken(server, ks, callback) {
+  kDoJSONRequest(server, ks, "/api_v3/service/uploadtoken/action/add", "", function(response) {
+    callback(response.id);
+  });
+}
+
+function addFile(server, ks, uploadToken, name, report) {
+  var report = {}
+    kAddUploadToNewMedia(server, ks, uploadToken, name, report);
+}
+   
       function kAddUploadToNewMedia(server, ks, uploadToken, name, report) {
+    
             
         kDoJSONRequest(server, ks, "/service/media/action/addFromUploadedFile", 
           "mediaEntry:name=" + name +"&mediaEntry:mediaType=1" +
@@ -293,6 +321,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             report['entry_id']=kalturaEntryId;
             is_success = true;
               entry_Id = response.id;
+
+          
+
             var iscategory = document.getElementById("category").value;
             //set category
             if(iscategory){
@@ -327,26 +358,91 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 		      reportDiv.innerHTML=status_msg;
 		      report['last_status']=status_msg;
 		      // Reflect that the file upload has completed
+          
+          if(is_success){ // if first upload was successfull
+            var config = new KalturaConfiguration();
+              config.serviceUrl = 'https://api.ca.kaltura.com';
+              var client = new KalturaClient(config);
+
+              client.setKs(ks);
+            //var mediaEntry = {objectType: "KalturaMediaEntry"};;
+              //  mediaEntry.name = "duplicatecopy";
+
+                var cloneOptions = []
+                
+                KalturaBaseEntryService.cloneAction(entry_Id, cloneOptions)
+                  .execute(client, function(success, results) {
+                    if (!success || (results && results.code && results.message)) {
+                      console.log('Kaltura Error', success, results);
+                      is_update = false;
+                    } else {
+                      is_update = true;
+                      newEntryId = results.id;
+                     
+                      console.log( "A duplicate copy of the entry was created with ID: " + newEntryId);
+                      var mediaEntry = {objectType: "KalturaMediaEntry"};
+                            //mediaEntry.creditUserName = "dapiawej_assignment";
+                          
+                            mediaEntry.name = response.name+"_Assignment";
+                            mediaEntry.userId = user+"_assignment";
+
+                            KalturaMediaService.update(newEntryId, mediaEntry)
+                              .execute(client, function(success, results) {
+                                if (!success || (results && results.code && results.message)) {
+                                  console.log('Kaltura Error', success, results);
+                                } else {
+                                  console.log('Kaltura Result', results);
+                                }
+                              });
+                    
+                    }
+                  });
+
+          }
+
+
 		      if (statsReportingEndpoint){
 			      analyticsRequest(statsReportingEndpoint,report);
 		      }
 		      return is_success;
         });
+
       }
+     
       // embed video from simple uploader to kaltura  media assignment
+      // https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/0_64cblm3g/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/
+      
+      function setIframeSrc(iframe, src) {
+          iframe.setAttribute('src', src);
+      }
+      var iframe = document.getElementById('contentframe');
+       // var iframe = document.getElementById('contentframe');
+        iframe.setAttribute('style', 'display: block;');
+   
       function embedVideo() {
-         
-         var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+entry_Id+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
-         document.getElementById("entry_id").value = entry_Id;
+        console.log(newEntryId);
+        
+         var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+         document.getElementById("entry_id").value = newEntryId;
          document.getElementById("width").value = 600;
          document.getElementById("height").value = 450;
          document.getElementById("source").value = src;
+
           // Close the modal
-          $('#myModal').modal('hide');
+         $('#myModal').modal('hide');
+          
           var submitButton = document.getElementById('submit_video');
           submitButton.removeAttribute('disabled');
-         alert(src);
+
+          var Vtmbnail = document.getElementById('video_thumbnail');
+          Vtmbnail.setAttribute('style', 'display: none;')
+         
+          setIframeSrc(iframe, src);
+         
       }
+
+     
+      
 
       function kUpload(server, ks, fileName, fileUniqueIdentifier, fileSize, resumable, report) {
 
@@ -453,8 +549,14 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           };
 
           // Actually start the upload
-          kUpload(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
+        
+        
+          //  kUploadClone(kalturaServerBase, kalturaSessionKey,  file.fileName,  file.uniqueIdentifier, file.size, r, report);
+      
+       kUpload(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
         });
+
+        
 
         r.on('pause', function(){
           // Show resume, hide pause
@@ -485,6 +587,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
             };
             kAddUploadToNewMedia(kalturaServerBase, kalturaSessionKey, uploadToken[file.uniqueIdentifier], file.fileName, report);
+         
+            //kUploadClone(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
         });
         r.on('fileError', function(file, message){
           // Reflect that the file upload has resulted in error
