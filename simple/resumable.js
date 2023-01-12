@@ -206,7 +206,7 @@
       }
     };
 
-    var onDrop = function(event){
+    var onDropold = function(event){
       $h.stopEvent(event);
 
       //handle dropped things as items if we can (this lets us deal with folders nicer in some cases)
@@ -222,6 +222,28 @@
       e.preventDefault();
     };
 
+    var onDrop = function(event){
+      $h.stopEvent(event);
+  
+      var files;
+      if (event.dataTransfer && event.dataTransfer.items) {
+          files = event.dataTransfer.items;
+      }
+      else if (event.dataTransfer && event.dataTransfer.files) {
+          files = event.dataTransfer.files;
+      }
+      if (files.length > 1) {
+          alert("You can only select one file!");
+      } else if(files.length == 1){
+          // call the function to process the file
+          loadFiles(files, event);
+      } else {
+          console.log("No file selected");
+      }
+  };
+  var preventDefault = function(e) {
+    e.preventDefault();
+  };
     /**
      * processes a single upload item (file or directory)
      * @param {Object} item item to upload, may be file or directory entry
@@ -961,7 +983,7 @@
         }
         var maxFiles = $.getOpt('maxFiles');
         if (typeof(maxFiles)==='undefined'||maxFiles!=1){
-          input.setAttribute('multiple', 'multiple');
+          input.setAttribute('multiple', 'false');
         } else {
           input.removeAttribute('multiple');
         }
@@ -972,15 +994,49 @@
         }
         // When new files are added, simply append them to the overall list
         input.addEventListener('change', function(e){
-          appendFilesFromFileList(e.target.files,e);
+          var files = e.target.files;
+          if (files.length > 1) {
+              alert("You can only select one file!");
+              e.target.value = ""; // clear the selected files
+          } else if(files.length == 1){
+              appendFilesFromFileList(files,e);
+          } else {
+              console.log("No file selected");
+          }
           var clearInput = $.getOpt('clearInput');
           if (clearInput) {
-            e.target.value = '';
+              e.target.value = '';
           }
-        }, false);
+      }, false);
       });
     };
-    $.assignDrop = function(domNodes){
+    
+ 
+  $.assignDrop2 = function(domNodes){
+    if(typeof(domNodes.length)=='undefined') domNodes = [domNodes];
+
+    $h.each(domNodes, function(domNode) {
+      domNode.addEventListener('dragover', function(e){
+          var files = e.dataTransfer.files;
+          if (files.length > 1) {
+              e.preventDefault();
+          }
+      }, false);
+      domNode.addEventListener('dragenter', preventDefault, false);
+      domNode.addEventListener('drop', onDrop, false);
+    });
+  };
+  $.unAssignDrop = function(domNodes) {
+    if (typeof(domNodes.length) == 'undefined') domNodes = [domNodes];
+
+    $h.each(domNodes, function(domNode) {
+      domNode.removeEventListener('dragover', preventDefault);
+      domNode.removeEventListener('dragenter', preventDefault);
+      domNode.removeEventListener('drop', onDrop);
+    });
+  };
+    
+  $.assignDrop = function(domNodes){
       if(typeof(domNodes.length)=='undefined') domNodes = [domNodes];
 
       $h.each(domNodes, function(domNode) {

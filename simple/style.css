@@ -1048,6 +1048,12 @@ top: 2px;
   border-color: #848889 !important;
 }
 
+.disabled {
+  pointer-events: none;
+}
+
+
+
 
 
 /*.accordion .card-header:after {

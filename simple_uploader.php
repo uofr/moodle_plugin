@@ -108,11 +108,10 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	          <div class="col">
               <fieldset>
               
-                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 8 mbps.</p>
+                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 3 mbps.</p>
+                <p>Remember to click Embed button to add your media to the assignment, then click Submit media button to submit</p>
                <!-- <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p> -->
-                <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
-          
-                <script >
+                  <script >
                     function setInputValue(id, value) {
                         document.getElementById(id).value=value;
                     }
@@ -167,6 +166,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                       </div>
                   </div>
                 </div>
+               
 
                 <div class="form-group">
 		
@@ -224,19 +224,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	    var uploadToken = new Array();
       var lastUploadToken = null;
 
-      var input = document.getElementById("file");
-
-        input.addEventListener("change", function() {
-            if (input.files.length > 1) {
-                // more than one file is selected
-                alert("You can only select one file!");
-                input.value = ""; // clear the selected files
-            } else if(input.files.length == 1){
-                console.log("File selected:", input.files[0].name);
-            } else {
-                console.log("No file selected");
-            }
-        });
+                  
 	    // if you wish to report the stats to an SQLITE DB, set this to where you host process_upload_stats.php
       // you also need to create the SQLITE DB from the chunked_upload.sql schema and ensure the web server user has write permissions to it and the directory in which it resides	
 	    var statsReportingEndpoint = null;
@@ -549,13 +537,17 @@ function addFile(server, ks, uploadToken, name, report) {
           };
 
           // Actually start the upload
-        
-        
-          //  kUploadClone(kalturaServerBase, kalturaSessionKey,  file.fileName,  file.uniqueIdentifier, file.size, r, report);
-      
+          
        kUpload(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
         });
 
+
+      document.querySelector(".resumable-browse input[type='file']").addEventListener("change", function(){
+                    if(this.value !== ""){
+                        document.querySelector(".resumable-drop").classList.add("disabled");
+                        document.querySelector(".resumable-browse").classList.add("disabled");
+                    }
+                });
         
 
         r.on('pause', function(){
@@ -634,6 +626,7 @@ function addFile(server, ks, uploadToken, name, report) {
           $('.resumable-progress .progress-pause-link').show();
         });
       }
+
     </script>
   </div>
     <!--footer id="footer">

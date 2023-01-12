@@ -161,8 +161,11 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
                 <div id="collapseOne" class="card-body collapse" data-parent="#accordion" >
                    
                     <p>
-                   <strong> Note:</strong> When the media upload is complete click <strong>Add media submission</strong> button to embed your media to the media assignment, then click <strong> Submit media</strong> button.
+                   <strong> Note:</strong> When the media upload is complete click <strong>Embed</strong> button to embed your media to the media assignment, then click <strong> Submit media</strong> button.
                     </p>
+                    <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
+          
+             
                         
                     <button type="button" class="btn btn-primary openBtn">
                     Upload
