@@ -96,40 +96,24 @@ $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltur
 $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));
 
 echo $renderer->display_iframe($kalvidres, $course->id);
+//dapiawej -- A simple hack to resize the kaltura player size if it is not resizing properly
 ?>
 <script>
 if (window.innerWidth < 2000) {
-  
+
     var iframe = document.getElementById("contentframe");
 if(iframe){
     var src = iframe.src;
-    var playerSize = src.match(/playerSize=(.*?)\//);
-    if(playerSize == null){
-        var elements = document.getElementsByClassName("kaltura-player-container");
-    for (var i = 0; i < elements.length; i++) {
-        if(elements){
-            playerSize = "400px";
-            elements[i].style.height = playerSize
-                
-            }
-     }
-        var playerContainer = document.getElementById("kaltura-player-container");
-            if(playerContainer){
-                playerContainer.style.height = "500px";
-                playerSize = "500px";
-            }
-      
-       // document.getElementById("kaltura-player-container").style.height = playerSize;
-    }else{
-        playerSize = playerSize[1];
+    var playerSizeheight = new URLSearchParams(new URL(src).search).get("height");
+    if(playerSizeheight == null){
+        iframe.style.height = "525px"; //if the height is null create one.
     }
-    console.log(playerSize);
+    else{
+        iframe.style.height = playerSizeheight+"px"; // add the default height coming from the url of the iframe.
+    }
+    console.log(playerSizeheight);
 }
-  
-  }
- 
-
-
+}
 </script>
 <?php
 echo $OUTPUT->footer();
