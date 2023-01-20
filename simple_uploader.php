@@ -168,6 +168,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                   </div>
                 </div>
                 <div id="kplayer-container"> 
+                
+               <!-- <button id="load-button" type="button"  class="btn btn-primary mt-2">Refresh</button> -->
+
               
                 <video id ="videoload" width="320" height="240" controls autoplay style="display:none;">
                   <source id ="kplayer" src="">
@@ -175,12 +178,15 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                   Your browser does not support the video tag.
                 </video>
                 <div id ="loading" style ="display:none;" >
-                <div id="assignment-name">
-                  </div>
-                <p>is now ready for submission, you dont have to wait for the media conversion and proccessing to be completed!.</p>
-                <img class="media-processing__image" src="https://vodcdn.ca.kaltura.com/5.108.602/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
+                <div  class ="border border-primary pl-2 pr-2 pt-2 mb-2 rounded" id="assignment-name">
                 </div>
-
+                <div id="media-processing_image">
+                <img class="rounded mx-auto d-block" src="https://vodcdn.ca.kaltura.com/5.108.602/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
+                  </div>
+                <div>
+                  <button id="embedmedia"  type="button" onclick="SubmitVideo()" class="btn btn-primary rounded mt-2">Submit media</button>
+                </div>  
+              </div>
 
                   </div>
 
@@ -301,8 +307,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
       }
 
       function kAddUploadToNewMedia(server, ks, uploadToken, name, report) {
-    
+
         
+
         kDoJSONRequest(server, ks, "/service/media/action/addFromUploadedFile", 
           "mediaEntry:name=" + name +"&mediaEntry:mediaType=1" +
           "&uploadTokenId=" + uploadToken, function(response) {
@@ -353,16 +360,13 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
 		      // Reflect that the file upload has completed
           if(is_success){ // if first upload was successfull
-            document.getElementById("upload-container").style.display ="none";
 
             var config = new KalturaConfiguration();
               config.serviceUrl = 'https://api.ca.kaltura.com';
               var client = new KalturaClient(config);
 
               client.setKs(ks);
-            //var mediaEntry = {objectType: "KalturaMediaEntry"};;
-              //  mediaEntry.name = "duplicatecopy";
-
+          
                 var cloneOptions = []
                 
                 KalturaBaseEntryService.cloneAction(entry_Id, cloneOptions)
@@ -374,12 +378,10 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                     
                       is_update = true;
                       newEntryId = results.id;
-                     
-                    
+                  
                       console.log( "A duplicate copy of the entry was created with ID: " + newEntryId);
                       var mediaEntry = {objectType: "KalturaMediaEntry"};
-                            //mediaEntry.creditUserName = "dapiawej_assignment";
-                          
+                            
                             mediaEntry.name = response.name+"_Assignment";
                             mediaEntry.userId = user+"_assignment";
 
@@ -388,14 +390,12 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                                 if (!success || (resulta && resulta.code && resulta.message)) {
                                   console.log('Kaltura Error', success, resulta);
                                 } else {
-                                 // console.log('Kaltura Result', resulta);
+                                
                                   kalturadlplayerURL = resulta.downloadUrl;
                                   name = resulta.name;
                                   entryid = resulta.id;
                                    embedurlvideo(name,entryid);
-                                  //<img class="media-processing__image" src="https://vodcdn.ca.kaltura.com/5.108.602/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
-                                 // document.getElementById("kplayer").src = resulta.downloadUrl;
-                                //  document.getElementById("videoload").load();
+                                
                                   console.log(kalturadlplayerURL);
                                 }
                                
@@ -415,8 +415,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
       }
      
+     
       // embed video from simple uploader to kaltura  media assignment
-      // https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/0_64cblm3g/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/
       function embedurlvideo(name,id){ 
         
         var video = document.getElementById("videoload");
@@ -432,45 +432,43 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         } else {
           video.style.display = "none";
           loading.style.display = "block";
-          assign.innerHTML = 'EntryId: <strong>'+ id +'</strong><br>Assignment: <strong> ' + name +'</strong>';
+          assign.innerHTML = 'EntryId: <strong>'+ id +'</strong><br>Assignment: <strong> ' + name +'</strong> <p>is now ready for submission, you dont have to wait for the media conversion and proccessing to be completed!.</p>';
+          assign.style.backgroundColor ="#dfd7d7";
+        
         }   
         } 
-      function setIframeSrc(iframe, src) {
-          iframe.setAttribute('src', src);
-      }
-
-      var iframe = document.getElementById('contentframe');
-       // var iframe = document.getElementById('contentframe');
-        iframe.setAttribute('style', 'display: block;');
    
-      function embedVideo() {
-        console.log(newEntryId);
-        
+      function SubmitVideo() {
+       
          var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
          document.getElementById("entry_id").value = newEntryId;
          document.getElementById("width").value = 600;
          document.getElementById("height").value = 450;
          document.getElementById("source").value = src;
-
-          // Close the modal
-         $('#myModal').modal('hide');
-          
+         
+         var urlArray = src.split("/");
+          var playerSizeIndex = urlArray.findIndex(function(element) {
+            return element === "playerSize";
+          });
+          var playerSize = urlArray[playerSizeIndex + 1].split("x");
+          var width = playerSize[0];
+          var height = playerSize[1];
+      
           var submitButton = document.getElementById('submit_video');
           submitButton.removeAttribute('disabled');
 
           var Vtmbnail = document.getElementById('video_thumbnail');
           Vtmbnail.setAttribute('style', 'display: none;')
          
-          setIframeSrc(iframe, src);
-        
-          //document.getElementById("submit_video").click();
-          //fireSubmitVideoButton();
+          // actually submit the video
+          document.getElementById("submit_video").click();
+
+           // Hide the modal
+         $('#myModal').modal('hide');
          
       }
    
-
      
-      
 
       function kUpload(server, ks, fileName, fileUniqueIdentifier, fileSize, resumable, report) {
 
@@ -527,6 +525,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
       if(!r.support) {
         $('.resumable-error').show();
       } else {
+
         // Show a place for dropping/selecting files
         $('.resumable-drop').show();
         r.assignDrop($('.resumable-drop')[0]);
@@ -552,6 +551,15 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             kalturaPartnerId=response.partnerId;
             kalturaUserId=response.id;
 		      });
+
+          //dapiawej
+          //hide close buttons in modal once file has been added
+          $("#staticBackdrop .close").css("display", "none");
+          $("#staticBackdrop .close-modal").css("display", "none"); 
+          document.getElementById("upload-container").style.display ="none";
+          var divimagepro = document.getElementById("media-processing_image");
+          divimagepro.style.backgroundColor = "#f0e9e9";
+         
 
           // Show progress pabr
           $('.resumable-progress, .resumable-list').show();
@@ -604,8 +612,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           var duration = (Date.now() - lastUploadStartTime)/1000;
           var mbSize = file.size/1024/1024;
           var speed = mbSize/duration;
-          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s <br> <button id="embedmedia" type="button" onclick="embedVideo()" class="btn btn-primary mt-2">Submit media</button>');
-        //  $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('<button id="embedmedia" type="button" onclick="embedVideo()" class="btn btn-primary mt-2">Submit media</button>')               
+          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s');
+        //  $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('')               
           // add upload to new media
           var report = {
                   user_id: kalturaUserId, 

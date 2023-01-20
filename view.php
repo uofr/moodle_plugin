@@ -165,7 +165,7 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
                     </p>
                     <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
                         
-                    <button type="button" class="btn btn-primary openBtn">
+                    <button type="button" class="btn btn-primary openBtn" >
                     Upload
                     </button>
                 </div>
@@ -178,48 +178,46 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
 
 <script>
     $(document).ready(function(){
- 
-$( ".card-header" ).click(function() {
-    $(this).find('i').toggleClass('fa-angle-right').toggleClass('fa-angle-down');
-  
-}); 
+        //load the page to the modal body
+        $(".modal-body").load("simple_uploader.php");
 
-
-$('.openBtn').on('click',function(){
-    $('.modal-body').load('simple_uploader.php',function(){
-        $('#myModal').modal('show');
-    });
-});
+        $( ".card-header" ).click(function() {
+            $(this).find('i').toggleClass('fa-angle-right').toggleClass('fa-angle-down');
         
+        }); 
+
+        $('.openBtn').on('click',function(){
+        $("#staticBackdrop").modal("show");
+       
+        });
+
+  
 
     });
 </script>
 
- 
-      <!-- The Modal -->
- <div class="">     
-<div class="modal fade" id="myModal" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header modal-radius-border ">
-                <h5 class="modal-title">Upload to My Media</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-          </div>
-     
-            <div class="modal-body">
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary rounded btn-simple-color" data-dismiss="modal">Close</button>
-            </div>
-        </div>
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+      <div class="modal-footer">
+       <button type="button"  class="btn btn-secondary close-modal" data-dismiss="modal">Close</button> 
+      
+      </div>
     </div>
+  </div>
+</div>
 
-</div>
-</div>
 <?php
 //Added for Student submitted Gallery 
 //check if submission exists
