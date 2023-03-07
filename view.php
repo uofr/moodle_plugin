@@ -67,14 +67,15 @@ $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
-
+// if lower version of moodle then use this heading - fix for dual description issue in Moodle 4 versions.
+if ($CFG->branch < 400) {
 $description = format_module_intro('kalvidres', $kalvidres, $cm->id);
 if (!empty($description)) {
     echo $OUTPUT->box_start('generalbox');
     echo $description;
     echo $OUTPUT->box_end();
 }
-
+}
 $renderer = $PAGE->get_renderer('mod_kalvidres');
 
 // Require a YUI module to make the object tag be as large as possible.
