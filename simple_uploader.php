@@ -4,7 +4,8 @@
 # Moodle Includes
 require_once('../../config.php');
 //require_once('locallib.php');
-
+require_once(dirname(dirname(dirname(__FILE__))).'/lib/moodlelib.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/local/kaltura/locallib.php');
 # Globals
 global $CFG, $USER, $DB, $PAGE;
 
@@ -14,6 +15,10 @@ $PAGE->set_pagelayout('base');
 $PAGE->navbar->ignore_active();
 $PAGE->set_context(context_system::instance());
 
+$configsettings = local_kaltura_get_config();
+
+$kafUrl = $configsettings->kaf_uri;
+$kafUrl_json = json_encode($kafUrl);
 # Check security - special privileges are required to use this script
 $currentcontext = context_system::instance();
 $username = $USER->username;
@@ -27,6 +32,7 @@ if ( (!isloggedin()) ) {
     print_error("You need to be logged in to access this page."); 
     exit;
 }
+
 
 
 // Upload a file to the KMC
@@ -437,10 +443,14 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         
         }   
         } 
-   
+
+      //get the url from kaf config
+      var kafUrl = <?php echo $kafUrl_json; ?>;
+       //console.log(kafUrl)
       function SubmitVideo() {
        
-         var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+        var src =  kafUrl+'/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+         
          document.getElementById("entry_id").value = newEntryId;
          document.getElementById("width").value = 600;
          document.getElementById("height").value = 450;
@@ -458,13 +468,13 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           submitButton.removeAttribute('disabled');
 
           var Vtmbnail = document.getElementById('video_thumbnail');
-          Vtmbnail.setAttribute('style', 'display: none;')
+         Vtmbnail.setAttribute('style', 'display: none;')
          
           // actually submit the video
-          document.getElementById("submit_video").click();
-
+        /document.getElementById("submit_video").click();
+        
            // Hide the modal
-         $('#myModal').modal('hide');
+         $('#staticBackdrop').modal('hide');
          
       }
    
