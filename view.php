@@ -161,11 +161,11 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
                 <div id="collapseOne" class="card-body collapse" data-parent="#accordion" >
                    
                     <p>
-                   <strong> Note:</strong> When the media upload is complete click, <strong>Submit</strong> button to submit your media to the media assignment.
+                   <strong> Note:</strong> Upon completion of the media upload, kindly click the 'Submit media' button to submit your media for the respective assignment.
                     </p>
-                    <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
+                    <p>Should you encounter any difficulties in uploading your media, please do not hesitate to contact us at <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
                         
-                    <button type="button" class="btn btn-primary openBtn" >
+                    <button id="uploadbtn" type="button" class="btn btn-primary openBtn" >
                     Upload
                     </button>
                 </div>
@@ -190,7 +190,18 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
         $("#staticBackdrop").modal("show");
        
         });
-
+        // Get a reference to the button element
+         const button = document.getElementById('id_add_video');
+          const uploadbutton = document.getElementById('uploadbtn');
+    
+          // Check if student can resubmit another video
+          if (button.disabled) {
+            uploadbutton.disabled = true;
+            //console.log('Button is disabled');
+          } else {
+            uploadbutton.disabled = false;
+            //console.log('Button is enabled');
+          }
   
 
     });
