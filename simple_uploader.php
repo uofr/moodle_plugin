@@ -15,6 +15,11 @@ $PAGE->set_pagelayout('base');
 $PAGE->navbar->ignore_active();
 $PAGE->set_context(context_system::instance());
 
+//get the url from config setting
+$configsettings = local_kaltura_get_config();
+$kafUrl = $configsettings->kaf_uri;
+$kafUrl_json = json_encode($kafUrl);
+
 # Check security - special privileges are required to use this script
 $currentcontext = context_system::instance();
 $username = $USER->username;
@@ -439,10 +444,14 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         
         }   
         } 
-   
+
+      //get the url from kaf config
+      var kafUrl = <?php echo $kafUrl_json; ?>;
+      console.log(kafUrl)
       function SubmitVideo() {
-       
-         var src = 'https://regina-moodle-dev.kaf.ca.kaltura.com/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+       //we will use the kafuri in the configsettings
+        var src =  kafUrl+'/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+         console.log(src)
          document.getElementById("entry_id").value = newEntryId;
          document.getElementById("width").value = 600;
          document.getElementById("height").value = 450;
@@ -463,8 +472,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
          Vtmbnail.setAttribute('style', 'display: none;')
          
           // actually submit the video
-          document.getElementById("submit_video").click();
-
+       //document.getElementById("submit_video").click();
+        
            // Hide the modal
          $('#staticBackdrop').modal('hide');
          
