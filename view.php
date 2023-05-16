@@ -153,13 +153,13 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
 
     <div id="accordion" class="accordion">
         <div class="card mb-0">
-            <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne">
+            <div id ="alternateH" class="card-header collapsed" data-toggle="collapse" href="#collapseOne">
             <i class="fa fa-angle-right"></i><a class="card-title">
                     Trouble Uploading?
                 </a>
             </div>
-                <div id="collapseOne" class="card-body collapse" data-parent="#accordion" >
-                   
+                <div id="collapseOne" class="collapse" data-parent="#accordion" >
+                   <div class="card-body">
                     <p>
                    <strong> Note:</strong> Upon completion of the media upload, kindly click the 'Submit media' button to submit your media for the respective assignment.
                     </p>
@@ -168,6 +168,7 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
                     <button id="uploadbtn" type="button" class="btn btn-primary openBtn" >
                     Upload
                     </button>
+                    </div>
                 </div>
                 
         </div>
@@ -191,18 +192,32 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
        
         });
         // Get a reference to the button element
-         const button = document.getElementById('id_add_video');
+         const buttonRm = document.getElementById('id_add_video');
           const uploadbutton = document.getElementById('uploadbtn');
     
           // Check if student can resubmit another video
-          if (button.disabled) {
+          if (buttonRm.disabled) {
             uploadbutton.disabled = true;
-            //console.log('Button is disabled');
+            uploadbutton.style.cursor = "not-allowed";
           } else {
             uploadbutton.disabled = false;
-            //console.log('Button is enabled');
           }
-  
+      
+      
+            
+            // Get the element you want to change the cursor for
+            var elementAu = document.getElementById("alternateH");
+
+            elementAu.addEventListener("mouseover", function() {
+            // Change the cursor to a hand
+            this.style.cursor = "pointer";
+            });
+
+            // Add an event listener for the mouseout event
+            elementAu.addEventListener("mouseout", function() {
+            // Revert the cursor back to the default
+            this.style.cursor = "auto";
+            });
 
     });
 </script>
