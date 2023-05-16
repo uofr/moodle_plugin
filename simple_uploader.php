@@ -15,6 +15,7 @@ $PAGE->set_pagelayout('base');
 $PAGE->navbar->ignore_active();
 $PAGE->set_context(context_system::instance());
 
+
 //get the url from config setting
 $configsettings = local_kaltura_get_config();
 $kafUrl = $configsettings->kaf_uri;
@@ -184,10 +185,15 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                  
                   Your browser does not support the video tag.
                 </video>
-                <div id ="loading" style ="display:none;" >
-                <div  class ="border border-primary pl-2 pr-2 pt-2 mb-2 rounded" id="assignment-name">
+                <!-- Status loading message for slower internet  speed-->
+                <div id="loading-overlay" style="display: none;">
+                <div id="loading-spinner"></div>
+                <div id="loading-message">Please wait while we create a copy of your video submission...</div>
+              </div>
+                <div id ="loading"  style ="display:none;" >
+                <div  class="alert alert-success" id="assignment-name">
                 </div>
-                <div id="media-processing_image">
+                <div id="media-processing_image" class ="rounded">
                 <img class="rounded mx-auto d-block" src="https://vodcdn.ca.kaltura.com/5.108.602/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
                   </div>
                 <div>
@@ -367,7 +373,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
 		      // Reflect that the file upload has completed
           if(is_success){ // if first upload was successfull
-
+            showLoadingOverlay();
             var config = new KalturaConfiguration();
               config.serviceUrl = 'https://api.ca.kaltura.com';
               var client = new KalturaClient(config);
@@ -385,7 +391,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                     
                       is_update = true;
                       newEntryId = results.id;
-                  
+                     
                       console.log( "A duplicate copy of the entry was created with ID: " + newEntryId);
                       var mediaEntry = {objectType: "KalturaMediaEntry"};
                             
@@ -394,15 +400,17 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
                             KalturaMediaService.update(newEntryId, mediaEntry)
                               .execute(client, function(success, resulta) {
+                                hideLoadingOverlay();
                                 if (!success || (resulta && resulta.code && resulta.message)) {
                                   console.log('Kaltura Error', success, resulta);
                                 } else {
                                 
                                   kalturadlplayerURL = resulta.downloadUrl;
+                                  status = resulta.status;
                                   name = resulta.name;
                                   entryid = resulta.id;
-                                   embedurlvideo(name,entryid);
-                                
+                                   embedurlvideo(name,entryid,status);
+                                 console.log(status);
                                   console.log(kalturadlplayerURL);
                                 }
                                
@@ -422,9 +430,20 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
       }
      
+      //Status loading message for slower internet  speed
+      function showLoadingOverlay() {
+        var loadingOverlay = document.getElementById("loading-overlay");
+        loadingOverlay.style.display = "flex";
+      }
+
+      function hideLoadingOverlay() {
+        var loadingOverlay = document.getElementById("loading-overlay");
+        loadingOverlay.style.display = "none";
+      }
      
+      
       // embed video from simple uploader to kaltura  media assignment
-      function embedurlvideo(name,id){ 
+    function embedurlvideo(name,id,status){ 
         
         var video = document.getElementById("videoload");
         var loading = document.getElementById("loading");
@@ -432,14 +451,16 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         document.getElementById("kplayer").src = kalturadlplayerURL;
         video.load();
         
-        if (video.readyState === 4) {
+        if (status == 2) {
+          //media is ready display it
           loading.style.display = "none";
           video.style.display = "block";
 
         } else {
+          //Media is still in preconvertion status
           video.style.display = "none";
           loading.style.display = "block";
-          assign.innerHTML = 'EntryId: <strong>'+ id +'</strong><br>Assignment: <strong> ' + name +'</strong> <p>is now ready for submission, you dont have to wait for the media conversion and proccessing to be completed!.</p>';
+          assign.innerHTML = '<h5>Assignment: ' + name +'</h5> <hr> <p>Your assignment has been created successfully. Click "Submit Media" to submit your assignment. No need to wait for media conversion and processing to finish.</p>';
           assign.style.backgroundColor ="#dfd7d7";
         
         }   
@@ -447,11 +468,11 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
       //get the url from kaf config
       var kafUrl = <?php echo $kafUrl_json; ?>;
-      console.log(kafUrl)
+      //console.log(kafUrl)
       function SubmitVideo() {
        //we will use the kafuri in the configsettings
         var src =  kafUrl+'/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
-         console.log(src)
+       //  console.log(src)
          document.getElementById("entry_id").value = newEntryId;
          document.getElementById("width").value = 600;
          document.getElementById("height").value = 450;
@@ -472,7 +493,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
          Vtmbnail.setAttribute('style', 'display: none;')
          
           // actually submit the video
-       //document.getElementById("submit_video").click();
+          document.getElementById("submit_video").click();
         
            // Hide the modal
          $('#staticBackdrop').modal('hide');
