@@ -86,12 +86,18 @@ echo '</pre>';
   <head>
   <head> 
 <?php
-//check if dark mode is enabled and if so add the style sheet
-if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$USER->id, 'darkmode'=>1))) {
-  //changes url to opposite of whatever the toggle currently is to set dark mode in db under columns2.php
-  $css = new moodle_url(('/theme/urcourses_default/style/darkmode.css'));
-  echo '<link rel="stylesheet" type="text/css" href="'.$css.'">';
-} 
+// only check for darkmode if not on a UR Community / CCE Community instance
+if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
+
+	//check if dark mode is enabled and if so add the style sheet
+	if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$USER->id, 'darkmode'=>1))) {
+	  //changes url to opposite of whatever the toggle currently is to set dark mode in db under columns2.php
+	  $css = new moodle_url(('/theme/urcourses_default/style/darkmode.css'));
+	  echo '<link rel="stylesheet" type="text/css" href="'.$css.'">';
+	}
+	
+}
+ 
 ?>
 
 </head>
