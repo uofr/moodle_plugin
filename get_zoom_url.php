@@ -5,9 +5,9 @@ require_once "bootstrap5.php";
 require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-
+require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 //require_once('locallib.php');
-global $CFG;
+
 
 # Globals
 global $CFG, $USER, $DB, $PAGE, $stat, $sett, $tagasett, $zoomMails, $count;
@@ -21,11 +21,15 @@ $ur_username = $USER->username;
 $ur_email = $USER->email;
 $lastname = $USER->lastname;
 $firstname = $USER->firstname;
+$ipadd = $USER->lastip;
+//print_r($currentcontext);
 
 $site = get_site();
 
+$cmid = get_context_info_array($PAGE->context->id);
 list($context, $course, $cm) = get_context_info_array($PAGE->context->id);
-
+//print_r($cmid);
+//$coursemodule = get_coursemodule_from_instance($PAGE->context->id);
 require_login($course, true, $cm);
 
 if ( (!isloggedin()) ) {
@@ -45,9 +49,53 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 ?>
 
 </head>
-<body onload="">
+<body >
 
   <?php
+
+
+function logVisit($action, $visitLogFile) {
+  global $CFG, $USER, $DB, $PAGE;
+
+  // Get the current site URL that was viewed
+  //$siteUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+  $siteUrl = "Import Zoom recording tool";
+  // Get the current date and time
+  $currentTimestamp = time(); // Get the current timestamp
+  $formattedTime = date('Y-m-d h:i:s A', $currentTimestamp); // Format the timestamp as a string with 12-hour format
+  
+  
+  // Create a log entry
+  $logEntry = array(
+      'time' => $formattedTime,
+      'fullname' => $USER->firstname . ' ' . $USER->lastname,
+      'ip' => $USER->lastip,
+      'user' => $USER->username,
+      'action' => $action, // Use the provided action parameter
+      'site_url' => $siteUrl
+  );
+  
+  // Read existing visit data from the file
+  $visitData = file_exists($visitLogFile) ? file_get_contents($visitLogFile) : '[]';
+  $visitDataArray = json_decode($visitData, true);
+  
+  // Append the new log entry to the visit data
+  $visitDataArray[] = $logEntry;
+  
+  // Write the updated data back to the JSON file
+ return file_put_contents($visitLogFile, json_encode($visitDataArray, JSON_PRETTY_PRINT));
+}
+
+$visitLogFile = 'visits.json';
+    if (!file_exists($visitLogFile)) {
+        file_put_contents($visitLogFile, '[]');
+    }
+
+
+$action = "Viewed the page";
+
+// Call the function to log the visit
+logVisit($action, $visitLogFile);
 
 //for alternative use-case zoom_data.php list of zoom users, if zoom plugin function is not available.
 //$list_users_response = json_decode($zoom_data);
@@ -90,6 +138,7 @@ if (strtolower($get_usersInfo->email) == strtolower($ur_email)) {
   getAlert($alertname);
   //break;
 }
+
 
 
 
@@ -217,38 +266,41 @@ function getAlert($alertname){
               <?php
                 if (isset($_POST["dateto"])) {
               ?>
-              <p class="resultxt m-0">Loading results..</p>
-              <div class="progress">
-                <script>    
-                  var current_progress =0;
+                <p class="resultxt m-0">Loading results..</p>
+                <div class="progress">
+                  <div class="progress-bar  progress-bar-striped bg-primary progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0% Complete</div>
+                </div>
+
+                <script>
+                  var current_progress = 0;
                   var interval = setInterval(function() {
                     if (document.readyState === "complete") {
-            
                       current_progress = 100;
-                      $('.resultxt').delay(2000).fadeOut('slow');
-                      $('.progress-bar').delay(2000).fadeOut('slow');
                       clearInterval(interval);
-                      $('.alert_results').show();
-                    }
-            
-                    if (document.readyState !== "complete") {
-                        $('.accordion-body').each(function() {
-                          current_progress = current_progress + 1; 
-                        });
-                    }
-
-                    if (current_progress  <= 100){
                       $(".progress-bar")
-                      .css("width", current_progress + "%")
-                      .attr("aria-valuenow", current_progress)
-                      .text(current_progress + "% Complete");
-                    }else {
-                    current_progress = 99;
-                    $(".progress-bar").text(current_progress + "% Please wait");
+                        .css("width", current_progress + "%")
+                        .attr("aria-valuenow", current_progress)
+                        .text(current_progress + "% Complete");
+                      setTimeout(function() {
+                        $('.resultxt').fadeOut('slow');
+                        $('.progress-bar').fadeOut('slow');
+                        $('.alert_results').show();
+                      }, 2000);
+                    } else {
+                      // Simulate progress update
+                      current_progress += 5; // Adjust the increment as needed
+                      if (current_progress <= 100) {
+                        $(".progress-bar")
+                          .css("width", current_progress + "%")
+                          .attr("aria-valuenow", current_progress)
+                          .text(current_progress + "% Complete");
+                      }
                     }
                   }, 1000);
                 </script>
-                <div class="p-2 progress-bar progress-bar-striped bg-success progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
+
+             <!--   <div class="p-2 progress-bar progress-bar-striped bg-success progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div> -->
               </div>
               <?php
               }
@@ -305,35 +357,18 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
   $period = new dateperiod(new datetime($_POST['datefrom']), new dateinterval('P1M'), (new datetime($_POST['dateto']))->modify('1 month'));
   
 $count =0;
+$get_recording_service = new mod_zoom_webservice();
+$datefrom = $_POST['datefrom'];
+
 foreach ($period as $xcount => $dateval) {
-
   $countdate = $dateval->format("Y-m-d");
+  $countdate = $dateval->format("Y-m-d");
+    $getrecordings = $get_recording_service->get_user_recording_list($zoomMails, $datefrom, $countdate);
 
-    $curl = curl_init();
-    $url ="https://api.zoom.us/v2/users/$zoomMails/recordings?page_size=30&mc=false&trash=false&from=".$_POST['datefrom']."&to=".$countdate;
-    curl_setopt_array($curl, array(
-      CURLOPT_URL => $url,
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => '',
-      CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      CURLOPT_CUSTOMREQUEST => 'GET',
-      CURLOPT_HTTPHEADER => array(
-        'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImRhUkFPOUV6UjFxWjFvN2U2N2VkU3ciLCJleHAiOjE2OTk4OTU1MDcsImlhdCI6MTU5OTE0MDEwN30.U4esT6f1c-W-DNun5yah66B3zoap-jOXFXDvveGuEdQ',
-        'Cookie: cred=31C801287EBEB8624CE52AB7A29404EC'
-      ),
-    ));
-$response = json_decode(curl_exec($curl));
-$resulta = array_values($response->meetings);
-
-?>
-
-<?php
-
-foreach ($resulta as $x => $records) {
-
+    $data = $getrecordings; // No need to decode if the response is already JSON
+  if (is_array($data) || $data instanceof Traversable)  {
+    foreach ($data as $records) {
+      $recordingFiles = $records->recording_files;
 ?>
 
 <div class="accordion" id="accordionTab">
@@ -349,37 +384,12 @@ foreach ($resulta as $x => $records) {
 
                 <?php
               
-                  foreach (array_values($records->recording_files) as  $recfiles) {
-                  
+              foreach ($recordingFiles as $recfiles) {
+                $get_meetingRecording_service = new mod_zoom_webservice();
                           $sett = $recfiles->meeting_id;
+                         // $get_meetingRecording_service->get_user_meeting_recording($sett);
                           $_SESSION['trash_mid'] = $recfiles->meeting_id;
-                          $curl = curl_init();
-                          $url="https://api.zoom.us/v2/meetings/$sett/recordings/settings";
                       
-                            curl_setopt_array($curl, array(
-                            CURLOPT_URL => $url,
-                            CURLOPT_RETURNTRANSFER => true,
-                            CURLOPT_ENCODING => '',
-                            CURLOPT_MAXREDIRS => 10,
-                            CURLOPT_TIMEOUT => 0,
-                            CURLOPT_FOLLOWLOCATION => true,
-                            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                            CURLOPT_CUSTOMREQUEST => 'PATCH',
-                            CURLOPT_POSTFIELDS =>'{
-                              "viewer_download": true,
-                              "password": ""
-                          }
-                          ',
-                            CURLOPT_HTTPHEADER => array(
-                              'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6ImRhUkFPOUV6UjFxWjFvN2U2N2VkU3ciLCJleHAiOjE2OTk4OTU1MDcsImlhdCI6MTU5OTE0MDEwN30.U4esT6f1c-W-DNun5yah66B3zoap-jOXFXDvveGuEdQ',
-                              'Content-Type: application/json',
-                              'Cookie: cred=7A4AC1161FF93912001DD2812965B420'
-                            ),
-                          ));
-
-                          $json =curl_exec($curl);
-
-                          $json_response = json_decode($json, true);
 
                       ?>
     <div id="collapseId<?php echo $count; ?>" class="accordion-collapse collapse <?php if($count==1) {echo 'show'; } ?>" aria-labelledby="heading<?php echo $count; ?>" >
@@ -392,9 +402,14 @@ foreach ($resulta as $x => $records) {
             <form  action ="" method="post" id="uploadfrm">
               <div class="form-floating mb-3 tit1">
               <input type="hidden" name="mid[]" value="<?php echo $records->uuid; ?>"  class="meetingid" >
+
+             
+              <input type="hidden" name="rectype[]" value="<?php echo $recfiles->recording_type; ?>" class="recordType" >
+             
+
                 <input type="hidden" name="zoomdate[]" value="<?php echo date('Y-M-d h:i:s', strtotime($records->start_time)); ?>" class="date_created" id="" >
                 <input type="text" name="title[]" value="" class="form-control tit" id="floatingInput" placeholder="Media Title">
-                <label for="floatingInput">Media Title</label>
+                <label for="floatingInput">Enter your media title here..</label>
               </div>
              
               <div class="form-check m-2">
@@ -445,9 +460,13 @@ foreach ($resulta as $x => $records) {
 <?php
 
 }
-}
 
-curl_close($curl);
+}
+} /*else { 
+  //dapiawej August 29, 2023 Catch the error!! when $data is not iterable we are commenting this since we dont want to display this error
+    echo "Invalid argument supplied for foreach.";
+}*/
+
 }
 
 }else  {
@@ -482,6 +501,9 @@ if (empty($count)) {
        getAlert($alertname);
    
           }  
+
+
+
           ?>
 <div>        
 <div class="submit-control mt-2">
@@ -531,6 +553,7 @@ $('.uploadurl').click(function (e) {
 var list =[]
 var title =[]
 var date_created =[]
+var record_type =[]
 var nothing ="default";
 var  uuid=[]
  $("[name='chooser[]']:checked").each(function () {
@@ -540,7 +563,7 @@ var  uuid=[]
                uuid.push($(this).parents("fieldset").find(".meetingid").val())
 
                date_created.push($(this).parents("fieldset").find(".date_created").val())
-
+               record_type.push($(this).parents("fieldset").find(".recordType").val())
                list.push(current)
 
 });
@@ -550,7 +573,7 @@ var  uuid=[]
     url: 'upload.php',
     datatype: 'html',
     //async:false,
-    data:{'chooser': list, 'title': title, 'zoomdate': date_created, 'nothing': nothing, "meetingId": uuid },
+    data:{'chooser': list, 'title': title, 'zoomdate': date_created, 'rectype': record_type, 'nothing': nothing, "meetingId": uuid },
     beforeSend: function(){
 				//$('.submit-control').html("<img src='LoaderIcon.gif' /> Ajax Request is Processing!");
 			},
@@ -573,7 +596,7 @@ var  uuid=[]
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">  </h5>
+        <h5 class="modal-title"> </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
