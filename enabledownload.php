@@ -26,12 +26,12 @@ $PAGE->set_pagelayout('base');
 $PAGE->set_heading($site->fullname);
 $PAGE->navbar->ignore_active();
 
-
+$get_recordMeeting_service = new mod_zoom_webservice();
 if (isset($_POST['name'])) {
 
 $meeting_id = $_POST['name'];
-
-$curl = curl_init();
+$getrecordings = $get_recordMeeting_service->get_user_meeting_recording($meeting_id);
+/*$curl = curl_init();
 $url="https://api.zoom.us/v2/meetings/$meeting_id/recordings/settings";
 curl_setopt_array($curl, array(
   CURLOPT_URL => $url,
@@ -54,9 +54,9 @@ curl_setopt_array($curl, array(
     ),
   ));
 
-  $response = curl_exec($curl);
+  $response = curl_exec($curl);*/
 
-curl_close($curl);
+//curl_close($curl);
 echo '<h3>Succesfully Added Request</h3>';
 echo "\n Meeting ID: ".$response;
 echo $meeting_id;
