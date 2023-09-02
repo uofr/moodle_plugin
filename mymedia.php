@@ -72,7 +72,20 @@ echo $OUTPUT->header();
       <?php
         }
         ?>
-      </li>
+         </li>
+        <?php
+              $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
+              if($hasAdminRole){
+                ?>
+              <li class="nav-item " forceintomoremenu ="true">
+              <a class="nav-link nav_border_bottom" target="contentframe" href="mymedia_logs.php">Logs</a>
+              </li>
+          <?php
+
+        }
+        ?>
+     
+      
       <li class="nav-item dropdown moremen">
         <a class="nav-link dropdown-toggle nav_border_bottom" data-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
         <ul class="dropdown-menu dropdown-bdr">
@@ -84,6 +97,14 @@ echo $OUTPUT->header();
         ?>
         <a class="dropdown-item" target="contentframe" href="get_zoom_url.php">Import Zoom Recordings</a>
       <?php
+        }
+        $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
+        if($hasAdminRole){
+          ?>
+     
+        <a class="dropdown-item " target="contentframe" href="mymedia_logs.php">Logs</a>
+        
+        <?php
         }
         ?>
         </ul>

@@ -52,6 +52,57 @@ $PAGE->set_pagelayout('report');
 $PAGE->set_heading($site->fullname);
 $PAGE->navbar->ignore_active();
 // using boostrap class
+function logVisit($action, $visitLogFile) {
+  global $CFG, $USER, $DB, $PAGE, $visitLogFile;
+  // File to store the visit data
+  
+  // Get the current site URL that was viewed
+  //$siteUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+  $siteUrl = "URLs for H5P page";
+  // Get the current date and time
+  $currentTimestamp = time(); // Get the current timestamp
+$formattedTime = date('Y-m-d h:i:s A', $currentTimestamp); // Format the timestamp as a string with 12-hour format
+
+  // Create a log entry
+  $logEntry = array(
+      'time' => $formattedTime,
+      'fullname' => $USER->firstname . ' ' . $USER->lastname,
+      'ip' => $USER->lastip,
+      'user' => $USER->username,
+      'action' => $action, // Use the provided action parameter
+      'site_url' => $siteUrl
+  );
+  
+  // Read existing visit data from the file
+  $visitData = file_exists($visitLogFile) ? file_get_contents($visitLogFile) : '[]';
+  $visitDataArray = json_decode($visitData, true);
+  
+  // Append the new log entry to the visit data
+  $visitDataArray[] = $logEntry;
+  
+  // Write the updated data back to the JSON file
+ return file_put_contents($visitLogFile, json_encode($visitDataArray, JSON_PRETTY_PRINT));
+}
+
+$visitLogFile = 'visits.json';
+    if (!file_exists($visitLogFile)) {
+        file_put_contents($visitLogFile, '[]');
+    }
+// Check if the user clicked the upload button
+$uploadClicked = isset($_POST['set']);
+if(!empty($_POST['entryId'])){
+  $entryID =$_POST['entryId'];
+}else{
+  $entryID ="null - It seems that the user forgot to enter a value for the entryID in the input field.";
+}
+ 
+
+// Determine the action based on the upload button click
+$action = $uploadClicked ? "Submitted a request to Kaltura to obtain the media flavors for <strong>Entry ID: " .$entryID."</strong>": "Viewed the page";
+
+// Call the function to log the visit
+logVisit($action, $visitLogFile);
+
 
 define("PARTNER_ID", "103");
 define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");

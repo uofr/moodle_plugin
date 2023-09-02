@@ -32,8 +32,6 @@ $PAGE->set_heading($site->fullname);
 //$PAGE->navbar->ignore_active();
 
 
-// Upload a file to the KMC
-
 // Your Kaltura partner credentials
 define("PARTNER_ID", "103");
 define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
@@ -80,7 +78,19 @@ echo '<pre>';
 print_r($result);
 echo '</pre>';
 */
+$userJson = json_encode($USER);
+//$siteUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+$siteUrl = "Trouble uploading page";
+echo "<script>const SITE_URL = " . json_encode($siteUrl) . ";</script>";
+// Embed the JSON in a JavaScript variable
+echo "<script>const USER = " . $userJson . ";</script>";
+
 ?>
+<script>
+
+
+
+</script>
 <!DOCTYPE html>
 <html>
   <head>
@@ -222,8 +232,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
       </div>
 	  </div>
-
+ 
     <script>
+
 
       var kalturaSessionKey = null;
 	    var kalturaPartnerId = null;
@@ -235,7 +246,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	    // if you wish to report the stats to an SQLITE DB, set this to where you host process_upload_stats.php
       // you also need to create the SQLITE DB from the chunked_upload.sql schema and ensure the web server user has write permissions to it and the directory in which it resides	
 	    var statsReportingEndpoint = null;
-
+      var kalturaEntryId=null;
       function genKS(server,userId, password, partnerId){
         var params;
         if (partnerId){
@@ -288,21 +299,25 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         xhr.open("POST", url, true);
         xhr.send();
       }
-
+      
       function kAddUploadToNewMedia(server, ks, uploadToken, name, report) {
             
         kDoJSONRequest(server, ks, "/service/media/action/addFromUploadedFile", 
           "mediaEntry:name=" + name +"&mediaEntry:mediaType=1" +
           "&uploadTokenId=" + uploadToken, function(response) {
-
-		      var kalturaEntryId=null;
+         
+		   
 		      var reportDiv = document.getElementById("report");
           if (response.id){
             kalturaEntryId=response.id;
             reportDiv.style.color="rgb(69, 145, 58)";
             status_msg ="Last fully uploaded entry ID: <b>"+response.id + "</b>, Entry Name: <b>"+response.name+"</b>"; 
             report['entry_id']=kalturaEntryId;
+            kalturaEntryId = response.id;
             is_success = true;
+            const action ="Successfully uploaded entry ID:" + response.id + " file name: "+ response.name;
+            // Call the function to log the visit
+            logVisit(action, USER);
 
             var iscategory = document.getElementById("category").value;
             //set category
@@ -331,7 +346,11 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             reportDiv.style.color="red";
             status_msg ='Upload ERROR! Code: ' + response.code + 'Message: ' + response.message;
             is_success = false;
+            const action = status_msg;
+            // Call the function to log the visit
+            logVisit(action, USER);
             $('.upload-speed').hide();
+            
           }
 
 		      //console.log('entry ID is '+kalturaEntryId);
@@ -457,6 +476,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           // Show resume, hide pause
           $('.resumable-progress .progress-resume-link').show();
           $('.resumable-progress .progress-pause-link').hide();
+         const action ="The user upload has been <strong>paused</strong>";
+            // Call the function to log the visit
+            logVisit(action, USER);
         });
         r.on('complete', function(){
           // Hide pause/resume when the upload has completed
@@ -481,6 +503,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                   filename: file.fileName, 
 
             };
+
             kAddUploadToNewMedia(kalturaServerBase, kalturaSessionKey, uploadToken[file.uniqueIdentifier], file.fileName, report);
         });
         r.on('fileError', function(file, message){
@@ -516,6 +539,9 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
         r.on('cancel', function(){
           $('.resumable-file-progress').html('canceled');
+          const action ="The user upload has been <strong>canceled</strong>"
+            // Call the function to log the visit
+            logVisit(action, USER);
         });
 
         r.on('uploadStart', function(){
@@ -523,10 +549,46 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 			    lastNow = new Date().getTime();
 			    lastKBytes = 0;
           // Show pause, hide resume
+       
           $('.resumable-progress .progress-resume-link').hide();
           $('.resumable-progress .progress-pause-link').show();
         });
       }
+
+
+    
+function logVisit(action, user) {
+
+const currentTime = new Date();
+const formattedTime = currentTime.toLocaleString(); 
+
+ // Create a log entry
+ const logEntry = {
+   'time': formattedTime,
+   'fullname': `${user.firstname} ${user.lastname}`,
+   'ip': user.lastip,
+   'user': user.username,
+   'action': action,
+   'site_url': SITE_URL 
+ };
+
+ // Send log entry to server-side script
+ fetch('logs.php', {
+   method: 'POST',
+   body: JSON.stringify(logEntry)
+ }).then(response => {
+   // Handle the response if needed
+ }).catch(error => {
+   // Handle any errors
+ });
+}
+
+
+ const action ="Viewed the page";
+// Call the function to log the visit
+logVisit(action, USER);
+
+
     </script>
   </div>
     <!--footer id="footer">

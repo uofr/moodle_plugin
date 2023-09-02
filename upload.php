@@ -1,8 +1,7 @@
 <?php
 require_once('../../config.php');
-//require_once('locallib.php');
-# Globals
-global $CFG, $USER, $DB, $PAGE;
+
+global $CFG, $USER, $DB, $PAGE,$action2;
 
 $PAGE->set_url('/local/mymedia/upload');
 $PAGE->set_context(context_system::instance());
@@ -21,6 +20,41 @@ if ( (!isloggedin()) ) {
     exit;
 }
 
+function logVisit($action, $visitLogFile) {
+  global $CFG, $USER, $DB, $PAGE;
+  // File to store the visit data
+
+ 
+  // Get the current site URL that was viewed
+  //$siteUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+  $siteUrl = "Import Zoom recording page";
+  
+  $currentTimestamp = time(); // Get the current timestamp
+$formattedTime = date('Y-m-d h:i:s A', $currentTimestamp); // Format the timestamp as a string with 12-hour format
+
+  
+  // Create a log entry
+  $logEntry = array(
+      'time' => $formattedTime,
+      'fullname' => $USER->firstname . ' ' . $USER->lastname,
+      'ip' => $USER->lastip,
+      'user' => $USER->username,
+      'action' => $action, // Use the provided action parameter
+      'site_url' => $siteUrl
+  );
+  
+  // Read existing visit data from the file
+  $visitData = file_exists($visitLogFile) ? file_get_contents($visitLogFile) : '[]';
+  $visitDataArray = json_decode($visitData, true);
+  
+  // Append the new log entry to the visit data
+  $visitDataArray[] = $logEntry;
+  
+  // Write the updated data back to the JSON file
+ return file_put_contents($visitLogFile, json_encode($visitDataArray, JSON_PRETTY_PRINT));
+}
+
+
 $PAGE->set_title("Import Zoomm Recordings");
 $PAGE->set_pagelayout('base');
 $PAGE->set_heading($site->fullname);
@@ -34,6 +68,7 @@ require_once "../kaltura/API/KalturaClient.php";
 
 $user = $username;  // If this user does not exist in your KMC, then it will be created.
 $kconf = new KalturaConfiguration(PARTNER_ID);
+
 // If you want to use the API against your self-hosted CE,
 // go to your KMC and look at Settings -> Integration Settings to find your partner credentials
 // and add them above. Then insert the domain name of your CE below.
@@ -49,7 +84,7 @@ $kclient->setKs($ksession);
 
 
 if (isset($_POST['chooser'])) {
-  $_POST['nothing'] = "Your Zoom recordings that have been uploaded successfully!";
+  $_POST['nothing'] = "Your Zoom recordings have been uploaded successfully!";
   $nothing = $_POST['nothing'];
   $state = $_POST['chooser'];
   //$uuid = array_values($_POST['meetingId']); 
@@ -61,9 +96,9 @@ if (isset($_POST['chooser'])) {
            $uploadURL = $result;
            $titulo = $_POST['title'][$key];
            $uuid = ($_POST['meetingId'])[$key];
-        
+           $record_type = $_POST['rectype'][$key];
              if (empty($titulo)) {
-               $entry->name = "Zoom recording date: ". $_POST['zoomdate'][$key]."-Uploaded from Zoom URL tool";
+               $entry->name = "Zoom recording date: ". $_POST['zoomdate'][$key]."-Uploaded from Import Zoom recordings tool";
 
               }else {
                  $entry->name = $titulo;
@@ -104,10 +139,13 @@ if (isset($_POST['chooser'])) {
    
     $date=date_create();
     date_timestamp_set($date,$results->createdAt);
+  
      echo "<b>Entry ID: </b>".$results->id."<br>";
      echo "<b>Video Title: </b>".$results->name."<br>";
      echo "<b>Download_url: </b>".$results->downloadUrl."<br>";
+
      echo "<b>Date created: </b>".date_format($date,"Y-M-d H:i:s")."<br>";
+     echo "<b>Zoom recording type: </b>".$record_type."<br>";
      ?>
        </div>
        
@@ -117,6 +155,14 @@ if (isset($_POST['chooser'])) {
   $('.modal-title').text("<?php echo $nothing; ?>")
   </script>
 <?php
+ $visitLogFile = 'visits.json';
+ if (!file_exists($visitLogFile)) {
+     file_put_contents($visitLogFile, '[]');
+ }
+$action = "Uploaded <strong>entry ID:".$results->id."</strong> to Kaltura from Zoom recording <strong>".$results->name."</strong>, Zoom recording type: ".$record_type;
+
+// Call the function to log the visit
+logVisit($action, $visitLogFile);
 
 }
 }else {
