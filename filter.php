@@ -194,11 +194,13 @@ function filter_kaltura_callback($link) {
 
         $source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3];
     }
-
+    $newplayer ="23448579";
+    echo($newplayer);
+    echo($link[1]);
     // Convert v3 anchor tags into iframe markup.
     if (7 == count($link) && $link[1] == filter_kaltura::$apiurl) {
         $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
-        $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$link[3];
+        $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$newplayer;
     }
 
     $params = array(
