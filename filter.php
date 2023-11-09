@@ -103,18 +103,15 @@ class filter_kaltura extends moodle_text_filter {
             WHERE summary LIKE '%playerSkin/23448540%'";
 
             $DB->execute($sql);
-       // Purge the cache
-           // cache::make('core', 'cache', ['local' => true])->purge();
 
-           
-          //  cache::make('core', 'modinfo', ['local' => true])->purge();
-           // cache::make('core', 'event', ['local' => true])->purge();
-            // Output success message
-           // echo "Cache purged successfully.\n";
+           $pattern = '/(uiConfId\/)\d+/';
 
-        if (empty($CFG->filter_kaltura_enable)) {
-            return $text;
-        }
+           $newUiConfId = '23448579';
+           $text = preg_replace($pattern, '${1}' . $newUiConfId, $text);
+
+            if (empty($CFG->filter_kaltura_enable)) {
+                return $text;
+            }
         
         // Check either if the KAF URI or API URI has been set.  If neither has been set then return the text with no changes.
         if (is_null(self::$kafuri) && is_null(self::$apiurl)) {
@@ -225,7 +222,7 @@ function filter_kaltura_callback($link) {
         $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
         $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$newPlayerSkinNumber;
     }
-    //echo($source);
+   // echo($source);
 
     $params = array(
         'courseid' => filter_kaltura::$pagecontext->instanceid,
