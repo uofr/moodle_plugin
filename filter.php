@@ -94,13 +94,28 @@ class filter_kaltura extends moodle_text_filter {
      * @return string The same text or modified text is returned.
      */
     public function filter($text, array $options = array()) {
-        global $CFG;
+        global $CFG, $DB;
+        $desiredPlayerSkin = "23448579";
+        
+     
+            $sql = "UPDATE {course_sections} 
+            SET summary = REPLACE(summary, 'playerSkin/23448540', 'playerSkin/23448579')
+            WHERE summary LIKE '%playerSkin/23448540%'";
 
-        // Check if the the filter plug-in is enabled.
+            $DB->execute($sql);
+       // Purge the cache
+           // cache::make('core', 'cache', ['local' => true])->purge();
+
+           
+          //  cache::make('core', 'modinfo', ['local' => true])->purge();
+           // cache::make('core', 'event', ['local' => true])->purge();
+            // Output success message
+           // echo "Cache purged successfully.\n";
+
         if (empty($CFG->filter_kaltura_enable)) {
             return $text;
         }
-
+        
         // Check either if the KAF URI or API URI has been set.  If neither has been set then return the text with no changes.
         if (is_null(self::$kafuri) && is_null(self::$apiurl)) {
             return $text;
@@ -121,12 +136,12 @@ class filter_kaltura extends moodle_text_filter {
 
         $oldsearch = '/<a\s[^>]*href="('.$uri.')\/index\.php\/kwidget\/wid\/_([0-9]+)\/uiconf_id\/([0-9]+)\/entry_id\/([\d]+_([a-z0-9]+))\/v\/flash"[^>]*>([^>]*)<\/a>/is';
         $newtext = preg_replace_callback($oldsearch, 'filter_kaltura_callback', $newtext);
-
+      
         // Search for newer versoin of Kaltura embedded anchor tag format.
         $kafuri = self::$kafuri;
         $kafuri = rtrim($kafuri, '/');
         $kafuri = str_replace(array('http://', 'https://', '.', '/'), array('https?://', 'https?://', '\.', '\/'), $kafuri);
-
+        //$search = $search = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafuri.')))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)\/uiconf_id\/([0-9]+)"[^>]*>([^>]*)<\/a>/is';
         $search = $search = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafuri.')))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
 
         if (!empty($CFG->filter_kaltura_uris)) {
@@ -151,20 +166,21 @@ class filter_kaltura extends moodle_text_filter {
             $search .= '))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
         }
 
+        
         $newtext = preg_replace_callback($search, 'filter_kaltura_callback', $newtext);
-		
+		//echo($newtext);
 		$kafprev = 'http://regina-moodle-prod.kaf.ca.kaltura.com';
         $kafprev = str_replace(array('http://', 'https://', '.', '/'), array('https?://', 'https?://', '\.', '\/'), $kafprev);
 
         $searchagn = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafprev.')))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
         $newtext = preg_replace_callback($searchagn, 'filter_kaltura_callback', $newtext);
-		
+		//print_r($newtext);
         if (empty($newtext) || $newtext === $text) {
             // Error or not filtered.
             unset($newtext);
             return $text;
         }
-
+      
         return $newtext;
     }
 }
@@ -175,10 +191,15 @@ class filter_kaltura extends moodle_text_filter {
  * @return string Kaltura embed video markup.
  */
 function filter_kaltura_callback($link) {
+   
     $width = filter_kaltura::$defaultwidth;
     $height = filter_kaltura::$defaultheight;
     $source = '';
-
+    //print_r($link[7]);
+    $newPlayerSkinNumber ="23448579";
+    $oldPlayerSkin = "23448540";
+    // Update the 7th element (index 6) of the array
+    
     // Convert KAF URI anchor tags into iframe markup.
     $count = count($link);
     if ($count > 7) {
@@ -191,17 +212,20 @@ function filter_kaltura_callback($link) {
         if (4 != count($properties)) {
             return $link[0];
         }
-
-        $source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3];
+// Modify the source to include the player skin.
+//$source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3] . 'playerSkin/' . $newPlayerSkinNumber;
+       $source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3];
+      $source = str_replace($oldPlayerSkin, $newPlayerSkinNumber, $source);
     }
-    $newplayer ="23448579";
-    echo($newplayer);
-    echo($link[1]);
+   
+    //echo($newplayer);
+    //echo($link[3]);
     // Convert v3 anchor tags into iframe markup.
     if (7 == count($link) && $link[1] == filter_kaltura::$apiurl) {
         $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
-        $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$newplayer;
+        $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$newPlayerSkinNumber;
     }
+    //echo($source);
 
     $params = array(
         'courseid' => filter_kaltura::$pagecontext->instanceid,
@@ -227,6 +251,6 @@ function filter_kaltura_callback($link) {
     $iframeContainer = html_writer::tag('div', $iframe, array(
         'class' => 'kaltura-player-container'
     ));
-
+       // echo($iframeContainer);
     return $iframeContainer;
 }
