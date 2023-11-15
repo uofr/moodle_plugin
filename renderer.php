@@ -60,7 +60,8 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
             'source' => $kalvidres->source
         );
         $url = new moodle_url('/mod/kalvidres/lti_launch.php', $params);
-
+        print_r($kalvidres);
+        print_r($url);
         $attr = array(
             'id' => 'contentframe',
             'class' => 'kaltura-player-iframe',
