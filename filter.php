@@ -104,11 +104,51 @@ class filter_kaltura extends moodle_text_filter {
 
             $DB->execute($sql);
 
-           $pattern = '/(uiConfId\/)\d+/';
-
-           $newUiConfId = '23448579';
-           $text = preg_replace($pattern, '${1}' . $newUiConfId, $text);
-
+            $pattern = '/(uiConfId\/)\d+/';
+            $defaultWidth = '95%';
+            $defaultHeight = '474';
+            // Check if uiConfId is found and not empty in the text
+            preg_match('/uiConfId\/(\d+)/', $text, $matches);
+            
+            // Check if uiConfId is not empty
+            if (!empty($matches[1])) {
+                // Add a class to the iframe tag
+                $text = preg_replace_callback(
+                    '/<iframe/',
+                    function ($matches) {
+                         return '<div class="kaltura-player-container d-flex justify-content-center">' .$matches[0];
+                    },
+                    $text
+                    
+                 );
+                $newUiConfId = '23448579';
+            
+                $text = preg_replace($pattern, '${1}' . $newUiConfId, $text);
+            
+                $text = preg_replace_callback(
+                    '/(width)="(\d+)"/',
+                    function ($matches) use ($defaultWidth) {
+                        $width = $matches[2];
+                        return ($width != $defaultWidth) ? $matches[1] . '="' . $defaultWidth . '"' : $matches[0];
+                    },
+                    $text
+                );
+            
+                $text = preg_replace_callback(
+                    '/(height)="(\d+)"/',
+                    function ($matches) use ($defaultHeight) {
+                        $height = $matches[2];
+                        return ($height < $defaultHeight) ? $matches[1] . '="' . $defaultHeight . '"' : $matches[0];
+                    },
+                    $text
+                );
+            
+                
+        
+            }
+           // Add width and height attributes
+           $text = preg_replace('/(<iframe[^>]+?)>/', '${1} width="' . $newWidth . '" height="' . $newHeight . '">', $text);
+           
             if (empty($CFG->filter_kaltura_enable)) {
                 return $text;
             }
@@ -192,11 +232,10 @@ function filter_kaltura_callback($link) {
     $width = filter_kaltura::$defaultwidth;
     $height = filter_kaltura::$defaultheight;
     $source = '';
-    //print_r($link[7]);
+   
     $newPlayerSkinNumber ="23448579";
     $oldPlayerSkin = "23448540";
-    // Update the 7th element (index 6) of the array
-    
+      
     // Convert KAF URI anchor tags into iframe markup.
     $count = count($link);
     if ($count > 7) {
@@ -209,14 +248,13 @@ function filter_kaltura_callback($link) {
         if (4 != count($properties)) {
             return $link[0];
         }
-// Modify the source to include the player skin.
-//$source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3] . 'playerSkin/' . $newPlayerSkinNumber;
+    // Modify the source to include the player skin.
+    //$source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3] . 'playerSkin/' . $newPlayerSkinNumber;
        $source = filter_kaltura::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3];
       $source = str_replace($oldPlayerSkin, $newPlayerSkinNumber, $source);
     }
    
-    //echo($newplayer);
-    //echo($link[3]);
+    
     // Convert v3 anchor tags into iframe markup.
     if (7 == count($link) && $link[1] == filter_kaltura::$apiurl) {
         $source = filter_kaltura::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
@@ -232,13 +270,22 @@ function filter_kaltura_callback($link) {
         'source' => $source
 
     );
+    // Default width and height
+        $defaultWidth = '100%';
+        $defaultHeight = 474;
+
+        // Check if provided width and height are less than default
+        if ($height < $defaultHeight) {
+            $width = $defaultWidth;
+            $height = $defaultHeight;
+        }
 
     $url = new moodle_url('/filter/kaltura/lti_launch.php', $params);
 
     $iframe = html_writer::tag('iframe', '', array(
         'width' => $width,
         'height' => $height,
-        'class' => 'kaltura-player-iframe',
+        'class' => 'kaltura-player-iframe d-flex justify-content-center',
         'allowfullscreen' => 'true',
         'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;',
         'src' => $url->out(false),
@@ -246,7 +293,7 @@ function filter_kaltura_callback($link) {
     ));
 
     $iframeContainer = html_writer::tag('div', $iframe, array(
-        'class' => 'kaltura-player-container'
+        'class' => 'kaltura-player-container d-flex justify-content-center'
     ));
        // echo($iframeContainer);
     return $iframeContainer;
