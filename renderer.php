@@ -1015,7 +1015,13 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         // If the submission object contains a source URL then display the video as part of an LTI launch.
         if (!empty($submission->source)) {
             $attr['style'] = 'display: none';
+            $newPlayerSkin = '23448579';
+            $oldPlayerSkin = '23448540';
 
+            // Accessing the 'source' attribute and replacing the playerSkin number
+            if (isset($submission->source)) {
+                $submission->source = str_replace($oldPlayerSkin, $newPlayerSkin, $submissions->source);
+            }
             $params = array(
                 'courseid' => $courseid,
                 'height' => $submission->height,
