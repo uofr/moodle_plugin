@@ -59,7 +59,7 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
         if (isset($kalvidres->source)) {
             $kalvidres->source = str_replace($oldPlayerSkin, $newPlayerSkin, $kalvidres->source);
         }
-                $params = array(
+        $params = array(
             'courseid' => $courseid,
             'height' => $kalvidres->height,
             'width' => $kalvidres->width,
@@ -67,13 +67,12 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
             'source' => $kalvidres->source
         );
         $url = new moodle_url('/mod/kalvidres/lti_launch.php', $params);
-        print_r($kalvidres);
-        print_r($url);
+       
         $attr = array(
             'id' => 'contentframe',
             'class' => 'kaltura-player-iframe',
             'height' => '100%',
-            'width' => $kalvidres->width,
+            'width' => '815',
             'src' => $url->out(false),
             'allowfullscreen' => 'true',
             'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;',
@@ -81,7 +80,7 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
 
         $iframe = html_writer::tag('iframe', '', $attr);
         $iframeContainer = html_writer::tag('div', $iframe, array(
-            'class' => 'kaltura-player-container'
+            'class' => 'kaltura-player-container d-flex justify-content-center'
         ));
 
         return $iframeContainer;
