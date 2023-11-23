@@ -67,14 +67,14 @@ $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
-
+if ($CFG->branch < 400) {
 $description = format_module_intro('kalvidres', $kalvidres, $cm->id);
 if (!empty($description)) {
     echo $OUTPUT->box_start('generalbox');
     echo $description;
     echo $OUTPUT->box_end();
 }
-
+}
 $renderer = $PAGE->get_renderer('mod_kalvidres');
 
 // Require a YUI module to make the object tag be as large as possible.
@@ -82,8 +82,8 @@ $params = array(
     'bodyclass' => $pageclass,
     'lastheight' => null,
     'padding' => 15,
-    'width' => $kalvidres->width,
-    'height' => $kalvidres->height
+   // 'width' => 830,
+   // 'height' => 550
 );
 $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));
