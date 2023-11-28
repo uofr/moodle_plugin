@@ -541,7 +541,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $html .= html_writer::start_tag('center', ['class' => 'm-t-2 m-b-1']);
 
         $attr = array(
-            'class' => 'btn btn-primary mr-2',
+            'class' => 'btn btn-primary m-1',
             'type' => 'button',
             'id' => 'id_add_video',
             'name' => 'add_video',
@@ -555,7 +555,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', $attr);
 
         $attr = array(
-            'class' => 'btn btn-secondary',
+            'class' => 'btn btn-secondary m-1',
             'type' => 'submit',
             'name' => 'submit_video',
             'id' => 'submit_video',
@@ -626,7 +626,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         // Add submit and review buttons.
         $attr = array(
-            'class' => 'btn btn-primary mr-2',
+            'class' => 'btn btn-primary m-1',
             'type' => 'button',
             'name' => 'add_video',
             'id' => 'id_add_video',
@@ -640,7 +640,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', $attr);
 
         $attr = array(
-            'class' => 'btn btn-secondary',
+            'class' => 'btn btn-secondary m-1',
             'type' => 'submit',
             'id'   => 'submit_video',
             'name' => 'submit_video',
@@ -689,11 +689,11 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                      'value' => $cm->id);
         $html .= html_writer::empty_tag('input', $attr);
 
-        $attr = array('class' => 'btn btn-secondary',
+        $attr = array('class' => 'btn btn-secondary  m-1 ',
                      'type' => 'submit',
                      'name' => 'grade_submissions',
-                     'value' => get_string('gradesubmission', 'kalvidassign'),
-                     'class' => 'btn btn-secondary');
+                     'value' => get_string('gradesubmission', 'kalvidassign'));
+                   // 'class' => 'btn btn-secondary');
 
         $html .= html_writer::empty_tag('input', $attr);
 
@@ -1011,7 +1011,13 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             'alt' => $alt,
             'title' => $title
         );
+        $newPlayerSkin = '23448579';
+        $oldPlayerSkin = '23448540';
 
+        // Accessing the 'source' attribute and replacing the playerSkin number
+        if (isset($submission->source)) {
+            $submission->source = str_replace($oldPlayerSkin, $newPlayerSkin, $submission->source);
+        }
         // If the submission object contains a source URL then display the video as part of an LTI launch.
         if (!empty($submission->source)) {
             $attr['style'] = 'display: none';
@@ -1045,7 +1051,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         $iframe = html_writer::tag('iframe', '', $params);
         $iframeContainer = html_writer::tag('div', $iframe, array(
-            'class' => 'kaltura-player-container'
+            'class' => 'kaltura-player-container m-2'
         ));
 
         $output .= $iframeContainer;
