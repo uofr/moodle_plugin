@@ -62,6 +62,20 @@ $PAGE->requires->css('/mod/kalvidassign/styles.css');
 $PAGE->requires->css('/local/kaltura/styles.css');
 echo $OUTPUT->header();
 
+if (!$kalvidassignobj = $DB->get_record('kalvidassign', array('id' => $cm->instance))) {
+    print_error('invalidid', 'kalvidassign');
+}
+
+/**
+ * Verify whether a student is permitted to resubmit their video assignment through the alternate uploader option.
+ */
+$submissionParams = array('vidassignid' => $kalvidassignobj->id, 'userid' => $USER->id);
+$submission = $DB->get_record('kalvidassign_submission', $submissionParams);
+$isResubmit = !empty($submission->entry_id) || !empty($submission->timecreated);
+$isExpired = kalvidassign_assignemnt_submission_expired($kalvidassignobj);
+$isReplaceMediaDisabled = $isExpired || !$kalvidassignobj->resubmit;
+
+
 $renderer = $PAGE->get_renderer('mod_kalvidassign');
 
 echo $OUTPUT->heading($kalvidassign->name);
@@ -133,6 +147,12 @@ if(isset($submission->width) && isset($submission->height))
     $params['height'] = $submission->height;
 }
 
+if ($kalvidassign->resubmit !== 0) {
+    $allowvideoreplacement = 1;
+}else {
+    $allowvideoreplacement = 0;
+}
+
 $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 $PAGE->requires->string_for_js('replacevideo', 'kalvidassign');
 
@@ -164,10 +184,20 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
                    <strong> Note:</strong> Upon completion of the media upload, kindly click the 'Submit media' button to submit your media for the respective assignment.
                     </p>
                     <p>Should you encounter any difficulties in uploading your media, please do not hesitate to contact us at <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
-                        
-                    <button id="uploadbtn" type="button" class="btn btn-primary openBtn" >
-                    Upload
-                    </button>
+                       <?php
+                   
+                       if ($isResubmit && $isReplaceMediaDisabled && $kalvidassign->resubmit == 0) {
+                        echo get_string('notallowedtoreplacemedia', 'mod_kalvidassign');
+                       
+                    }else {
+                        ?> 
+                        <button id="uploadbtn" type="button" class="btn btn-primary openBtn" >
+                        Upload
+                        </button>
+                        <?php
+
+                    }
+                        ?>
                     </div>
                 </div>
                 
@@ -191,20 +221,7 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
         $("#staticBackdrop").modal("show");
        
         });
-        // Get a reference to the button element
-         const buttonRm = document.getElementById('id_add_video');
-          const uploadbutton = document.getElementById('uploadbtn');
-    
-          // Check if student can resubmit another video
-          if (buttonRm.disabled) {
-            uploadbutton.disabled = true;
-            uploadbutton.style.cursor = "not-allowed";
-          } else {
-            uploadbutton.disabled = false;
-          }
-      
-      
-            
+
             // Get the element you want to change the cursor for
             var elementAu = document.getElementById("alternateH");
 
