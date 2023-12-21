@@ -70,7 +70,7 @@ echo $OUTPUT->box_start('generalbox');
 
 echo $renderer->display_mod_info($kalvidassign, $context);
 
-echo format_module_intro('kalvidassign', $kalvidassign, $cm->id);
+//echo format_module_intro('kalvidassign', $kalvidassign, $cm->id);
 echo $OUTPUT->box_end();
 
 $disabled = false;
