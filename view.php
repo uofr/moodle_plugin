@@ -72,7 +72,7 @@ $renderer = $PAGE->get_renderer('mod_kalvidpres');
 
 echo $OUTPUT->box_start('generalbox');
 
-echo format_module_intro('kalvidpres', $kalvidpres, $cm->id);
+//echo format_module_intro('kalvidpres', $kalvidpres, $cm->id);
 
 echo $OUTPUT->box_end();
 
