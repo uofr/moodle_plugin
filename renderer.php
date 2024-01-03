@@ -1011,13 +1011,17 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             'alt' => $alt,
             'title' => $title
         );
-        $newPlayerSkin = '23448579';
-        $oldPlayerSkin = '23448540';
+        
+		// Suppress until we update players
+		//$newPlayerSkin = '23448579';
+        //$oldPlayerSkin = '23448540';
 
         // Accessing the 'source' attribute and replacing the playerSkin number
-        if (isset($submission->source)) {
+        /*
+		if (isset($submission->source)) {
             $submission->source = str_replace($oldPlayerSkin, $newPlayerSkin, $submission->source);
         }
+		*/
         // If the submission object contains a source URL then display the video as part of an LTI launch.
         if (!empty($submission->source)) {
             $attr['style'] = 'display: none';
