@@ -102,7 +102,7 @@ logVisit($action, $visitLogFile);
 //$users_info = array_values($list_users_response->users);
 
 //using zoom plugin function to match the user
-$service = new mod_zoom_webservice();
+$service = zoom_webservice();
 $user = $USER;
 $get_usersInfo = zoom_get_user_zoomemail($user,$service);
 $visited = isset($_SESSION['visited']);
@@ -357,7 +357,7 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
   $period = new dateperiod(new datetime($_POST['datefrom']), new dateinterval('P1M'), (new datetime($_POST['dateto']))->modify('1 month'));
   
 $count =0;
-$get_recording_service = new mod_zoom_webservice();
+$get_recording_service = zoom_webservice();
 $datefrom = $_POST['datefrom'];
 
 foreach ($period as $xcount => $dateval) {
@@ -385,7 +385,7 @@ foreach ($period as $xcount => $dateval) {
                 <?php
               
               foreach ($recordingFiles as $recfiles) {
-                $get_meetingRecording_service = new mod_zoom_webservice();
+                $get_meetingRecording_service = zoom_webservice();
                           $sett = $recfiles->meeting_id;
                          // $get_meetingRecording_service->get_user_meeting_recording($sett);
                           $_SESSION['trash_mid'] = $recfiles->meeting_id;
