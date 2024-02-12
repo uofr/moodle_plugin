@@ -152,30 +152,6 @@ class filter_kaltura extends moodle_text_filter {
         }
 
         $newtext = preg_replace_callback($search, 'filter_kaltura_callback', $newtext);
-
-        if (!empty($CFG->filter_kaltura_uris)) {
-            $altkafuriconfig = $CFG->filter_kaltura_uris;
-            $altkafuris = explode(PHP_EOL, $altkafuriconfig);
-
-            $search = $search = '/<a\s[^>]*href="(((https?:\/\/'.KALTURA_URI_TOKEN.')|('.$kafuri.')';
-
-            foreach ($altkafuris as $altkafuri) {
-                $altkafuri = rtrim($altkafuri);
-                if ($altkafuri != '') {
-                    // If a https url is needed for kaf_uri it should be entered into the kaf_uri setting as https://.
-                    if (!preg_match('#^https?://#', $altkafuri)) {
-                        $altkafuri = 'http://' . $altkafuri;
-                    }
-
-                    $altkafuri = str_replace(array('http://', 'https://', '.', '/'), array('https?://', 'https?://', '\.', '\/'), $altkafuri);
-                    $search .= '|('.$altkafuri.')';
-                }
-            }
-
-            $search .= '))\/browseandembed\/index\/media\/entryid\/([\d]+_[a-z0-9]+)(\/([a-zA-Z0-9]+\/[a-zA-Z0-9]+\/)*)"[^>]*>([^>]*)<\/a>/is';
-        }
-
-        $newtext = preg_replace_callback($search, 'filter_kaltura_callback', $newtext);
 		
 		$kafprev = 'http://regina-moodle-prod.kaf.ca.kaltura.com';
         $kafprev = str_replace(array('http://', 'https://', '.', '/'), array('https?://', 'https?://', '\.', '\/'), $kafprev);
