@@ -145,7 +145,9 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
                 <div class="resumable-error">
                   <p>Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</p>
                 </div>
-
+                <div class="extension-error">
+                 
+                </div>
 	        
                 <div class="form-group valid-row">
                   <div class="resumable-progress">
@@ -432,10 +434,35 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
         // Handle file add event
         r.on('fileAdded', function(file){
+          $('.extension-error').hide();
           var chunkSize = parseFloat(getInputValue("inputChunkSize"));
           if (chunkSize === -1) {
             chunkSize = VERY_BIG_CHUNK;
           }
+              // Get the file extension
+        var fileExtension = file.fileName.split('.').pop().toLowerCase();
+
+        // Check if the file extension is pptx or pdf
+        if (fileExtension === 'pptx' || fileExtension === 'pdf') {
+            // If it's pptx or pdf, prevent the upload
+            var errorMessage = file.fileName + " is not in a valid format. Only common video, audio, and image formats in all resolutions are accepted.";
+            // Display the error message in an HTML element
+            var errorMessage = '<div class="alert alert-danger" role="alert">' + errorMessage + '</div>';
+            // Reset upload token
+            uploadToken[file.uniqueIdentifier] = null;
+
+            $('.extension-error').show();
+            $('.extension-error').html(errorMessage);
+            r.files = [];
+            
+            // Reset the file input field
+            $('.resumable-browse input[type=file]').val('');
+            
+            console.log("Sorry, uploading .pptx and .pdf files is not allowed.");
+          
+            return;
+        }
+
           r.opts.chunkSize = chunkSize*1024;
           r.opts.simultaneousUploads = parseInt(getInputValue("inputSimUploads"));
           file.bootstrap();
@@ -480,6 +507,7 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
         r.on('pause', function(){
           // Show resume, hide pause
+          
           $('.resumable-progress .progress-resume-link').show();
           $('.resumable-progress .progress-pause-link').hide();
          const action ="The user upload has been <strong>paused</strong>";
