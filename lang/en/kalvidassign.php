@@ -55,6 +55,7 @@ $string['emptyentryid'] = 'Video assignment was not submitted correctly.  Please
 $string['deleteallsubmissions'] = 'Delete all video submissions';
 $string['fullname'] = 'Name';
 $string['grade'] = 'Grade';
+$string['update'] = 'Update Grade';
 $string['gallery'] = 'Student Submission Gallery';
 $string['submissioncomment'] = 'Comment';
 $string['timemodified'] = 'Last modified (Submission)';

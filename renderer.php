@@ -363,7 +363,7 @@ class submissions_table extends table_sql {
 
         if ($data->timemarked > 0) {
             $class = 's1';
-            $buttontext = get_string('update');
+            $buttontext = get_string('update', 'kalvidassign');
         } else {
             $class = 's0';
             $buttontext  = get_string('grade', 'kalvidassign');
@@ -1155,7 +1155,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $strsectionname  = $indexsummary->courseformatname;
         $strduedate = get_string('duedate', 'kalvidassign');
         $strsubmission = get_string('submission', 'kalvidassign');
-        $strgrade = get_string('grade');
+        $strgrade = get_string('grade', 'kalvidassign');
 
         $table = new html_table();
         if ($indexsummary->usesections) {
