@@ -71,6 +71,7 @@ class kalvidassign_singlesubmission_form extends moodleform {
                 'width' => $submission->width,
                 'allowfullscreen' => 'true',
                 'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *; display-capture *;',
+                'frameBorder' => 0,
             );
             $mform->addElement('html', html_writer::tag('iframe', '', $attr));
         }
