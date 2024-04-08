@@ -277,6 +277,7 @@ function kalvidassign_supports($feature) {
             break;
         case FEATURE_MOD_PURPOSE:
             return MOD_PURPOSE_ASSESSMENT;
+            break;
         default:
             return null;
             break;
