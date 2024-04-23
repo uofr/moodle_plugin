@@ -201,6 +201,11 @@ function filter_kaltura_callback($link) {
         $source .= filter_kaltura::$defaultwidth.'x'.filter_kaltura::$defaultheight.'/playerSkin/'.$link[3];
     }
 
+    if (strpos($source, 'playerSkin') !== false) {
+        $newPlayerSkin = '23448579';
+        $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+    }
+
     $params = array(
         'courseid' => filter_kaltura::$pagecontext->instanceid,
         'height' => $height,
