@@ -52,6 +52,11 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
      * @return string HTML markup.
      */
     public function display_iframe($kalvidres, $courseid) {
+        // Accessing the 'source' attribute and replacing the playerSkin number
+        if (isset($kalvidres->source) && strpos($kalvidres->source, 'playerSkin') !== false) {
+            $newPlayerSkin = '23448579';
+            $kalvidres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $kalvidres->source);
+        }
         $params = array(
             'courseid' => $courseid,
             'height' => $kalvidres->height,
