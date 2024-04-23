@@ -438,7 +438,11 @@ class submissions_table extends table_sql {
         }
         $realSource = local_kaltura_add_kaf_uri_token($source);
         $hashedSource = base64_encode($realSource);
-        
+
+        if (strpos($source, 'playerSkin') !== false) {
+            $newPlayerSkin = '23448579';
+            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+        }
         $target = new moodle_url('/mod/kalvidassign/lti_launch_grade.php?cmid='.$cmid.'&source='.urlencode($source).'&height='.$height.'&width='.$width.'&courseid='.$this->courseId);
         return $target;
     }
