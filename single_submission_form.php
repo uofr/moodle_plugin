@@ -206,12 +206,12 @@ class kalvidassign_singlesubmission_form extends moodleform {
 
         return $editoroptions;
     }
-    
+
     private function _generateLtiLaunchLink($source, $data)
     {
         $cmid = $this->_customdata->cm->id;
         $courseId = $this->_customdata->cm->course;
-        
+
         $width = 485;
         $height = 450;
         if(isset($data->height) && isset($data->width))
@@ -219,7 +219,11 @@ class kalvidassign_singlesubmission_form extends moodleform {
             $width = $data->width;
             $height = $data->height;
         }
-        
+
+        if (strpos($source, 'playerSkin') !== false) {
+            $newPlayerSkin = '23448579';
+            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+        }
         $target = new moodle_url('/mod/kalvidassign/lti_launch_grade.php?cmid='.$cmid.'&source='.urlencode($source).'&height='.$height.'&width='.$width.'&courseid='.$courseId);
         return $target;
     }
