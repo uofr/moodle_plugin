@@ -207,6 +207,10 @@ class mod_kalvidpres_mod_form extends moodleform_mod {
         $width = empty($this->current->width) ? '0px' : $this->current->width.'px';
         $height = empty($this->current->height) ? 'opx' : $this->current->height.'px';
         $source = empty($this->current->source) ? '' : $this->current->source;
+        if (strpos($source, 'playerSkin') !== false) {
+            $newPlayerSkin = '23448579';
+            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+        }
 
         $params =  array(
             'id' => 'contentframe',
