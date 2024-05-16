@@ -206,6 +206,10 @@ function filter_kaltura_callback($link) {
         $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
     }
 
+    if (strpos($source, 'thumbEmbed/1/') !== false) {
+        $source = preg_replace('/thumbEmbed\/1\//', '', $source);
+    }
+
     $params = array(
         'courseid' => filter_kaltura::$pagecontext->instanceid,
         'height' => $height,
