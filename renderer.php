@@ -443,6 +443,9 @@ class submissions_table extends table_sql {
             $newPlayerSkin = '23448579';
             $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
         }
+        if (strpos($source, 'thumbEmbed/1/') !== false) {
+            $source = preg_replace('/thumbEmbed\/1\//', '', $source);
+        }
         $target = new moodle_url('/mod/kalvidassign/lti_launch_grade.php?cmid='.$cmid.'&source='.urlencode($source).'&height='.$height.'&width='.$width.'&courseid='.$this->courseId);
         return $target;
     }
@@ -1020,6 +1023,9 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         if (isset($submission->source) && strpos($submission->source, 'playerSkin') !== false) {
             $newPlayerSkin = '23448579';
             $submission->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $submission->source);
+        }
+        if (strpos($submission->source, 'thumbEmbed/1/') !== false) {
+            $submission->source = preg_replace('/thumbEmbed\/1\//', '', $submission->source);
         }
         // If the submission object contains a source URL then display the video as part of an LTI launch.
         if (!empty($submission->source)) {

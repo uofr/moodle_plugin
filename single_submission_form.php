@@ -224,6 +224,9 @@ class kalvidassign_singlesubmission_form extends moodleform {
             $newPlayerSkin = '23448579';
             $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
         }
+        if (strpos($source, 'thumbEmbed/1/') !== false) {
+            $source = preg_replace('/thumbEmbed\/1\//', '', $source);
+        }
         $target = new moodle_url('/mod/kalvidassign/lti_launch_grade.php?cmid='.$cmid.'&source='.urlencode($source).'&height='.$height.'&width='.$width.'&courseid='.$courseId);
         return $target;
     }
