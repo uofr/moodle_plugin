@@ -40,6 +40,9 @@ class mod_kalvidpres_renderer extends plugin_renderer_base {
             $newPlayerSkin = '23448579';
             $kalvidpres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $kalvidpres->source);
         }
+        if (strpos($kalvidpres->source, 'thumbEmbed/1/') !== false) {
+            $kalvidpres->source = preg_replace('/thumbEmbed\/1\//', '', $kalvidpres->source);
+        }
         $params = array(
             'courseid' => $courseid,
             'height' => $kalvidpres->height,

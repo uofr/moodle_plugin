@@ -211,6 +211,9 @@ class mod_kalvidpres_mod_form extends moodleform_mod {
             $newPlayerSkin = '23448579';
             $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
         }
+        if (strpos($source, 'thumbEmbed/1/') !== false) {
+            $source = preg_replace('/thumbEmbed\/1\//', '', $source);
+        }
 
         $params =  array(
             'id' => 'contentframe',
