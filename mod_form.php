@@ -203,6 +203,10 @@ class mod_kalvidres_mod_form extends moodleform_mod {
             $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
         }
 
+        if (strpos($source, 'thumbEmbed/1/') !== false) {
+            $source = preg_replace('/thumbEmbed\/1\//', '', $source);
+        }
+
         $params = array(
             'id' => 'contentframe',
             'class' => 'kaltura-player-iframe',

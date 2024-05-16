@@ -57,6 +57,9 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
             $newPlayerSkin = '23448579';
             $kalvidres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $kalvidres->source);
         }
+        if (strpos($kalvidres->source, 'thumbEmbed/1/') !== false) {
+            $kalvidres->source = preg_replace('/thumbEmbed\/1\//', '', $kalvidres->source);
+        }
         $params = array(
             'courseid' => $courseid,
             'height' => $kalvidres->height,
