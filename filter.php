@@ -210,6 +210,12 @@ function filter_kaltura_callback($link) {
         $source = preg_replace('/thumbEmbed\/1\//', '', $source);
     }
 
+    // enforce 16:9 sizing, based on width, if height is larger than width
+	if ($height > $width) {
+        $newheight = ceil($width / 1.78);
+        $height = $newheight + 30;
+    }
+
     $params = array(
         'courseid' => filter_kaltura::$pagecontext->instanceid,
         'height' => $height,
