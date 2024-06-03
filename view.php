@@ -52,7 +52,7 @@ global $SESSION, $CFG;
 $PAGE->set_url('/mod/kalvidres/view.php', array('id' => $id));
 $PAGE->set_title(format_string($kalvidres->name));
 $PAGE->set_heading($course->fullname);
-$pageclass = 'kaltura-kalvidres-body';
+$pageclass = 'kaltura-kalvidres-body limitedwidth';
 $PAGE->add_body_class($pageclass);
 
 $context = $PAGE->context;
