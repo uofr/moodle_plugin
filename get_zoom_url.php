@@ -6,7 +6,6 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/zoom/lib.php');
 require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
-//require_once('locallib.php');
 
 
 # Globals
@@ -28,12 +27,11 @@ $site = get_site();
 
 $cmid = get_context_info_array($PAGE->context->id);
 list($context, $course, $cm) = get_context_info_array($PAGE->context->id);
-//print_r($cmid);
-//$coursemodule = get_coursemodule_from_instance($PAGE->context->id);
+
 require_login($course, true, $cm);
 
 if ( (!isloggedin()) ) {
-    print_error("You need to be logged in to access this page.");
+    echo("You need to be logged in to access this page.");
     exit;
 }
  ?>
@@ -97,14 +95,9 @@ $action = "Viewed the page";
 // Call the function to log the visit
 logVisit($action, $visitLogFile);
 
-//for alternative use-case zoom_data.php list of zoom users, if zoom plugin function is not available.
-//$list_users_response = json_decode($zoom_data);
-//$users_info = array_values($list_users_response->users);
-
 //using zoom plugin function to match the user
-$service = new mod_zoom_webservice();
 $user = $USER;
-$get_usersInfo = zoom_get_user_zoomemail($user,$service);
+$get_usersInfo = zoom_get_user_zoomemail($user);
 $visited = isset($_SESSION['visited']);
 ?>
 <!-- hidden fields for emails accounts--> 
@@ -357,13 +350,13 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
   $period = new dateperiod(new datetime($_POST['datefrom']), new dateinterval('P1M'), (new datetime($_POST['dateto']))->modify('1 month'));
   
 $count =0;
-$get_recording_service = new mod_zoom_webservice();
+
 $datefrom = $_POST['datefrom'];
 
 foreach ($period as $xcount => $dateval) {
   $countdate = $dateval->format("Y-m-d");
   $countdate = $dateval->format("Y-m-d");
-    $getrecordings = $get_recording_service->get_user_recording_list($zoomMails, $datefrom, $countdate);
+    $getrecordings = zoom_webservice()->get_user_recording_list($zoomMails, $datefrom, $countdate);
 
     $data = $getrecordings; // No need to decode if the response is already JSON
   if (is_array($data) || $data instanceof Traversable)  {
@@ -385,9 +378,8 @@ foreach ($period as $xcount => $dateval) {
                 <?php
               
               foreach ($recordingFiles as $recfiles) {
-                $get_meetingRecording_service = new mod_zoom_webservice();
+              
                           $sett = $recfiles->meeting_id;
-                         // $get_meetingRecording_service->get_user_meeting_recording($sett);
                           $_SESSION['trash_mid'] = $recfiles->meeting_id;
                       
 
