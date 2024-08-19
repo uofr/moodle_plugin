@@ -26,7 +26,7 @@ $PAGE->set_pagelayout('base');
 $PAGE->set_heading($site->fullname);
 $PAGE->navbar->ignore_active();
 
-$get_recordMeeting_service = new mod_zoom_webservice();
+$get_recordMeeting_service = new \mod_zoom\webservice();
 if (isset($_POST['name'])) {
 
 $meeting_id = $_POST['name'];

@@ -356,7 +356,7 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
   $period = new dateperiod(new datetime($_POST['datefrom']), new dateinterval('P1M'), (new datetime($_POST['dateto']))->modify('1 month'));
   
 $count =0;
-$get_recording_service = new mod_zoom_webservice();
+$get_recording_service = new \mod_zoom\webservice();
 $datefrom = $_POST['datefrom'];
 
 foreach ($period as $xcount => $dateval) {
@@ -384,7 +384,7 @@ foreach ($period as $xcount => $dateval) {
                 <?php
               
               foreach ($recordingFiles as $recfiles) {
-                $get_meetingRecording_service = new mod_zoom_webservice();
+                $get_meetingRecording_service = new \mod_zoom\webservice();
                           $sett = $recfiles->meeting_id;
                          // $get_meetingRecording_service->get_user_meeting_recording($sett);
                           $_SESSION['trash_mid'] = $recfiles->meeting_id;
