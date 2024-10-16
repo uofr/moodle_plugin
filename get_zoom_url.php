@@ -626,7 +626,8 @@ function attachGrantAccessEvent() {
                 $('.modal-title').text('Upload Status');
                 $('#add_data_Modal').modal('show'); // Show the modal
                 $("#close-x-button, #close-button").hide(); // Hide the close buttons
-                $("#upload-complete-message").hide();
+                // Clear the content of #upload-complete-message if it exists
+                 $("#upload-complete-message").html('');
                 $("#upload-results").html(''); // Clear any previous results
                 const genericMessage = "Starting upload process...";
                 displayMessage_generic(genericMessage, 'processing'); 
@@ -672,7 +673,7 @@ function attachGrantAccessEvent() {
         });
     
   function displayMessage_generic(message, type) {
-    console.log('Inside displayMessage_generic');
+    
     const iconSize = 'fa-lg'; 
     const icon = type === 'processing' 
         ? `<i class="fa fa-spinner fa-spin ${iconSize}"></i>` 
@@ -790,30 +791,30 @@ function displayMessage(message, type, entryId) {
     // Store the message ID in the upload status
     uploadStatus[entryId].messageId = messageId; // Save the message ID for future reference
 }
+
 //let allUploadsCompletedFlag = false;
 function checkAllUploadsComplete() {
     const allEntries = Object.keys(uploadStatus);
     const completedEntries = allEntries.filter(entryId => {
-        return !uploadStatus[entryId].isUploading; // Check for completed uploads
+        return !uploadStatus[entryId].isUploading; 
     });
 
     // Check if the number of completed entries matches the total number of entries
-    if (completedEntries.length === allEntries.length) 
+    if (completedEntries.length === allEntries.length) {
+    // Clear the content of #upload-complete-message if it exists
+    $("#upload-complete-message").html('');
 
-        // Clear the content of #upload-complete-message if it exists
-        $("#upload-complete-message").html('');
+    // Create the "Upload all completed" message
+    const messageHtml = `
+        <div class="alert alert-success mt-3" role="alert">
+            <strong>Upload all completed!</strong> All recordings have been successfully uploaded.
+        </div>
+    `;
 
-        // Create the "Upload all completed" message
-        const messageHtml = `
-            <div class="alert alert-success mt-3" role="alert">
-                <strong>Upload all completed!</strong> All recordings have been successfully uploaded.
-            </div>
-        `;
-
-        // Append the message to the modal's content area
-        $("#upload-complete-message").append(messageHtml).show();
+    // Append the message to the modal's content area
+    $("#upload-complete-message").append(messageHtml).show();
     }
-
+    
     // We need to revert back the settings of the Zoom recording
     grantedAccessIds.forEach(function(meetingId) {
         $.ajax({
