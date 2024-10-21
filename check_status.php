@@ -1,5 +1,6 @@
 <?php
 require_once('../../config.php');
+require_once($CFG->dirroot . '/local/kaltura/locallib.php'); 
 global $CFG, $USER, $DB, $PAGE;
 
 
@@ -11,27 +12,19 @@ if (!isloggedin()) {
     exit;
 }
 
-// Check if constants are already defined
-if (!defined('PARTNER_ID')) {
-    define("PARTNER_ID", "103");
-}
-if (!defined('ADMIN_SECRET')) {
-    define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
-}
-if (!defined('USER_SECRET')) {
-    define("USER_SECRET", "d8027e262988b996b7ed8b3eacc23295");
-}
+$partnerId = local_kaltura_get_config()->partner_id;
+$adminSecret = local_kaltura_get_config()->adminsecret;
 
 require_once "../kaltura/API/KalturaClient.php";
 
 // Kaltura session setup
 $username = $USER->username;
-$kconf = new KalturaConfiguration(PARTNER_ID);
+$kconf = new KalturaConfiguration($partnerId);
 $kconf->serviceUrl = "https://api.ca.kaltura.com";
 $kclient = new KalturaClient($kconf);
 
 try {
-    $ksession = $kclient->session->start(ADMIN_SECRET, $username, KalturaSessionType::ADMIN, PARTNER_ID, null, 'disableentitlement');
+    $ksession = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
     $kclient->setKs($ksession);
 } catch (Exception $e) {
     error_log("Kaltura session could not be established: " . $e->getMessage());

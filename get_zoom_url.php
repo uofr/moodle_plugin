@@ -714,7 +714,6 @@ function startPolling(entryId, videoTitle) {
                 const data = JSON.parse(response);
                 console.log('Polling data:', data);
 
-                // Inside your polling function
                 if (data.status === 'success') {
                     let status = data.results[entryId];
                       let message = '';
