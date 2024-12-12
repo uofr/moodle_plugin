@@ -84,7 +84,17 @@ echo $OUTPUT->header();
 
         }
         ?>
-     
+     <?php
+              $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
+              if($hasAdminRole){
+                ?>
+              <li class="nav-item " forceintomoremenu ="true">
+              <a class="nav-link nav_border_bottom" target="contentframe" href="migrate_kaltura.php">Migrate Kaltura Videos</a>
+              </li>
+          <?php
+
+        }
+        ?>
       
       <li class="nav-item dropdown moremen">
         <a class="nav-link dropdown-toggle nav_border_bottom" data-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
