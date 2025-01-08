@@ -2,9 +2,9 @@
 
 
 # Moodle Includes
-require_once "bootstrap5.php";
 require_once('../../config.php');
-require_once($CFG->dirroot . '/local/kaltura/locallib.php');
+require_once($CFG->dirroot . '/local/kaltura/locallib.php'); 
+require_once "bootstrap5.php";
 //require_once('locallib.php');
 
 # Globals
@@ -217,8 +217,8 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
                 <?php if (isset($_GET["debug"])&&$_GET["debug"]==1) { ?>
                   <p class="text-muted">Kaltura Service URL: <?php echo $kconf->serviceUrl ?><br />
-                Partner ID: <?php echo PARTNER_ID ?><br />
-                User: <?php echo $user ?><br />
+                Partner ID: <?php echo $partnerId ?><br />
+                User: <?php echo $username ?><br />
                 KS: <?php echo $ksession ?></p>
                 Category: <?php echo $category ?></p>
                 <?php } ?>
