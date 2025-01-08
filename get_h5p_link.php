@@ -170,7 +170,7 @@ $kclient->setKs($ksession);
               }else {
 
               $eid = $_POST['entryId']; //pass entry id coming from Input entryId
-              $kclient->setKS($ks);
+              $kclient->setKS($ksession);
               $filter = new KalturaAssetFilter();
               $pager = new KalturaFilterPager();
 
