@@ -170,12 +170,12 @@ $kclient->setKs($ksession);
               }else {
 
               $eid = $_POST['entryId']; //pass entry id coming from Input entryId
-              $client->setKS($ks);
+              $kclient->setKS($ks);
               $filter = new KalturaAssetFilter();
               $pager = new KalturaFilterPager();
 
               $filter->entryIdEqual = $eid; //entryId being pass to kaltura api call
-              $result = $client->flavorAsset->listAction($filter, $pager);
+              $result = $kclient->flavorAsset->listAction($filter, $pager);
                     if ($result->totalCount == 0) {
                       # code...
                       ?> 
