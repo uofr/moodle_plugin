@@ -4,6 +4,7 @@
 # Moodle Includes
 require_once "bootstrap5.php";
 require_once('../../config.php');
+//require_once($CFG->dirroot . '/local/kaltura/locallib.php'); 
 //require_once('locallib.php');
 
 # Globals
@@ -30,25 +31,21 @@ $PAGE->set_title("simple uploader");
 $PAGE->set_pagelayout('report');
 $PAGE->set_heading($site->fullname);
 //$PAGE->navbar->ignore_active();
-
-
-// Your Kaltura partner credentials
-define("PARTNER_ID", "103");
-define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
-define("USER_SECRET",  "d8027e262988b996b7ed8b3eacc23295");
+$partnerId = local_kaltura_get_config()->partner_id;
+$adminSecret = local_kaltura_get_config()->adminsecret;
 
 require_once "../kaltura/API/KalturaClient.php";
 
-$user = $username;  // If this user does not exist in your KMC, then it will be created.
-$kconf = new KalturaConfiguration(PARTNER_ID);
-// If you want to use the API against your self-hosted CE,
-// go to your KMC and look at Settings -> Integration Settings to find your partner credentials
-// and add them above. Then insert the domain name of your CE below.
-// $kconf->serviceUrl = "http://www.mySelfHostedCEsite.com/";
+$username = $USER->username;
+$kconf = new KalturaConfiguration($partnerId);
 $kconf->serviceUrl = "https://api.ca.kaltura.com";
 $kclient = new KalturaClient($kconf);
-$ksession = $kclient->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
 
+$ksession = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
+if (!$ksession) {
+    error_log("Failed to establish Kaltura session.");
+    die("Error establishing Kaltura session.");
+}
 if (!isset($ksession)) {
 	die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
 }
@@ -219,7 +216,7 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
                 <?php if (isset($_GET["debug"])&&$_GET["debug"]==1) { ?>
                   <p class="text-muted">Kaltura Service URL: <?php echo $kconf->serviceUrl ?><br />
-                Partner ID: <?php echo PARTNER_ID ?><br />
+                Partner ID: <?php echo $partnerId ?><br />
                 User: <?php echo $user ?><br />
                 KS: <?php echo $ksession ?></p>
                 Category: <?php echo $category ?></p>
@@ -228,7 +225,7 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
                 <input id="inputSimUploads" type="hidden" value="5"> 
                 <input class="form-control" id="serviceUrl" type="hidden" value="<?php echo $kconf->serviceUrl ?>" size="30">
                 <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $user ?>">
-                <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo PARTNER_ID ?>">
+                <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo $partnerId ?>">
                 <input class="form-control" id="inputKS" type="hidden" size="30" value="<?php echo $ksession ?>">
                 <input class="form-control" id="category" type="hidden" size="30" value="<?php echo $category ?>">
 	            </div>

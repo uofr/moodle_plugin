@@ -43,7 +43,7 @@ list($context, $course, $cm) = get_context_info_array($PAGE->context->id);
 require_login($course, true, $cm);
 
 if ( (!isloggedin()) ) {
-    print_error("You need to be logged in to access this page.");
+    echo'You need to be logged in to access this page.';
     exit;
 }
 
@@ -104,23 +104,21 @@ $action = $uploadClicked ? "Submitted a request to Kaltura to obtain the media f
 logVisit($action, $visitLogFile);
 
 
-define("PARTNER_ID", "103");
-define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
-define("USER_SECRET",  "f6c308cac9d01e68d8d8ef0d64911793");
+$partnerId = local_kaltura_get_config()->partner_id;
+$adminSecret = local_kaltura_get_config()->adminsecret;
 
 require_once "../kaltura/API/KalturaClient.php";
 
-$user = $username;
-$kconf = new KalturaConfiguration(PARTNER_ID);
-// If you want to use the API against your self-hosted CE,
-// go to your KMC and look at Settings -> Integration Settings to find your partner credentials
-// and add them above. Then insert the domain name of your CE below.
+$username = $USER->username;
+$kconf = new KalturaConfiguration($partnerId);
 $kconf->serviceUrl = "https://api.ca.kaltura.com";
-$client = new KalturaClient($kconf);
-//$ks = $client->session->start($secret, $userId, KalturaSessionType::ADMIN, $partnerId, 86400, 'disableentitlement');
+$kclient = new KalturaClient($kconf);
 
-$ks = $client->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
-
+$ks = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
+if (!$ks) {
+    error_log("Failed to establish Kaltura session.");
+    die("Error establishing Kaltura session.");
+}
 if (!isset($ks)) {
   die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
 }
@@ -178,6 +176,7 @@ if (!isset($ks)) {
 
               $filter->entryIdEqual = $eid; //entryId being pass to kaltura api call
               $result = $client->flavorAsset->listAction($filter, $pager);
+              var_dump($result);
                     if ($result->totalCount == 0) {
                       # code...
                       ?> 
@@ -223,7 +222,8 @@ if (!isset($ks)) {
                                                       }
                                                       
                                                       //create the flavor url link
-                                                      $flavorlink="https://vodcdn.ca.kaltura.com/p/103/sp/10300/serveFlavor/entryId/$eid/v/2/ev/3/flavorId/$entry->id/forceproxy/true/name/a.mp4";
+                                                      //https://vodcdn.ca.kaltura.com/p/103/sp/10300/serveFlavor/entryId/0_1yfbnnie/v/2/ev/6/flavorId/0_v45srvhm/fileName/202401021456100000.mp4_(Basic_Small_-_WEB_MBL_(H264_600)).mp4/forceproxy/true/name/a.mp4
+                                                      $flavorlink="https://vodcdn.ca.kaltura.com/p/103/sp/10300/serveFlavor/entryId/$eid/v/2/ev/6/flavorId/$entry->id/forceproxy/true/name/a.mp4";
 
                                                       if ($entry->isOriginal == 1 and $entry->flavorParamsId == 0) {
                                                             $flavorname = "Source";
