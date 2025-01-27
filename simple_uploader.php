@@ -35,27 +35,24 @@ if ( (!isloggedin()) ) {
     exit;
 }
 
+require_once($CFG->dirroot . '/local/kaltura/API/KalturaClient.php');
 
 
-// Upload a file to the KMC
+$partnerId = local_kaltura_get_config()->partner_id;
+$adminSecret = local_kaltura_get_config()->adminsecret;
 
-// Your Kaltura partner credentials
-define("PARTNER_ID", "103");
-define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
-define("USER_SECRET",  "d8027e262988b996b7ed8b3eacc23295");
 
-require_once "../../local/kaltura/API/KalturaClient.php"; //local/kaltura/API/KalturaClient.php
 
-$user = $username;  // If this user does not exist in your KMC, then it will be created.
-$kconf = new KalturaConfiguration(PARTNER_ID);
-// If you want to use the API against your self-hosted CE,
-// go to your KMC and look at Settings -> Integration Settings to find your partner credentials
-// and add them above. Then insert the domain name of your CE below.
-// $kconf->serviceUrl = "http://www.mySelfHostedCEsite.com/";
+$username = $USER->username;
+$kconf = new KalturaConfiguration($partnerId);
 $kconf->serviceUrl = "https://api.ca.kaltura.com";
 $kclient = new KalturaClient($kconf);
-$ksession = $kclient->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
 
+$ksession = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
+if (!$ksession) {
+    error_log("Failed to establish Kaltura session.");
+    die("Error establishing Kaltura session.");
+}
 if (!isset($ksession)) {
 	die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
 }
@@ -116,10 +113,10 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	          <div class="col">
               <fieldset>
               
-                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 3 mbps.</p>
-                <!--<p>Remember to click Embed button to add your media to the assignment, then click Submit media button to submit</p>
-                <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p> -->
-                  <script >
+                    <p>This alternate uploader is intended to improve performance for users with upload speeds less than 3 mbps.</p>
+                    <!--<p>Remember to click Embed button to add your media to the assignment, then click Submit media button to submit</p>
+                    <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p> -->
+                      <script >
                     function setInputValue(id, value) {
                         document.getElementById(id).value=value;
                     }
@@ -127,24 +124,30 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                         return document.getElementById(id).value;
                     }
                     var VERY_BIG_CHUNK = Math.pow(2,100);
-                </script>
+                 </script>
 
-                <div class="resumable-error">
-                  <p>Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</p>
-                </div>
+                  <div class="resumable-error">
+                    <p>Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</p>
+                  </div>
 
 	        
-                 <div class="form-group">
+                  <div class="form-group">
                     <div class="resumable-progress">
                       <table>
                         <tr>
                           <td width="100%"><div class="progress-container"><div class="progress-bar"></div></div></td>
                           <td class="progress-text" nowrap="nowrap"></td>
                           <td class="progress-pause" nowrap="nowrap">
-                            <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><img src="simple/resume.png" title="Resume upload" /></a>
-                            <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><img src="simple/pause.png" title="Pause upload" /></a>
-                            <a href="#" onclick="r.cancel(); return(false);" class="progress-cancel-link"><img src="simple/cancel.png" title="Cancel upload" /></a>
-                          </td>
+                          <a href="#" onclick="toggleUpload(); return false;" class="progress-toggle-link">
+                            <img id="toggle-icon" src="simple/pause.png" title="Pause upload" />
+                          </a>
+                          <a href="#" onclick="handleCancel(); return false;" class="progress-cancel-link" data-dismiss="modal">
+                            Cancel
+                          </a>
+                        </td>
+
+
+
                         </tr>
                       </table>
                     </div>
@@ -153,13 +156,13 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
                     <div id="report" style="color: rgb(69, 145, 58);"></div>
 
-                        <ul class="resumable-list mt-2">
-                          <li class ="li-margin"><h4>Upload Log</h4></li>
-                        </ul>
-                 </div>  
+                        <div class="resumable-list mt-2">
+                          <span class ="li-margin"><h4>Upload Log</h4></span>
+                       </div>
+                  </div>  
                    
 
-                <div id ="upload-container" class="mb-5  drop_drag" >
+                 <div id ="upload-container" class="mb-5  drop_drag" >
                   <div  class="resumable-drop displayme" ondragenter="jQuery(this).addClass('resumable-dragover');" ondragend="jQuery(this).removeClass('resumable-dragover');" ondrop="jQuery(this).removeClass('resumable-dragover');">
                       <div class="position-relative m-5 p-2">
                         <img class = "img-fluid" src="simple/upload_background.png" alt="Upload new media">
@@ -177,8 +180,6 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                 </div>
                 <div id="kplayer-container"> 
                 
-               <!-- <button id="load-button" type="button"  class="btn btn-primary mt-2">Refresh</button> -->
-
               
                 <video id ="videoload" width="320" height="240" controls autoplay style="display:none;">
                   <source id ="kplayer" src="">
@@ -189,12 +190,12 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                 <div id="loading-overlay" style="display: none;">
                 <div id="loading-spinner"></div>
                 <div id="loading-message">Please wait while we create a copy of your video submission...</div>
-              </div>
+                </div>
                 <div id ="loading"  style ="display:none;" >
                 <div  class="alert alert-success" id="assignment-name">
                 </div>
                 <div id="media-processing_image" class ="rounded">
-                <img class="rounded mx-auto d-block" src="https://vodcdn.ca.kaltura.com/5.108.602/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
+                <img class="rounded mx-auto d-block" src="https://cfvod.cap2.ovp.kaltura.com/5.132.4.480/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
                   </div>
                 <div>
                   <button id="embedmedia"  type="button" onclick="SubmitVideo()" class="btn btn-primary rounded mt-2">Submit media</button>
@@ -228,7 +229,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
                 <?php if (isset($_GET["debug"])&&$_GET["debug"]==1) { ?>
                   <p class="text-muted">Kaltura Service URL: <?php echo $kconf->serviceUrl ?><br />
-                Partner ID: <?php echo PARTNER_ID ?><br />
+                Partner ID: <?php echo $partnerId ?><br />
                 User: <?php echo $user ?><br />
                 KS: <?php echo $ksession ?></p>
                 Category: <?php echo $category ?></p>
@@ -237,7 +238,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
                 <input id="inputSimUploads" type="hidden" value="5"> 
                 <input class="form-control" id="serviceUrl" type="hidden" value="<?php echo $kconf->serviceUrl ?>" size="30">
                 <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $user ?>">
-                <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo PARTNER_ID ?>">
+                <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo $partnerId ?>">
                 <input class="form-control" id="inputKS" type="hidden" size="30" value="<?php echo $ksession ?>">
                 <input class="form-control" id="category" type="hidden" size="30" value="<?php echo $category ?>">
 	            </div>
@@ -260,7 +261,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
       var kalturaServerBase = null; 
 	    var uploadToken = new Array();
       var lastUploadToken = null;
-
+      let isPaused = true; // Initial state
                   
 	    // if you wish to report the stats to an SQLITE DB, set this to where you host process_upload_stats.php
       // you also need to create the SQLITE DB from the chunked_upload.sql schema and ensure the web server user has write permissions to it and the directory in which it resides	
@@ -283,7 +284,119 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             }
         });
       }   
-       
+
+
+          function handleCancel() {
+          // Cancel any ongoing upload (if r is defined)
+          if (typeof r !== "undefined") {
+              r.cancel();
+          }
+
+          // Reset progress bar and text
+          const progressBar = document.querySelector('.progress-bar');
+          const progressText = document.querySelector('.progress-text');
+          if (progressBar) progressBar.style.width = '0%';
+          if (progressText) progressText.innerHTML = '';
+
+          // Hide the upload progress container
+          const progressContainer = document.querySelector('.resumable-progress');
+          if (progressContainer) progressContainer.style.display = 'none';
+          const uploadSpeed = document.querySelector('.upload-speed');
+          if (uploadSpeed) uploadSpeed.style.display = 'none'; 
+          const  resumablelist = document.querySelector('.resumable-list');
+          if ( resumablelist)  resumablelist.style.display = 'none';
+
+          const toggleIcon = document.getElementById('toggle-icon');
+          toggleIcon.src = 'simple/pause.png'; // Change to pause icon
+          isPaused = true;
+          // Reset upload list
+          const uploadList = document.querySelector('.resumable-list');
+          if (uploadList) uploadList.innerHTML = '<li class="li-margin"><h4>Upload Log</h4></li>';
+
+          // Hide video preview and reset the source
+          const videoElement = document.getElementById('videoload');
+          if (videoElement) {
+              videoElement.style.display = 'none';
+              videoElement.querySelector('#kplayer').src = '';
+          }
+
+          // Hide loading spinner and success messages
+          const loadingOverlay = document.getElementById('loading-overlay');
+          if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+          const loading = document.getElementById('loading');
+          if (loading) loading.style.display = 'none';
+
+          const report = document.getElementById('report');
+          if (report) report.style.display = 'none';
+
+          // Show the upload prompt again
+          const uploadContainer = document.getElementById('upload-container');
+          if (uploadContainer) {
+              uploadContainer.style.display = 'block'; // Make upload prompt visible
+          }
+
+          // Optionally reset other fields (e.g., category, partnerId, etc.)
+          const fileInput = document.querySelector('.resumable-browse');
+          if (fileInput) {
+              fileInput.style.display = 'block'; // Show the file input button again
+          }
+
+          // Reset hidden fields if necessary
+          document.getElementById('category').value = '';
+          document.getElementById('partnerId').value = '';
+
+          // Log completion of the reset
+          console.log('Modal has been reset to initial state');
+      }
+
+
+        // Disable the buttons after upload completion
+        function disableUploadButtons() {
+            // Disable the toggle (pause/resume) button
+            const toggleButton = document.querySelector('.progress-toggle-link');
+            if (toggleButton) {
+                toggleButton.style.pointerEvents = 'none'; // Prevent clicks
+                toggleButton.style.opacity = '0.5'; // Dim the button
+            }
+
+            // Disable the cancel button
+            const cancelButton = document.querySelector('.progress-cancel-link');
+            if (cancelButton) {
+                cancelButton.style.pointerEvents = 'none'; // Prevent clicks
+                cancelButton.style.opacity = '0.5'; // Dim the button
+            }
+        }
+
+
+
+        function toggleUpload() {
+            if (typeof r === "undefined") return;
+
+            const toggleIcon = document.getElementById('toggle-icon');
+            if (!toggleIcon) return;
+
+            if (isPaused) {
+                // Pause the upload
+                r.pause();
+                isPaused = false;
+                toggleIcon.src = 'simple/resume.png'; // Change to resume icon
+                toggleIcon.title = 'Resume upload';
+                console.log('Upload paused.');
+                
+            } else {
+              // Start the upload
+              r.upload();
+                isPaused = true;
+                toggleIcon.src = 'simple/pause.png'; // Change to pause icon
+                toggleIcon.title = 'Pause upload';
+                console.log('Upload started.');
+              
+            }
+        }
+
+
+
       function kDoJSONRequest(server, ks, path, queryString, callback) {
             
 	      if (ks){
@@ -300,7 +413,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         };
         xhr.send();
       }
-        
+    
+
       function analyticsRequest(endpoint, query) {
         //do something with the upload stats for QoS
             
@@ -373,7 +487,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
 		      // Reflect that the file upload has completed
           if(is_success){ // if first upload was successfull
-            showLoadingOverlay();
+            
             var config = new KalturaConfiguration();
               config.serviceUrl = 'https://api.ca.kaltura.com';
               var client = new KalturaClient(config);
@@ -641,11 +755,15 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
         });
        
         r.on('fileSuccess', function(file,message){
+          
           var duration = (Date.now() - lastUploadStartTime)/1000;
           var mbSize = file.size/1024/1024;
           var speed = mbSize/duration;
-          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s');
-        //  $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('')               
+          $('.resumable-file-' + file.uniqueIdentifier + ' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(1) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: ' + speed.toFixed(1) + ' mb/s');
+   
+          // Disable buttons after completion
+          disableUploadButtons();
+                  
           // add upload to new media
           var report = {
                   user_id: kalturaUserId, 
@@ -661,7 +779,6 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
             };
             kAddUploadToNewMedia(kalturaServerBase, kalturaSessionKey, uploadToken[file.uniqueIdentifier], file.fileName, report);
          
-            //kUploadClone(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
         });
         r.on('fileError', function(file, message){
           // Reflect that the file upload has resulted in error
@@ -672,9 +789,14 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           // Handle progress for both the file and the overall upload
           $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
           $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
-			  
-			    // Write out upload speed
-			    //if (file.lengthComputable) {
+         
+          const overallProgress = Math.floor(r.progress() * 100);
+          $('.progress-bar').css({ width: overallProgress + '%' });
+          if (overallProgress >= 98) {
+              console.log('Upload is nearing completion!');
+              showLoadingOverlay();
+          }
+			   
 	        var duration = (Date.now() - lastUploadStartTime)/1000;
 	        var mbSize = file.size/1024/1024;
 	        var speed = mbSize/duration;
@@ -691,7 +813,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 					uploadedstr = stotal * sbytes / 1024 / 1024;
 			    lastNow = now;
 			    $('.upload-speed').text('' + duration.toFixed(1) + ' secs ' + uploadedstr.toFixed(1) + " MB (" + percent.toFixed(0) + "%) " + speed.toFixed(1) + " mb/s");
-					  //}
+				
         });
 
         r.on('cancel', function(){
