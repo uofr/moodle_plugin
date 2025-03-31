@@ -2,14 +2,8 @@
 
 
 # Moodle Includes
-<<<<<<< HEAD
 require_once "bootstrap5.php";
 require_once('../../config.php');
-=======
-require_once('../../config.php');
-require_once($CFG->dirroot . '/local/kaltura/locallib.php'); 
-require_once "bootstrap5.php";
->>>>>>> 653eb97ddc9227ff7a01016e81aa81324db515bd
 //require_once('locallib.php');
 
 # Globals
@@ -39,7 +33,6 @@ $PAGE->set_heading($site->fullname);
 
 
 // Your Kaltura partner credentials
-<<<<<<< HEAD
 define("PARTNER_ID", "103");
 define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
 define("USER_SECRET",  "d8027e262988b996b7ed8b3eacc23295");
@@ -60,25 +53,6 @@ if (!isset($ksession)) {
 	die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
 }
 
-=======
-$partnerId = local_kaltura_get_config()->partner_id;
-$adminSecret = local_kaltura_get_config()->adminsecret;
-
-require_once "../kaltura/API/KalturaClient.php";
-
-$kconf = new KalturaConfiguration($partnerId);
-
-$kconf->serviceUrl = "https://api.ca.kaltura.com";
-$kclient = new KalturaClient($kconf);
-
-$kafuri = local_kaltura_get_config()->partner_id;
-//error_log('Kaltura Configuration Data: ' . print_r($kafuri, true));
-$ksession = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
-if (!$ksession) {
-    error_log("Failed to establish Kaltura session.");
-    die("Error establishing Kaltura session.");
-}
->>>>>>> 653eb97ddc9227ff7a01016e81aa81324db515bd
 $kclient->setKs($ksession);
 
 //only add a the category if site is not UR Courses and is CCE Community
@@ -245,26 +219,16 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
                 <?php if (isset($_GET["debug"])&&$_GET["debug"]==1) { ?>
                   <p class="text-muted">Kaltura Service URL: <?php echo $kconf->serviceUrl ?><br />
-<<<<<<< HEAD
                 Partner ID: <?php echo PARTNER_ID ?><br />
                 User: <?php echo $user ?><br />
-=======
-                Partner ID: <?php echo $partnerId ?><br />
-                User: <?php echo $username ?><br />
->>>>>>> 653eb97ddc9227ff7a01016e81aa81324db515bd
                 KS: <?php echo $ksession ?></p>
                 Category: <?php echo $category ?></p>
                 <?php } ?>
 
                 <input id="inputSimUploads" type="hidden" value="5"> 
                 <input class="form-control" id="serviceUrl" type="hidden" value="<?php echo $kconf->serviceUrl ?>" size="30">
-<<<<<<< HEAD
                 <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $user ?>">
                 <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo PARTNER_ID ?>">
-=======
-                <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $username ?>">
-                <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo $partnerId ?>">
->>>>>>> 653eb97ddc9227ff7a01016e81aa81324db515bd
                 <input class="form-control" id="inputKS" type="hidden" size="30" value="<?php echo $ksession ?>">
                 <input class="form-control" id="category" type="hidden" size="30" value="<?php echo $category ?>">
 	            </div>
