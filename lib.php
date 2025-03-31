@@ -433,7 +433,6 @@ function kalvidassign_cron () {
 }
 
 /**
-<<<<<<< HEAD:lib.php
  * Function get media on id
  *
  * Uses Kaltura API to fetch media for display
@@ -513,7 +512,7 @@ function kalvidassign_comment_display($comments, $args) {
     return $comments;
 }
 
-=======
+ /**
  * Add a get_coursemodule_info function in case any assignment type wants to add 'extra' information
  * for the course (see resource).
  *
@@ -630,4 +629,3 @@ function mod_kalvidassign_core_calendar_get_event_action_string(string $eventtyp
         return get_string('requiresaction', 'calendar', $modulename);
     }
 }
->>>>>>> 9fa562c6597132bd163cf6a80f5a5b4d9b7c4128:mod/kalvidassign/lib.php
