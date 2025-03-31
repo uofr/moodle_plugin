@@ -51,11 +51,21 @@
   .clarete {
     vertical-align: unset;
   }
-
-  .accordionBdr {
-    border: 1px solid rgba(35, 65, 100, .1) !important;
-    background: #f7f7f7;;
+  .btn-primary {
+    color: #fff;
+    background-color: #004f2e;
+    border-color: #004f2e;
   }
+  .btn-primary:hover {
+  color: #fff;
+  background-color: #00331e;
+  border-color: #004025;
+}
+.btn-primary:disabled {
+  color: #fff;
+  background-color: #707377;
+  border-color: #5d5f62;
+}
   </style>
         <svg xmlns="http://www.w3.org/2000/svg" style="display: none;"> 
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
