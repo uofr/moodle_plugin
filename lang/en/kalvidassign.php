@@ -157,3 +157,8 @@ $string['allowlikes'] = 'Allow likes';
 $string['allowlikes_help'] = 'Allow users to \'like\' items in a gallery.';
 $string['enablegallery'] = 'Enable Student Gallery';
 $string['enablegallery_help'] = 'Student submissions will be entered into a gallery view for other students to see after they have submitted their assignments';
+
+$string['completionsubmit'] = 'Make a submission';
+$string['completiondetail:submit'] = 'Make a submission';
+$string['addsubmission'] = 'Add submission';
+$string['calendardue'] = '{$a} is due';

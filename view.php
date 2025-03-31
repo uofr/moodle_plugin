@@ -29,7 +29,7 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Retrieve module instance.
 if (empty($id)) {
-    print_error('invalidid', 'kalvidassign');
+    throw new \moodle_exception('invalidid', 'kalvidassign');
 }
 
 if (!empty($id)) {
@@ -63,7 +63,7 @@ $PAGE->requires->css('/local/kaltura/styles.css');
 echo $OUTPUT->header();
 
 if (!$kalvidassignobj = $DB->get_record('kalvidassign', array('id' => $cm->instance))) {
-    print_error('invalidid', 'kalvidassign');
+    throw new \moodle_exception('invalidid', 'kalvidassign');
 }
 
 /**
@@ -78,13 +78,10 @@ $isReplaceMediaDisabled = $isExpired || !$kalvidassignobj->resubmit;
 
 $renderer = $PAGE->get_renderer('mod_kalvidassign');
 
-echo $OUTPUT->heading($kalvidassign->name);
-
 echo $OUTPUT->box_start('generalbox');
 
 echo $renderer->display_mod_info($kalvidassign, $context);
 
-//echo format_module_intro('kalvidassign', $kalvidassign, $cm->id);
 echo $OUTPUT->box_end();
 
 $disabled = false;
