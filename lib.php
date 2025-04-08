@@ -28,11 +28,6 @@ if (!defined('MOODLE_INTERNAL')) {
 require_once($CFG->dirroot.'/calendar/lib.php');
 require_once($CFG->dirroot.'/local/kaltura/API/KalturaClient.php');
 
-// Your Kaltura partner credentials
-define("PARTNER_ID", "103");
-define("ADMIN_SECRET", "5f15c0b27473ecf4b56398db7b48eea9");
-define("USER_SECRET",  "d8027e262988b996b7ed8b3eacc23295");
-
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod_form.php) this function
@@ -439,14 +434,15 @@ function kalvidassign_cron () {
  * @return bool Returns media object
  */
 function kalvidassign_get_media ($entryid, $user) {
-    
-
-    $config = new KalturaConfiguration(PARTNER_ID);
+    $kalturaconfig = local_kaltura_get_config();
+    $partnerid = $kalturaconfig->partner_id;
+    $adminsecret = $kalturaconfig->adminsecret;
+    $config = new KalturaConfiguration($partnerid);
     $config->serviceUrl = "https://api.ca.kaltura.com";
 
 
     $client = new KalturaClient($config);
-    $ks = $client->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
+    $ks = $client->session->start($adminsecret, $user, KalturaSessionType::ADMIN, $partnerid);
     $client->setKS($ks);
 
     try {
