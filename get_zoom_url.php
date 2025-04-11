@@ -41,7 +41,7 @@ if ( (!isloggedin()) ) {
 <head> 
 <?php
 //check if dark mode is enabled and if so add the style sheet
-if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$USER->id, 'darkmode'=>1))) {
+if ($usedarkmode = get_user_preferences('theme_urcourses_default_darkmode', false)) {
   //changes url to opposite of whatever the toggle currently is to set dark mode in db under columns2.php
   $css = new moodle_url(('/theme/urcourses_default/style/darkmode.css'));
   echo '<link rel="stylesheet" type="text/css" href="'.$css.'">';
