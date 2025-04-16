@@ -29,8 +29,9 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Retrieve module instance.
 if (empty($id)) {
-    print_error('invalidid', 'kalvidassign');
+    throw new moodle_exception('invalidid', 'kalvidassign');
 }
+
 
 if (!empty($id)) {
     list($cm, $course, $kalvidassign) = kalvidassign_validate_cmid($id);
@@ -72,7 +73,7 @@ echo $OUTPUT->heading($kalvidassign->name);
 
 
 //get list of submissions for assignment
-$sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id LIMIT 10";
+$sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id";
 $videos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
 
 if($kalvidassign->enablegallery){

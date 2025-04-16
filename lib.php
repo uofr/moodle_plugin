@@ -420,24 +420,35 @@ function kalvidassign_cron () {
  * Uses Kaltura API to fetch media for display
  * @return bool Returns media object
  */
-function kalvidassign_get_media ($entryid, $user) {
+function kalvidassign_get_media($entryid, $user) {
+    global $CFG;
+    $kalturaconfig = local_kaltura_get_config();
+    $partnerid = $kalturaconfig->partner_id;
+    $adminsecret = $kalturaconfig->adminsecret;
     
-
-    $config = new KalturaConfiguration(PARTNER_ID);
-    $config->serviceUrl = "https://api.ca.kaltura.com";
-
-
+    // Initialize Kaltura Configuration
+    $config = new KalturaConfiguration($partnerid);
+    $config->serviceUrl = "https://api.ca.kaltura.com"; 
+    
+    // Create a Kaltura Client
     $client = new KalturaClient($config);
-    $ks = $client->session->start(ADMIN_SECRET, $user, KalturaSessionType::ADMIN, PARTNER_ID);
-    $client->setKS($ks);
 
+    // Start Kaltura session
     try {
-      $result = $client->media->get($entryid, 1);
-      return $result;
+        $ks = $client->session->start($adminsecret, $user, KalturaSessionType::USER, $partnerid);
+        $client->setKS($ks); 
+
+        // Fetch media entry
+        $result = $client->media->get($entryid, 1); 
+        
+        return $result;
     } catch (Exception $e) {
-      return false;
+        // Log the exception for debugging purposes
+        error_log("Error in kalvidassign_get_media: " . $e->getMessage());
+        return false;  // Return false on error
     }
 }
+
 
 /**
  * Validate comment parameter before perform other comments actions
