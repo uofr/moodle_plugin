@@ -13,13 +13,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kaltura video assignment view script.
- *
- * @package    mod_kalvidassign
- * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2014 Remote Learner.net Inc http://www.remote-learner.net
- */
+* Kaltura video assignment view script.
+*
+* @package    mod_kalvidassign
+* @author     Remote-Learner.net Inc
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @copyright  (C) 2014 Remote Learner.net Inc http://www.remote-learner.net
+*/
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(dirname(dirname(__FILE__))).'/local/kaltura/locallib.php');
@@ -29,11 +29,12 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Retrieve module instance.
 if (empty($id)) {
-    print_error('invalidid', 'kalvidassign');
+    throw new moodle_exception('invalidid', 'kalvidassign');
 }
 
+
 if (!empty($id)) {
-    list($cm, $course, $kalvidassign) = kalvidassign_validate_cmid($id);
+list($cm, $course, $kalvidassign) = kalvidassign_validate_cmid($id);
 }
 
 require_course_login($course->id, true, $cm);
@@ -49,9 +50,9 @@ $PAGE->add_body_class($pageclass);
 $context = context_module::instance($cm->id);
 
 /*$event = \mod_kalvidassign\event\assignment_details_viewed::create(array(
-            'objectid' => $kalvidassign->id,
-            'context' => context_module::instance($cm->id)
-        ));
+           'objectid' => $kalvidassign->id,
+           'context' => context_module::instance($cm->id)
+       ));
 $event->trigger();*/
 
 $PAGE->requires->css('/mod/kalvidassign/styles.css');
@@ -73,10 +74,10 @@ echo $OUTPUT->heading($kalvidassign->name);
 
 //get list of submissions for assignment
 $sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id LIMIT 10";
+$sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id";
 $videos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
 
 if($kalvidassign->enablegallery){
-    //render thumbnail grid
-    echo $renderer->display_student_gallery_grid($videos,$kalvidassign->id, $context, $cm, $kalvidassign, $id  );
+//render thumbnail grid
+echo $renderer->display_student_gallery_grid($videos,$kalvidassign->id, $context, $cm, $kalvidassign, $id  );
 }
-echo $OUTPUT->footer();

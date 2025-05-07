@@ -115,23 +115,27 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
                     repositionitem();
                 }
              }
+                // Sidebar hide/expand button click handling
+                $('#sidebar-actions .sidebartoggle, #minimize-button').click(function() {
+                    const icon = $('#minimize-button').find('i');
 
-            // Sidebar hide/expand button.
-            $('#sidebar-actions .sidebartoggle').click(function() {
-                $("#mediabox").toggleClass('sidebarhidden');
-                $("#sidebar-actions").toggleClass('mod-kalvidassign-sidebar-shrink');
-                $("#mediabox-metainfo").toggleClass('hide');
-                $("#mediabox-social").toggleClass('hide');
-                $("#mediabox-comments").toggleClass('hide');
+                    $("#mediabox").toggleClass('sidebarhidden');
 
-                if($(this).hasClass("fa-minus")){
-                    $(this).addClass('fa-plus').removeClass('fa-minus');
-                }else{
-                    $(this).addClass('fa-minus').removeClass('fa-plus');
-                }
-                resizeoverlay();
-                repositionitem();
-            });
+                    // Toggle the icon between fa-minus and fa-plus
+                    if ($("#mediabox").hasClass('sidebarhidden')) {
+                        icon.removeClass('fa-minus').addClass('fa-plus');
+                    } else {
+                        icon.removeClass('fa-plus').addClass('fa-minus');
+                    }
+
+                    // Trigger resize overlay and reposition items functions after sidebar toggle
+                    resizeoverlay();
+                    repositionitem();
+                });
+
+
+
+
 
             for (var i = 0; i < root.album.length; i++) {
                 var navitem = Y.Node.create('<div class="navitem" style="opacity:0.7;"></div>');

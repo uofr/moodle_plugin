@@ -21,6 +21,12 @@
  * @author     Brooke Clary
  *
  */
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+
 class mod_kalvidassign_external extends external_api {
 
     /**
@@ -34,15 +40,18 @@ class mod_kalvidassign_external extends external_api {
             'vidassignid' => new external_value(PARAM_INT),
             'courseid' => new external_value(PARAM_INT),
             'cmid' => new external_value(PARAM_INT),
+            'page' => new external_value(PARAM_INT, 'Page number', VALUE_DEFAULT, 0),
         ));
     }
+
 
     /**
      * Returns guide page data.
      *
      * @param string $url 
      */
-    public static function fetch_videos($count, $vidassignid, $courseid, $cmid) {
+    public static function fetch_videos($count, $vidassignid, $courseid, $cmid, $page = 0) {
+
         global $PAGE, $COURSE, $CFG, $DB, $USER;
     
             require_once($CFG->dirroot.'/local/kaltura/locallib.php');
@@ -58,7 +67,9 @@ class mod_kalvidassign_external extends external_api {
                 'vidassignid' => $vidassignid,
                 'courseid' => $courseid,
                 'cmid' => $cmid,
+                'page' => $page,
             ));
+
 
             self::validate_context(context_course::instance($params['courseid']));
             $context = context_course::instance($params['courseid']);
@@ -70,9 +81,16 @@ class mod_kalvidassign_external extends external_api {
 
             //$context = $DB->get_record("context", ["id"=>$params['contextid']], '*', IGNORE_MISSING);
     
-            $sql = "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid']." ORDER BY id LIMIT 10 OFFSET ".$params['count'];
-    
-            $rawvideos = $DB->get_records_sql($sql, [], IGNORE_MISSING);
+            $limit = $params['count'];
+            $offset = $params['page'] * $limit;
+
+            $sql = "SELECT * FROM mdl_kalvidassign_submission
+                    WHERE vidassignid = :vidassignid
+                    ORDER BY id
+                    LIMIT $limit OFFSET $offset";
+
+            $rawvideos = $DB->get_records_sql($sql, ['vidassignid' => $params['vidassignid']]);
+
     
             $sql= "SELECT * FROM mdl_kalvidassign_submission WHERE vidassignid = ".$params['vidassignid'];
             ///$maxcount = $DB->count_records_sql($sql);
@@ -121,21 +139,29 @@ class mod_kalvidassign_external extends external_api {
                         $comments= new \comment($cmtopt);
                         \comment::init();
     
-                    $videos[]=array(
-                        "id" => $entry->id,
-                        "itemid" => $video->id,
-                        "name" => $entry->name,
-                        "creator"=>fullname($user, true),
-                        "description" => $entry->description,
-                        "thumbnailUrl" => $entry->thumbnailUrl,
-                        "url"=> $url->out(false),
-                        "width"=> $entry->width,
-                        "height"=> $entry->height,
-                        "liked"=>$liked->liked,
-                        "totallikes"=>$totallikes-$liked->liked,
-                        "commentid"=>$comments->get_cid(),
-                    );
-                    $videocount++;
+                        try {
+                            $videos[] = array(
+                                "id" => $entry->id,
+                                "itemid" => $video->id,
+                                "name" => $entry->name ?? '',
+                                "creator" => fullname($user, true),
+                                "description" => $entry->description ?? '',
+                                "thumbnailUrl" => $entry->thumbnailUrl ?? '',
+                                "url" => $url->out(false),
+                                "width" => $entry->width ?? 0,
+                                "height" => $entry->height ?? 0,
+                                "liked" => $liked->liked ?? 0,
+                                "totallikes" => $totallikes - ($liked->liked ?? 0),
+                                "commentid" => $comments->get_cid() ?? ''
+                            );
+
+                            $videocount++;
+                        } catch (Exception $e) {
+                            error_log('[VIDEOS ERROR] ' . $e->getMessage());
+                            error_log('[VIDEOS TRACE] ' . $e->getTraceAsString());
+                        }
+
+
                 }
             }
     
@@ -172,6 +198,7 @@ class mod_kalvidassign_external extends external_api {
             'maxcount' => new external_value(PARAM_INT),
         ));
     }    
+
     /**
      * Returns description of params passed to get_guide_page.
      *
@@ -275,11 +302,13 @@ class mod_kalvidassign_external extends external_api {
         
         $params = array();
         $perpage = (!empty($CFG->commentsperpage))?$CFG->commentsperpage:15;
-        $start = $page * $perpage;
+        //$start = $page * $perpage;
         $userfieldsapi = \core_user\fields::for_userpic();
         $ufields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
-        $sortdirection = ($sortdirection === 'ASC') ? 'ASC' : 'DESC';
+        $sortdirection = isset($sortdirection) ? $sortdirection : 'DESC';  // Set default if not set
+        $sortdirection = ($sortdirection === 'ASC') ? 'ASC' : 'DESC';  // Ensure it's either 'ASC' or 'DESC'
+
         $sql = "SELECT c.id AS cid, $ufields,  c.content AS ccontent, c.format AS cformat, c.timecreated AS ctimecreated
                   FROM {comments} c
                   JOIN {user} u ON u.id = c.userid
@@ -305,11 +334,10 @@ class mod_kalvidassign_external extends external_api {
             $c->format      = $u->cformat;
             $c->timecreated = $u->ctimecreated;
             $c->strftimeformat = get_string('strftimerecentfull', 'langconfig');
-        $url = new moodle_url('/user/view.php', array('id'=>$u->id, /*'course'=>$this->courseid*/));
-            $c->profileurl = $url->out(false); // URL should not be escaped just yet.
+            $url = new moodle_url('/user/view.php', array('id'=>$u->id, /*'course'=>$this->courseid*/));
+            $c->profileurl = $url->out(false); 
             $c->fullname = fullname($u);
             $c->time = userdate($c->timecreated, $c->strftimeformat);
-           // $c->content = format_text($c->content, $c->format, $formatoptions);
             $c->avatar = $OUTPUT->user_picture($u, array('size'=>18));
             $c->userid = $u->id;
 

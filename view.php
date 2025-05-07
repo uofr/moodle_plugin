@@ -29,7 +29,7 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Retrieve module instance.
 if (empty($id)) {
-    throw new \moodle_exception('invalidid', 'kalvidassign');
+    throw new moodle_exception('invalidid', 'kalvidassign');
 }
 
 if (!empty($id)) {
@@ -63,7 +63,7 @@ $PAGE->requires->css('/local/kaltura/styles.css');
 echo $OUTPUT->header();
 
 if (!$kalvidassignobj = $DB->get_record('kalvidassign', array('id' => $cm->instance))) {
-    throw new \moodle_exception('invalidid', 'kalvidassign');
+    throw new moodle_exception('invalidid', 'kalvidassign');
 }
 
 /**
@@ -78,10 +78,13 @@ $isReplaceMediaDisabled = $isExpired || !$kalvidassignobj->resubmit;
 
 $renderer = $PAGE->get_renderer('mod_kalvidassign');
 
+echo $OUTPUT->heading($kalvidassign->name);
+
 echo $OUTPUT->box_start('generalbox');
 
 echo $renderer->display_mod_info($kalvidassign, $context);
 
+//echo format_module_intro('kalvidassign', $kalvidassign, $cm->id);
 echo $OUTPUT->box_end();
 
 $disabled = false;
@@ -158,7 +161,8 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
     echo $renderer->display_instructor_buttons($cm, $USER->id);
 }
 
-?>
+/*?>
+// Commenting this, as seems like we dont need alternate uploader anymore
 
 <script src="simple/resumable.js"></script>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -258,15 +262,15 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
   </div>
 </div>
 
-<?php
-//Added for Student submitted Gallery 
-//check if submission exists
-if(isset($submission->width) && isset($submission->height))
-{
-    //check if studentgallery is enabled 
-    //logic is there should alway be a submission since we are checking if student has submitted
-    if($kalvidassign->enablegallery){
-        //render student gallery preview container
+<?php */
+
+ // Always show student gallery to teachers. For students, show only if they have a submission.
+if ($kalvidassign->enablegallery) {
+    $is_teacher = has_capability('mod/kalvidassign:grade', $context);
+    $has_submission = !empty($submission); 
+    if ($is_teacher || $has_submission) {
+
+
         echo $renderer->display_student_gallery_container($kalvidassign, $context, $cm);
     }
 }
