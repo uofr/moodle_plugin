@@ -2,6 +2,7 @@
 
 
 # Moodle Includes
+
 require_once('../../config.php');
 //require_once('locallib.php');
 require_once(dirname(dirname(dirname(__FILE__))).'/lib/moodlelib.php');
@@ -249,6 +250,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 	  </div>
 
     <script>
+      import jQuery from 'jquery';
      var user = <?php echo json_encode($user); ?>;
       var newEntryId;
       var kalturadlplayerURL;           
@@ -610,7 +612,7 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
           document.getElementById("submit_video").click();
         
            // Hide the modal
-         $('#staticBackdrop').modal('hide');
+           jQuery('#staticBackdrop').modal('hide');
          
       }
    
@@ -700,8 +702,8 @@ if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$
 
           //dapiawej
           //hide close buttons in modal once file has been added
-          $("#staticBackdrop .close").css("display", "none");
-          $("#staticBackdrop .close-modal").css("display", "none"); 
+          jQuery("#staticBackdrop .close").css("display", "none");
+          jQuery("#staticBackdrop .close-modal").css("display", "none"); 
           document.getElementById("upload-container").style.display ="none";
           var divimagepro = document.getElementById("media-processing_image");
           divimagepro.style.backgroundColor = "#f0e9e9";
