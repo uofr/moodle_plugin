@@ -81,3 +81,4 @@ if($kalvidassign->enablegallery){
 //render thumbnail grid
 echo $renderer->display_student_gallery_grid($videos,$kalvidassign->id, $context, $cm, $kalvidassign, $id  );
 }
+echo $OUTPUT->footer();

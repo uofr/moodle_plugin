@@ -10,24 +10,30 @@
     <div class="row">
         {{#entries}}
         <div id="{{itemid}}" class="card bg-light m-3 kalvidassign_videocards" style="width: 15rem;">
-            <img id="{{{id}}}" class="card-img-top kalvidassign_thumbnail" src='{{{thumbnailUrl}}}/width/640/height/360'>
+    <img id="{{{id}}}" class="card-img-top kalvidassign_thumbnail" src='{{{thumbnailUrl}}}/width/640/height/360'>
 
-            <div class="hide url"
-                data-comment="{{commentid}}"
-                data-totallikes={{totallikes}}
-                data-liked='{{liked}}'
-                data-value='{{url}}'
-                data-width={{{width}}}
-                data-height={{{height}}}>
-            </div>
+    <!-- Hover overlay -->
+    <div class="hover-overlay">
+        <i class="fa fa-play-circle"></i>
+    </div>
 
-            <div class="card-body">
-                <p id="thumbcreator">Creator: {{creator}}</p>
-                <h5 id="thumbtitle" class="card-title fw-semibold text-truncate" title="{{name}}">
-                    {{name}}
-                </h5>
-            </div>
-        </div>
+    <div class="hide url"
+        data-comment="{{commentid}}"
+        data-totallikes={{totallikes}}
+        data-liked='{{liked}}'
+        data-value='{{url}}'
+        data-width={{{width}}}
+        data-height={{{height}}}>
+    </div>
+        
+    <div class="card-body">
+        <p id="thumbcreator">Creator: {{creator}}</p>
+        <h5 id="thumbtitle" class="card-title fw-semibold text-truncate" title="{{name}}">
+            {{name}}
+        </h5>
+    </div>
+</div>
+
         {{/entries}}
 
         {{#teaser}}

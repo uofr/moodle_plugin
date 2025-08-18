@@ -321,3 +321,45 @@ button.btn-outline-light:hover {
         color: #e4e6eb;
     }
 }
+/* Overlay hover icon on video cards */
+.kalvidassign_videocards {
+    position: relative; 
+    overflow: hidden;
+}
+
+.kalvidassign_videocards .hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.kalvidassign_videocards .hover-overlay i {
+    font-size: 3rem;   /* adjust size of icon */
+    color: #fff;       /* white icon */
+    transition: transform 0.2s ease-in-out;
+}
+
+.kalvidassign_videocards:hover .hover-overlay {
+    opacity: 1;
+}
+
+.kalvidassign_videocards:hover .hover-overlay i {
+    transform: scale(1.1);
+}
+.kalvidassign_videocards {
+    cursor: pointer; /* hand icon when hovering over the card */
+}
+.kalvidassign_videocards:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
