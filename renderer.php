@@ -1234,9 +1234,25 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $entries = [];
 
         //get three top newest videos
-        $sql = "
-            SELECT * FROM ". $CFG->prefix."kalvidassign_submission WHERE vidassignid = ".$kalvidassign->id." ORDER BY id DESC LIMIT 3
-         ";
+       // For students: only show their own submission
+        // For teachers/admins: show all submissions
+        if ($is_teacher) {
+            $sql = "
+                SELECT * FROM {$CFG->prefix}kalvidassign_submission
+                WHERE vidassignid = ?
+                ORDER BY id DESC
+            ";
+            $videos = $DB->get_records_sql($sql, [$kalvidassign->id]);
+        } else {
+            // students only see their own submission
+            $sql = "
+                SELECT * FROM {$CFG->prefix}kalvidassign_submission
+                WHERE vidassignid = ? AND userid = ?
+                ORDER BY id DESC
+            ";
+            $videos = $DB->get_records_sql($sql, [$kalvidassign->id, $USER->id]);
+        }
+
 
         $videos = $DB->get_records_sql($sql);
 
