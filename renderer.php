@@ -1298,6 +1298,14 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                 ); 
             } 
         }
+
+         // If teacher, allow empty gallery
+    $is_teacher = has_capability('mod/kalvidassign:grade', $context);
+    if ($is_teacher && empty($entries)) {
+        // Add placeholder entry to show container
+        $entries = [];
+    }
+
     
         $data =[];
         $data = array(
@@ -1318,114 +1326,114 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $PAGE->requires->js('/mod/mediagallery/js/screenfull.min.js');
     }
 
-/**
- * Display full student gallery with pagination (12 videos per page)
- *
- * @global object
- * @global object
- */
-public function display_student_gallery_grid($videos, $vidassignid, $context, $cm, $kalvidassign, $cmid) {
-    global $PAGE, $COURSE, $CFG, $DB, $USER, $OUTPUT;
+    /**
+     * Display full student gallery with pagination (12 videos per page)
+     *
+     * @global object
+     * @global object
+     */
+    public function display_student_gallery_grid($videos, $vidassignid, $context, $cm, $kalvidassign, $cmid) {
+        global $PAGE, $COURSE, $CFG, $DB, $USER, $OUTPUT;
 
 
 
-    require_once($CFG->dirroot.'/local/kaltura/locallib.php');
-    $configsettings = local_kaltura_get_config();
-    $kafuri = $configsettings->kaf_uri;
+        require_once($CFG->dirroot.'/local/kaltura/locallib.php');
+        $configsettings = local_kaltura_get_config();
+        $kafuri = $configsettings->kaf_uri;
 
 
-    if (!empty($configsettings->uri)) {
-        $apiurl = $configsettings->uri;
-    }
-
-    $module = local_kaltura_get_endpoint(KAF_BROWSE_EMBED_MODULE);
-    $entries = [];
-
-
-    // Pagination setup
-    $perpage = 12; // Change this number as needed
-    $page = optional_param('page', 0, PARAM_INT); // Current page (0-indexed)
-    $totalvideos = count($videos);
-    $start = $page * $perpage;
-    $videos = array_slice($videos, $start, $perpage); // Only get videos for current page
-
-    foreach ($videos as $video) {
-        $entry = kalvidassign_get_media($video->entry_id, $video->userid);
-
-        if ($entry) {
-            $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cmid;
-
-            $params = array(
-                'courseid' => $COURSE->id,
-                'height' => $entry->height,
-                'width' => $entry->width,
-                'withblocks' => 1,
-                'source' => $source,
-                'cmid' => $cmid
-            );
-
-            $url = new moodle_url('/mod/kalvidassign/lti_launch.php', $params);
-            $creator = $DB->get_record("user", ["username" => $entry->creatorId], '*', IGNORE_MISSING);
-            $creatorname = $creator ? fullname($creator, true) : $entry->creatorId;
-
-            $totallikes = $DB->count_records('kalvidassign_userfeedback', ['itemid' => $video->id, 'liked' => 1]);
-            $liked = $DB->get_record('kalvidassign_userfeedback', ['itemid' => $video->id, 'userid' => $USER->id]);
-
-            $cmtopt = new \stdClass();
-            $cmtopt->area = 'gallery';
-            $cmtopt->context = $context;
-            $cmtopt->itemid = $video->id;
-            $cmtopt->showcount = true;
-            $cmtopt->component = 'mod_kalvidassign';
-            $cmtopt->cm = $cm;
-            $cmtopt->autostart = true;
-            $cmtopt->course = $COURSE;
-
-            $comments = new \comment($cmtopt);
-            \comment::init();
-
-            $entries[] = array(
-                "id" => $entry->id,
-                "itemid" => $video->id,
-                "name" => $entry->name,
-                "creator" => $creatorname,
-                "description" => $entry->description,
-                "thumbnailUrl" => $entry->thumbnailUrl,
-                "url" => $url->out(false),
-                "width" => $entry->width,
-                "height" => $entry->height,
-                "liked" => $liked ? $liked->liked : 0,
-                "totallikes" => $totallikes - ($liked ? $liked->liked : 0),
-                "commentid" => $comments->get_cid(),
-            );
+        if (!empty($configsettings->uri)) {
+            $apiurl = $configsettings->uri;
         }
+
+        $module = local_kaltura_get_endpoint(KAF_BROWSE_EMBED_MODULE);
+        $entries = [];
+
+
+        // Pagination setup
+        $perpage = 12; // Change this number as needed
+        $page = optional_param('page', 0, PARAM_INT); // Current page (0-indexed)
+        $totalvideos = count($videos);
+        $start = $page * $perpage;
+        $videos = array_slice($videos, $start, $perpage); // Only get videos for current page
+
+        foreach ($videos as $video) {
+            $entry = kalvidassign_get_media($video->entry_id, $video->userid);
+
+            if ($entry) {
+                $source = $kafuri.'/browseandembed/index/media/entryid/'.$entry->id.'/playerSize/'.$entry->width.'x'.$entry->height.'/playerSkin/23449221/&cmid='.$cmid;
+
+                $params = array(
+                    'courseid' => $COURSE->id,
+                    'height' => $entry->height,
+                    'width' => $entry->width,
+                    'withblocks' => 1,
+                    'source' => $source,
+                    'cmid' => $cmid
+                );
+
+                $url = new moodle_url('/mod/kalvidassign/lti_launch.php', $params);
+                $creator = $DB->get_record("user", ["username" => $entry->creatorId], '*', IGNORE_MISSING);
+                $creatorname = $creator ? fullname($creator, true) : $entry->creatorId;
+
+                $totallikes = $DB->count_records('kalvidassign_userfeedback', ['itemid' => $video->id, 'liked' => 1]);
+                $liked = $DB->get_record('kalvidassign_userfeedback', ['itemid' => $video->id, 'userid' => $USER->id]);
+
+                $cmtopt = new \stdClass();
+                $cmtopt->area = 'gallery';
+                $cmtopt->context = $context;
+                $cmtopt->itemid = $video->id;
+                $cmtopt->showcount = true;
+                $cmtopt->component = 'mod_kalvidassign';
+                $cmtopt->cm = $cm;
+                $cmtopt->autostart = true;
+                $cmtopt->course = $COURSE;
+
+                $comments = new \comment($cmtopt);
+                \comment::init();
+
+                $entries[] = array(
+                    "id" => $entry->id,
+                    "itemid" => $video->id,
+                    "name" => $entry->name,
+                    "creator" => $creatorname,
+                    "description" => $entry->description,
+                    "thumbnailUrl" => $entry->thumbnailUrl,
+                    "url" => $url->out(false),
+                    "width" => $entry->width,
+                    "height" => $entry->height,
+                    "liked" => $liked ? $liked->liked : 0,
+                    "totallikes" => $totallikes - ($liked ? $liked->liked : 0),
+                    "commentid" => $comments->get_cid(),
+                );
+            }
+        }
+
+        $data = array(
+            "entries" => $entries,
+            "preview" => false,
+            "vidassignid" => $vidassignid,
+            "allowlikes" =>$kalvidassign->allowlikes,
+            "allowcomments" => $kalvidassign->allowcomments,
+            "course" => $COURSE->id,
+            "context" => $context->id,
+            "cmid" => $cmid,
+            "infinitescroll" => false
+
+        );
+
+
+        // Create pagination bar
+        $pagingbar = new \paging_bar($totalvideos, $page, $perpage, new moodle_url('/mod/kalvidassign/student_gallery.php', ['id' => $cmid]));
+        $pagingbar->pagevar = 'page';
+
+        // Render both pagination and gallery
+        $html = $OUTPUT->render($pagingbar); // Top pagination
+        $html .= $this->render_from_template('mod_kalvidassign/studentgallery', $data);
+        $html .= $OUTPUT->render($pagingbar); // Bottom pagination
+
+        $PAGE->requires->js('/mod/mediagallery/js/screenfull.min.js');
+
+        return $html;
     }
-
-    $data = array(
-        "entries" => $entries,
-        "preview" => false,
-        "vidassignid" => $vidassignid,
-        "allowlikes" =>$kalvidassign->allowlikes,
-        "allowcomments" => $kalvidassign->allowcomments,
-        "course" => $COURSE->id,
-        "context" => $context->id,
-        "cmid" => $cmid,
-        "infinitescroll" => false
-
-    );
-
-
-    // Create pagination bar
-    $pagingbar = new \paging_bar($totalvideos, $page, $perpage, new moodle_url('/mod/kalvidassign/student_gallery.php', ['id' => $cmid]));
-    $pagingbar->pagevar = 'page';
-
-    // Render both pagination and gallery
-    $html = $OUTPUT->render($pagingbar); // Top pagination
-    $html .= $this->render_from_template('mod_kalvidassign/studentgallery', $data);
-    $html .= $OUTPUT->render($pagingbar); // Bottom pagination
-
-    $PAGE->requires->js('/mod/mediagallery/js/screenfull.min.js');
-
-    return $html;
-}
 }
