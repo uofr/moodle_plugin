@@ -1234,27 +1234,10 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $entries = [];
 
         //get three top newest videos
-       // For students: only show their own submission
-        // For teachers/admins: show all submissions
-        if ($is_teacher) {
-            $sql = "
-                SELECT * FROM {$CFG->prefix}kalvidassign_submission
-                WHERE vidassignid = ?
-                ORDER BY id DESC
-            ";
-            $videos = $DB->get_records_sql($sql, [$kalvidassign->id]);
-        } else {
-            // students only see their own submission
-            $sql = "
-                SELECT * FROM {$CFG->prefix}kalvidassign_submission
-                WHERE vidassignid = ? AND userid = ?
-                ORDER BY id DESC
-            ";
-            $videos = $DB->get_records_sql($sql, [$kalvidassign->id, $USER->id]);
-        }
-
-
-        $videos = $DB->get_records_sql($sql);
+        $sql = "SELECT * FROM {kalvidassign_submission} 
+            WHERE vidassignid = ? 
+            ORDER BY id DESC LIMIT 3";
+         $videos = $DB->get_records_sql($sql, [$kalvidassign->id]);
 
         //display gallery teaser
         $teaserurl = new moodle_url('/mod/kalvidassign/student_gallery.php', array('id' => $cm->id));
@@ -1315,19 +1298,14 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
             } 
         }
 
-         // If teacher, allow empty gallery
-    $is_teacher = has_capability('mod/kalvidassign:grade', $context);
-    if ($is_teacher && empty($entries)) {
-        // Add placeholder entry to show container
-        $entries = [];
-    }
+
 
     
         $data =[];
         $data = array(
             "entries"=>$entries,
             "preview"=> false,
-            "vidassignid"=> $vidassignid,
+            "vidassignid"=> $kalvidassign->$vidassignid,
             "teaser"=>true,
             "teaserurl"=>$teaserurl,
             "allowlikes"=>$kalvidassign->allowlikes,

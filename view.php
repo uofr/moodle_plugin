@@ -266,11 +266,9 @@ if (has_capability('mod/kalvidassign:gradesubmission', $context)) {
 
  // Always show student gallery to teachers. For students, show only if they have a submission.
 if ($kalvidassign->enablegallery) {
-    $is_teacher = has_capability('mod/kalvidassign:grade', $context);
+  $is_teacher = has_capability('mod/kalvidassign:gradesubmission', $context);
     $has_submission = !empty($submission); 
     if ($is_teacher || $has_submission) {
-
-
         echo $renderer->display_student_gallery_container($kalvidassign, $context, $cm);
     }
 }
