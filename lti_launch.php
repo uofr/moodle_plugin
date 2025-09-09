@@ -37,8 +37,11 @@ $width = required_param('width', PARAM_INT);
 $withblocks = optional_param('withblocks', 0, PARAM_INT);
 $source = optional_param('source', '', PARAM_URL);
 
-$context = context_course::instance($courseid);
+//$context = context_course::instance($courseid);
+//require_capability('mod/kalvidassign:submit', $context);
+$context = context_module::instance($cmid);
 require_capability('mod/kalvidassign:submit', $context);
+
 $course = get_course($courseid);
 
 $launch = array();
