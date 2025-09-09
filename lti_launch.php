@@ -39,9 +39,21 @@ $source = optional_param('source', '', PARAM_URL);
 
 //$context = context_course::instance($courseid);
 //require_capability('mod/kalvidassign:submit', $context);
-$context = context_module::instance($cmid);
-require_capability('mod/kalvidassign:submit', $context);
 
+$context = context_module::instance($cmid);
+
+// Allow both students and teachers to view the gallery.
+$canview = has_capability('mod/kalvidassign:submit', $context) ||
+           has_capability('mod/kalvidassign:gradesubmission', $context);
+
+if (!$canview) {
+    throw new required_capability_exception(
+        $context,
+        'mod/kalvidassign:submit',
+        'nopermissions',
+        ''
+    );
+}
 $course = get_course($courseid);
 
 $launch = array();
