@@ -404,63 +404,69 @@ define(['jquery','core/templates','core/ajax','core/notification', 'core/str'], 
             });
         };
 
-        var repositionitem = function(width, height) {
+    var repositionitem = function(specWidth, specHeight) {
 
-            var offsetTop, offsetLeft;
-            var newwidth = '';
-            var newheight = '';
-            var content = $('#mediabox-content');
-            var innercontent = $('.kaltura-player-container');
-            var sidebarwidth = $("#mediabox-sidebar").width();
+        var content = $('#mediabox-content');
+        var innercontent = $('#mediabox-content .kaltura-player-container');
 
-            if (root.mediabox.hasClass('sidebarhidden')) {
-                sidebarwidth = 0;
-            }
+        if (!innercontent.length) {
+            return;
+        }
 
-            if (typeof innercontent === "undefined") {
-                return;
-            }
+        // Sidebar width (0 if hidden)
+        var sidebarwidth = 0;
+        if (!root.mediabox.hasClass('sidebarhidden') && $('#mediabox-sidebar').is(':visible')) {
+            sidebarwidth = $('#mediabox-sidebar').outerWidth(true) || 0;
+        }
 
-            if (typeof width === "undefined") {
-                width= $(innercontent).find("iframe").width();
-                height = $(innercontent).find("iframe").height();
-            }
+        // Determine natural width/height: prefer function args, then iframe attrs, then computed
+        var iframe = innercontent.find('iframe');
+        var natW = parseInt(specWidth, 10) || parseInt(iframe.attr('width'), 10) || iframe.width();
+        var natH = parseInt(specHeight, 10) || parseInt(iframe.attr('height'), 10) || iframe.height();
 
-            var winwidth = $('body').width();
-            var winheight = $('body').height();
+        // Fallback
+        if (!natW || !natH) {
+            natW = 800;
+            natH = 450;
+        }
 
-            var maxwidth = winwidth - sidebarwidth;
-            var maxheight = winheight - vars._navbarheight;
+        var winwidth = window.innerWidth || $(window).width();
+        var winheight = window.innerHeight || $(window).height();
 
-            if (width > maxwidth || height > maxheight) {
-                if ((width / maxwidth) > (height / maxheight)) {
-                    newwidth = maxwidth;
-                    newheight = parseInt(height / (width / maxwidth), 10);
-                    offsetLeft = 0;
-                    offsetTop = (winheight - newheight) / 2;
-                } else {
-                    newheight = maxheight;
-                    newwidth = parseInt(width / (height / maxheight), 10);
-                    offsetTop = 0;
-                    offsetLeft = (winwidth - newwidth - sidebarwidth) / 2;
-                }
-                newwidth += 'px';
-                newheight += 'px';
-            } else {
-                offsetLeft = (winwidth - width - sidebarwidth) / 2;
-                offsetTop = (winheight - height - vars._navbarheight) / 2;
-            }
-            innercontent.css('width', newwidth);
-            innercontent.css('height', newheight);
+        // Keep a small padding so it doesn't butt up to edges
+        var padding = 40;
+        var maxwidth = Math.max(100, winwidth - sidebarwidth - padding);
+        var maxheight = Math.max(100, winheight - vars._navbarheight - padding);
 
-            if(winwidth >500){
-                content.css('top', offsetTop + 'px');
-                content.css('left', offsetLeft + 'px');
-            }else{
-                content.css('top', '0 px');
-                content.css('left', '0 px');
-            }
-        };
+        var scale = Math.min(1, maxwidth / natW, maxheight / natH);
+
+        var newwidth = Math.round(natW * scale);
+        var newheight = Math.round(natH * scale);
+
+        // Apply sizes to the player wrapper and make iframe fill it
+        innercontent.css({
+            width: newwidth + 'px',
+            height: newheight + 'px'
+        });
+        iframe.css({
+            width: '100%',
+            height: '100%'
+        });
+
+        // Center position (account for sidebar)
+        var offsetLeft = Math.round((winwidth - newwidth - sidebarwidth) / 2);
+        var offsetTop  = Math.round((winheight - newheight - vars._navbarheight) / 2);
+
+        if (offsetLeft < 8) offsetLeft = 8;
+        if (offsetTop < 8) offsetTop = 8;
+
+
+        content.css({
+            top: offsetTop + 'px',
+            left: offsetLeft + 'px'
+        });
+    };
+
 
         var resizeoverlay = function() {
             var viewportwidth = screen.width;
