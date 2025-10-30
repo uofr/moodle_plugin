@@ -988,7 +988,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                 $grade = '-';
             }
 
-            $courseindexsummary->add_assign_info($cm->id, $cm->name, $sectionname, $timedue, $submitted, $grade);
+            $courseindexsummary->add_assign_info($cm->id, $cm->name, $sectionname, $timedue, $submitted, $grade, $cm->visible);
         }
 
         if ($assignmentcount > 0) {
@@ -1179,7 +1179,10 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $currentsection = '';
         foreach ($indexsummary->assignments as $info) {
             $params = array('id' => $info['cmid']);
-            $link = html_writer::link(new moodle_url('/mod/kalvidassign/view.php', $params), $info['cmname']);
+
+						$visibility_class = $info['visible'] ? '' : 'dimmed'; // hidden Kaltura modules are dimmed
+
+            $link = html_writer::link(new moodle_url('/mod/kalvidassign/view.php', $params), $info['cmname'], array('class' => $visibility_class));
             $due = $info['timedue'] ? userdate($info['timedue']) : '-';
 
             $printsection = '';

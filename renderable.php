@@ -56,14 +56,15 @@ class kalvidassign_course_index_summary implements renderable {
      *                               status of the current users submission depending on capabilities.
      * @param string $gradeinfo The current users grade if they have been graded and it is not hidden.
      */
-    public function add_assign_info($cmid, $cmname, $sectionname, $timedue, $submissioninfo, $gradeinfo) {
+    public function add_assign_info($cmid, $cmname, $sectionname, $timedue, $submissioninfo, $gradeinfo, $visible) {
         $this->assignments[] = array(
             'cmid' => $cmid,
             'cmname' => $cmname,
             'sectionname' => $sectionname,
             'timedue' => $timedue,
             'submissioninfo' => $submissioninfo,
-            'gradeinfo' => $gradeinfo
+            'gradeinfo' => $gradeinfo,
+            'visible' => $visible
         );
     }
 }
