@@ -38,31 +38,31 @@ class MultiRequestSubResult implements ArrayAccess
         $this->value = $value;
 	}
 
-    function __toString()
+    function __toString(): string
 	{
         return '{' . $this->value . '}';
 	}
 
-    function __get($name)
+    function __get($name): MultiRequestSubResult
 	{
         return new MultiRequestSubResult($this->value . ':' . $name);
 	}
 
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
 	{
 		return true;
 	}
 
-	public function offsetGet($offset)
+	public function offsetGet($offset): MultiRequestSubResult
 	{
         return new MultiRequestSubResult($this->value . ':' . $offset);
 	}
 
-	public function offsetSet($offset, $value)
+	public function offsetSet($offset, $value): void
 	{
 	}
 
-	public function offsetUnset($offset)
+	public function offsetUnset($offset): void
 	{
 	}
 }
