@@ -36,6 +36,7 @@ $navitems[] = [
     'url'   => new moodle_url('/local/mymedia/get_h5p_link.php')
 ];
 
+
 // for URcommunity 
 if (!in_array($SITE->shortname, ['CCE Community', 'UR Community'])) {
     $navitems[] = [
@@ -46,6 +47,10 @@ if (!in_array($SITE->shortname, ['CCE Community', 'UR Community'])) {
 
 // Admin only
 if (has_capability('moodle/site:config', $systemcontext)) {
+    $navitems[] = [
+    'label' => get_string('Studentreport', 'local_mymedia', 'Track Student Report'),
+    'url'   => new moodle_url('/local/mymedia/track_student_report.php')
+];
     $navitems[] = [
         'label' => get_string('logs', 'local_mymedia', 'Logs'),
         'url'   => new moodle_url('/local/mymedia/mymedia_logs.php')
