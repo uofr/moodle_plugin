@@ -42,3 +42,13 @@ $string['importzoomrecordings'] = 'Import Zoom Recordings';
 $string['logs'] = 'Logs';
 $string['migratekaltura'] = 'Migrate Kaltura Videos';
 $string['kalturareport'] = 'Kaltura Usage Report';
+
+$string['Studentreport'] = 'Track Student Report';
+$string['meetingid'] = 'Meeting ID';
+$string['topic'] = 'Topic';
+$string['starttime'] = 'Start time';
+$string['duration'] = 'Duration';
+$string['timezone'] = 'Timezone';
+$string['course'] = 'Course';
+$string['joinurl'] = 'UrL';
+$string['exportcsv'] = 'Export CSV';

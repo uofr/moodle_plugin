@@ -260,13 +260,13 @@ foreach ($students as $student) {
     foreach ($activity_stats as $cmid => $stat) {
         $module_name = ($cmid == 0) ? 'COURSE' : get_modulename_by_cmid($cmid);
 
-        $activity_completion = '';
-        $activity_completed_at = '';
-        if (isset($cm_items[$cmid])) {
-            $item = $cm_items[$cmid];
-            $activity_completion = ($item->completionstate == COMPLETION_COMPLETE) ? 'Completed' : 'Not completed';
-            $activity_completed_at = $item->timemodified ? date('Y-m-d H:i:s', $item->timemodified) : '';
-        }
+       // $activity_completion = '';
+      //  $activity_completed_at = '';
+     //   if (isset($cm_items[$cmid])) {
+      //      $item = $cm_items[$cmid];
+        //    $activity_completion = ($item->completionstate == COMPLETION_COMPLETE) ? 'Completed' : 'Not completed';
+        //    $activity_completed_at = $item->timemodified ? date('Y-m-d H:i:s', $item->timemodified) : '';
+     //   }
 
         $records[] = [
             'userid' => $student->id,
@@ -279,9 +279,6 @@ foreach ($students as $student) {
             'lastaccess' => date('Y-m-d H:i:s', $stat['last']),
             // minutes spent = active seconds / 60
             'minutes_spent' => round($stat['active_seconds'] / 60, 2),
-            'activity_completion' => $activity_completion,
-            'activity_completed_at' => $activity_completed_at,
-            'course_completed_at' => $course_completed_at,
             'total_hours' => round($stat['active_seconds'] / 3600, 2),
             'idle_hours' => round($stat['idle_seconds'] / 3600, 2)
         ];
@@ -313,9 +310,7 @@ foreach ($students as $student) {
         'lastaccess' => date('Y-m-d H:i:s', $last_all),
         'minutes_spent' => $total_minutes_spent,
         'total_span_hours' => $total_span_hours,
-        'completed_activities' => $completed_activities,
-        'course_completed_at' => $course_completed_at,
-        'total_hours' => round($activity_seconds_total / 3600, 2),
+         'total_hours' => round($activity_seconds_total / 3600, 2),
         'idle_hours' => round($idle_seconds_total / 3600, 2),
         'events' => $student_event_summary
     ];
@@ -326,37 +321,35 @@ foreach ($students as $student) {
 
 $download = optional_param('download', '', PARAM_RAW);
 if ($download === 'csv') {
-    // CSV headers
+
     $filename = clean_filename("student_activity_report_course_{$selectedcourseid}_" . date('Ymd_His') . '.csv');
+
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header("Content-Disposition: attachment; filename=\"{$filename}\"");
 
     $out = fopen('php://output', 'w');
 
-    // Column headers (match table)
     $headers = [
         'UserID','Full Name','ModuleID','ModuleName','Event','EventsInCourse',
         'FirstAccess','LastAccess','MinutesSpent','TotalSpanHours',
-        'ActivityCompletion','ActivityCompletedAt','CourseCompletedAt','TotalHours','IdleHours'
+        'TotalHours','IdleHours'
     ];
     fputcsv($out, $headers);
 
-    // For each student summary, output the summary row then module rows
     foreach ($student_summaries as $s) {
-        $row = [
+
+        fputcsv($out, [
             $s['userid'], $s['fullname'], '', 'COURSE SUMMARY', '', $s['events'],
             $s['firstaccess'], $s['lastaccess'], $s['minutes_spent'], $s['total_span_hours'],
-            "{$s['completed_activities']} activities completed", '', $s['course_completed_at'], $s['total_hours'], $s['idle_hours']
-        ];
-        fputcsv($out, $row);
+            $s['total_hours'], $s['idle_hours']
+        ]);
 
         foreach (array_filter($records, fn($r) => $r['userid'] == $s['userid']) as $r) {
-            $row = [
+            fputcsv($out, [
                 $r['userid'], $r['fullname'], $r['moduleid'], $r['modulename'], $r['event'], '',
-                $r['firstaccess'], $r['lastaccess'], $r['minutes_spent'], round($r['minutes_spent'] / 60, 2),
-                $r['activity_completion'], $r['activity_completed_at'], $r['course_completed_at'], $r['total_hours'], $r['idle_hours']
-            ];
-            fputcsv($out, $row);
+                $r['firstaccess'], $r['lastaccess'], $r['minutes_spent'], round($r['minutes_spent']/60,2),
+                $r['total_hours'], $r['idle_hours']
+            ]);
         }
     }
 
@@ -366,41 +359,37 @@ if ($download === 'csv') {
 
 //Render HTML table
 
-echo html_writer::link(new moodle_url($PAGE->url, ['courseid' => $selectedcourseid, 'download' => 'csv']), 'Download CSV', ['class' => 'btn btn-success mb-3']);
-echo html_writer::tag('style', '.low-hours { background-color: #ffcccc; } .summary-row { font-weight:bold; background-color:#e0e0e0; }');
+echo html_writer::link(
+    new moodle_url($PAGE->url, ['courseid'=>$selectedcourseid,'download'=>'csv']),
+    'Download CSV',
+    ['class'=>'btn btn-success mb-3']
+);
+
+echo html_writer::tag('style', '.summary-row{font-weight:bold;background:#e0e0e0;}');
 
 $table = new html_table();
 $table->head = [
     'UserID','Full Name','ModuleID','ModuleName','Event','EventsInCourse',
-    'FirstAccess','LastAccess','MinutesSpent','TotalSpanHours',
-    'ActivityCompletion','ActivityCompletedAt','CourseCompletedAt','TotalHours','IdleHours'
+    'FirstAccess','LastAccess','MinutesSpent','TotalSpanHours','TotalHours','IdleHours'
 ];
 $table->data = [];
 $table->attributes['class'] = 'table table-striped';
-// Add summary rows
 foreach ($student_summaries as $s) {
     $row = [
         $s['userid'], $s['fullname'], '', 'COURSE SUMMARY', '', $s['events'],
         $s['firstaccess'], $s['lastaccess'], $s['minutes_spent'], $s['total_span_hours'],
-        "{$s['completed_activities']} activities completed", '', $s['course_completed_at'], $s['total_hours'], $s['idle_hours']
+        $s['total_hours'], $s['idle_hours']
     ];
     $tr = new html_table_row($row);
     $tr->attributes['class'] = 'summary-row';
     $table->data[] = $tr;
 
-    // Add module-level rows for this student
     foreach (array_filter($records, fn($r) => $r['userid'] == $s['userid']) as $r) {
-        $row = [
+        $table->data[] = new html_table_row([
             $r['userid'], $r['fullname'], $r['moduleid'], $r['modulename'], $r['event'], '',
-            $r['firstaccess'], $r['lastaccess'], $r['minutes_spent'], round($r['minutes_spent'] / 60, 2),
-            $r['activity_completion'], $r['activity_completed_at'], $r['course_completed_at'], $r['total_hours'], $r['idle_hours']
-        ];
-        $tr = new html_table_row($row);
-        // Low-hours highlight: if course total hours for this module is < 3h
-        if ($r['total_hours'] < 3) {
-          //  $tr->attributes['class'] = 'low-hours';
-        }
-        $table->data[] = $tr;
+            $r['firstaccess'], $r['lastaccess'], $r['minutes_spent'], round($r['minutes_spent']/60,2),
+            $r['total_hours'], $r['idle_hours']
+        ]);
     }
 }
 
