@@ -440,8 +440,17 @@ class submissions_table extends table_sql {
         $hashedSource = base64_encode($realSource);
 
         if (strpos($source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+			// Allowed player skins
+			// 23448579 - prod transcript (default),
+			// 23451243 - prod no transcript,
+			// 23450803 - dev,
+			// 23450968 - audio
+            $newPlayerSkins = array('23448579','23451243','23450803','23450968');
+			preg_match('/playerSkin\/(\d+)\//', $source, $skin);
+			//if the specified playerSkin is not in the list, set it to the default
+			if (!in_array($skin[1],$newPlayerSkins)) {
+            	$source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $source);
+			}
         }
         if (strpos($source, 'thumbEmbed/1/') !== false) {
             $source = preg_replace('/thumbEmbed\/1\//', '', $source);
@@ -1021,8 +1030,17 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         // Accessing the 'source' attribute and replacing the playerSkin number
         if (isset($submission->source) && strpos($submission->source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $submission->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $submission->source);
+			// Allowed player skins
+			// 23448579 - prod transcript (default),
+			// 23451243 - prod no transcript,
+			// 23450803 - dev,
+			// 23450968 - audio
+            $newPlayerSkins = array('23448579','23451243','23450803','23450968');
+			preg_match('/playerSkin\/(\d+)\//', $submission->source, $skin);
+			//if the specified playerSkin is not in the list, set it to the default
+			if (!in_array($skin[1],$newPlayerSkins)) {
+            	$submission->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $submission->source);
+			}
         }
         if (strpos($submission->source, 'thumbEmbed/1/') !== false) {
             $submission->source = preg_replace('/thumbEmbed\/1\//', '', $submission->source);

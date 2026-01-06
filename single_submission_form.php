@@ -221,8 +221,17 @@ class kalvidassign_singlesubmission_form extends moodleform {
         }
 
         if (strpos($source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+			// Allowed player skins
+			// 23448579 - prod transcript (default),
+			// 23451243 - prod no transcript,
+			// 23450803 - dev,
+			// 23450968 - audio
+            $newPlayerSkins = array('23448579','23451243','23450803','23450968');
+			preg_match('/playerSkin\/(\d+)\//', $source, $skin);
+			//if the specified playerSkin is not in the list, set it to the default
+			if (!in_array($skin[1],$newPlayerSkins)) {
+            	$source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $source);
+			}
         }
         if (strpos($source, 'thumbEmbed/1/') !== false) {
             $source = preg_replace('/thumbEmbed\/1\//', '', $source);
