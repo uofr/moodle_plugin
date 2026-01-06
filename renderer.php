@@ -37,8 +37,17 @@ class mod_kalvidpres_renderer extends plugin_renderer_base {
     public function display_iframe($kalvidpres, $courseid) {
         // Accessing the 'source' attribute and replacing the playerSkin number
         if (isset($kalvidpres->source) && strpos($kalvidpres->source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $kalvidpres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $kalvidpres->source);
+			// Allowed player skins
+			// 23448579 - prod transcript (default),
+			// 23451243 - prod no transcript,
+			// 23450803 - dev,
+			// 23450968 - audio
+            $newPlayerSkins = array('23448579','23451243','23450803','23450968');
+			preg_match('/playerSkin\/(\d+)\//', $kalvidpres->source, $skin);
+			//if the specified playerSkin is not in the list, set it to the default
+			if (!in_array($skin[1],$newPlayerSkins)) {
+            	$kalvidpres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $kalvidpres->source);
+			}
         }
         if (strpos($kalvidpres->source, 'thumbEmbed/1/') !== false) {
             $kalvidpres->source = preg_replace('/thumbEmbed\/1\//', '', $kalvidpres->source);
