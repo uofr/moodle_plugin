@@ -188,8 +188,12 @@ class mod_kalvidres_mod_form extends moodleform_mod {
         $height = empty($this->current->height) ? 'opx' : $this->current->height.'px';
         $source = empty($this->current->source) ? '' : $this->current->source;
         if (strpos($source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $source);
+            $newPlayerSkins = array('23448579','23451243');
+			$srcPlayerSkin = preg_match('/playerSkin\/(\d+)\//', $source, $skin);
+			//if the specified PlayerSkin is not in the list, set it to the default
+			if (!in_array($skin,$newPlayerSkins)) {
+            	$source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $source);
+			}
         }
 
         if (strpos($source, 'thumbEmbed/1/') !== false) {

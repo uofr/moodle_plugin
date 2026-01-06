@@ -54,8 +54,12 @@ class mod_kalvidres_renderer extends plugin_renderer_base {
     public function display_iframe($kalvidres, $courseid) {
         // Accessing the 'source' attribute and replacing the playerSkin number
         if (isset($kalvidres->source) && strpos($kalvidres->source, 'playerSkin') !== false) {
-            $newPlayerSkin = '23448579';
-            $kalvidres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkin . '/', $kalvidres->source);
+            $newPlayerSkins = array('23448579','23451243');
+			$srcPlayerSkin = preg_match('/playerSkin\/(\d+)\//', $kalvidres->source, $skin);
+			//if the specified PlayerSkin is not in the list, set it to the default
+			if (!in_array($skin,$newPlayerSkins)) {
+            	$kalvidres->source = preg_replace('/playerSkin\/\d+\//', 'playerSkin/' . $newPlayerSkins[0] . '/', $kalvidres->source);
+			}
         }
         if (strpos($kalvidres->source, 'thumbEmbed/1/') !== false) {
             $kalvidres->source = preg_replace('/thumbEmbed\/1\//', '', $kalvidres->source);
