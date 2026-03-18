@@ -93,7 +93,7 @@ function local_zvm_format_lti_instance_object($ltirequest) {
 	}
 */
 	//if ($configsettings->client_id) {
-		$lti->client_id = 'mEpBYGrywd5GxLI';//$configsettings->client_id;
+		$lti->client_id = $configsettings->client_id;
 		//}
 
     $lti->introformat = FORMAT_MOODLE;
@@ -162,10 +162,10 @@ function local_zvm_request_lti_launch($ltirequest, $withblocks = true, $editor =
     $returnurlparams['editor'] = $editor;
 
     // Add the return URL. We send the launch container along to help us avoid frames-within-frames when the user returns.
-    $url = new moodle_url('/local/kaltura/service.php', $returnurlparams);
+    $url = new moodle_url('/local/mymedia/zvm_service.php', $returnurlparams);
     $requestparams['launch_presentation_return_url'] = $url->out(false);
 
-    $serviceurl = new moodle_url('/local/kaltura/service.php');
+    $serviceurl = new moodle_url('/local/mymedia/zvm_service.php');
     $requestparams['lis_outcome_service_url'] = $serviceurl->out(false);
 
     // Add custom parameters
@@ -245,7 +245,7 @@ function local_zvm_lti_get_type_type_config($ltirequest, $kaltura_config) {
 
 	$type->lti_ltiversion = 'LTI-1p3';//$kaltura_config->lti_version;
 
-	$type->lti_clientid = 'mEpBYGrywd5GxLI';//$kaltura_config->client_id;
+	$type->lti_clientid = '';//$kaltura_config->client_id;
 
 	//if (isset($kaltura_config->public_keyset_url)) {
 		$type->lti_publickeyset = 'https://applications.zoom.us/lti/advantage/jwks';//$kaltura_config->public_keyset_url;
@@ -253,7 +253,7 @@ function local_zvm_lti_get_type_type_config($ltirequest, $kaltura_config) {
 	$type->lti_keytype = LTI_JWK_KEYSET;
 
 	//if (isset($kaltura_config->launch_url)) {
-		$type->lti_initiatelogin = 'https://applications.zoom.us/lti/advantage/login/gl1o5mMuRNixmx1wqPpSqw';//$kaltura_config->launch_url;
+		$type->lti_initiatelogin = 'https://applications.zoom.us/lti/advantage/login/';//$kaltura_config->launch_url;
 		//}
 	//if (isset($kaltura_config->redirection_uris)) {
 		$type->lti_redirectionuris = 'https://applications.zoom.us/lti/advantage/oauth/complete';//$kaltura_config->redirection_uris;
@@ -274,7 +274,7 @@ function local_zvm_lti_get_type_type_config($ltirequest, $kaltura_config) {
 function local_zvm_get_config() {
     $configsettings = new \stdClass();
     //$configsettings->public_keyset_url = 'https://applications.zoom.us/lti/advantage/jwks';
-    //$configsettings->launch_url = 'https://applications.zoom.us/lti/advantage/login/gl1o5mMuRNixmx1wqPpSqw';
+    //$configsettings->launch_url = 'https://applications.zoom.us/lti/advantage/login/';
     //$configsettings->redirection_uris = 'https://applications.zoom.us/lti/advantage/oauth/complete';
     
     return $configsettings;
