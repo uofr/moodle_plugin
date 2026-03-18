@@ -3,15 +3,23 @@
 
 # Moodle Includes
 require_once('../../config.php');
-require_once($CFG->dirroot . '/local/kaltura/locallib.php'); 
-require_once "bootstrap5.php";
 //require_once('locallib.php');
-
+require_once(dirname(dirname(dirname(__FILE__))).'/lib/moodlelib.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/local/kaltura/locallib.php');
 # Globals
 global $CFG, $USER, $DB, $PAGE;
 
-$PAGE->set_url('/local/mymedia/simple_uploader');
+$PAGE->set_url('/mod/kalvidassign/simple_uploader.php');
+$PAGE->set_pagelayout('base');
+
+$PAGE->navbar->ignore_active();
 $PAGE->set_context(context_system::instance());
+
+
+//get the url from config setting
+$configsettings = local_kaltura_get_config();
+$kafUrl = $configsettings->kaf_uri;
+$kafUrl_json = json_encode($kafUrl);
 
 # Check security - special privileges are required to use this script
 $currentcontext = context_system::instance();
@@ -27,30 +35,28 @@ if ( (!isloggedin()) ) {
     exit;
 }
 
-$PAGE->set_title("simple uploader");
-$PAGE->set_pagelayout('report');
-$PAGE->set_heading($site->fullname);
-//$PAGE->navbar->ignore_active();
+require_once($CFG->dirroot . '/local/kaltura/API/KalturaClient.php');
 
 
-// Your Kaltura partner credentials
 $partnerId = local_kaltura_get_config()->partner_id;
 $adminSecret = local_kaltura_get_config()->adminsecret;
 
-require_once "../kaltura/API/KalturaClient.php";
 
+
+$username = $USER->username;
 $kconf = new KalturaConfiguration($partnerId);
-
 $kconf->serviceUrl = "https://api.ca.kaltura.com";
 $kclient = new KalturaClient($kconf);
 
-$kafuri = local_kaltura_get_config()->partner_id;
-//error_log('Kaltura Configuration Data: ' . print_r($kafuri, true));
 $ksession = $kclient->session->start($adminSecret, $username, KalturaSessionType::ADMIN, $partnerId, null, 'disableentitlement');
 if (!$ksession) {
     error_log("Failed to establish Kaltura session.");
     die("Error establishing Kaltura session.");
 }
+if (!isset($ksession)) {
+	die("Could not establish Kaltura session. Please verify that you are using valid Kaltura partner credentials.");
+}
+
 $kclient->setKs($ksession);
 
 //only add a the category if site is not UR Courses and is CCE Community
@@ -76,61 +82,41 @@ echo '<pre>';
 print_r($result);
 echo '</pre>';
 */
-$userJson = json_encode($USER);
-//$siteUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-$siteUrl = "Trouble uploading page";
-echo "<script>const SITE_URL = " . json_encode($siteUrl) . ";</script>";
-// Embed the JSON in a JavaScript variable
-echo "<script>const USER = " . $userJson . ";</script>";
-
 ?>
-<script>
-
-
-
-</script>
 <!DOCTYPE html>
 <html>
   <head>
   <head> 
 <?php
-// only check for darkmode if not on a UR Community / CCE Community instance
-if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
-
-	//check if dark mode is enabled and if so add the style sheet
-	if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$USER->id, 'darkmode'=>1))) {
-	  //changes url to opposite of whatever the toggle currently is to set dark mode in db under columns2.php
-	  $css = new moodle_url(('/theme/urcourses_default/style/darkmode.css'));
-	  echo '<link rel="stylesheet" type="text/css" href="'.$css.'">';
-	}
-	
-}
- 
+//check if dark mode is enabled and if so add the style sheet
+if ($usedarkmode = $DB->get_record('theme_urcourses_darkmode', array('userid'=>$USER->id, 'darkmode'=>1))) {
+  //changes url to opposite of whatever the toggle currently is to set dark mode in db under columns2.php
+  $css = new moodle_url(('/theme/urcourses_default/style/darkmode.css'));
+  echo '<link rel="stylesheet" type="text/css" href="'.$css.'">';
+} 
 ?>
 
 </head>
     <title>Alternate Upload to Kaltura</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="simple/style.css" />
-    <link rel="stylesheet" href="simple/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="simple/resumable.js"></script>
+ 
+    <link rel="stylesheet"  href="simple/style.css" />
+        <script src="simple/resumable.js"></script>
     <script src="simple/KalturaFullClient.min.js"></script>
   </head>
   <body class="page">
-    
- 
-      <div class="content">
+
+	  <!--<p class="mt-1"><a href="javascript:window.history.back()" class="btn btn-primary" style="float: right">Back</a></p> -->
+      <div class="container">
         <div id="frame">
         <div class="row">
-	          <div class="col-sm-12 d-flex align-items-center">
+	          <div class="col">
               <fieldset>
-                <h3>Upload to My Media</h3>
-                <p>This alternate uploader is intended to improve performance for users with upload speeds less than 8 mbps.</p>
-                <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p>
-                <p>If you continue to experience problems uploading media, please contact <a href="mailto:it.support@uregina.ca">it.support@uregina.ca</a>.</p>
-          
-                <script >
+              
+                    <p>This alternate uploader is intended to improve performance for users with upload speeds less than 3 mbps.</p>
+                    <!--<p>Remember to click Embed button to add your media to the assignment, then click Submit media button to submit</p>
+                    <p>You can drag and drop up to 5 files at once, but we recommend uploading only one file at a time for slower connections.</p> -->
+                      <script >
                     function setInputValue(id, value) {
                         document.getElementById(id).value=value;
                     }
@@ -138,55 +124,87 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
                         return document.getElementById(id).value;
                     }
                     var VERY_BIG_CHUNK = Math.pow(2,100);
-                </script>
+                 </script>
 
-                <div class="resumable-error">
-                  <p>Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</p>
-                </div>
-                <div class="extension-error">
-                 
-                </div>
+                  <div class="resumable-error">
+                    <p>Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.</p>
+                  </div>
+
 	        
-                <div class="form-group valid-row">
-                  <div class="resumable-progress">
-                    <table>
-                      <tr>
-                        <td width="100%"><div class="progress-container"><div class="progress-bar"></div></div></td>
-                        <td class="progress-text" nowrap="nowrap"></td>
-                        <td class="progress-pause" nowrap="nowrap">
-                          <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><img src="simple/resume.png" title="Resume upload" /></a>
-                          <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><img src="simple/pause.png" title="Pause upload" /></a>
-                          <a href="#" onclick="r.cancel(); return(false);" class="progress-cancel-link"><img src="simple/cancel.png" title="Cancel upload" /></a>
+                  <div class="form-group">
+                    <div class="resumable-progress">
+                      <table>
+                        <tr>
+                          <td width="100%"><div class="progress-container"><div class="progress-bar"></div></div></td>
+                          <td class="progress-text" nowrap="nowrap"></td>
+                          <td class="progress-pause" nowrap="nowrap">
+                          <a href="#" onclick="toggleUpload(); return false;" class="progress-toggle-link">
+                            <img id="toggle-icon" src="simple/pause.png" title="Pause upload" />
+                          </a>
+                          <a href="#" onclick="handleCancel(); return false;" class="progress-cancel-link" data-dismiss="modal">
+                            Cancel
+                          </a>
                         </td>
-                      </tr>
-                    </table>
-                  </div>
-      
-                  <div class="upload-speed"></div> 
 
-                  <div id="report" style="color: rgb(69, 145, 58);"></div>
 
-                  <ul class="resumable-list">
-                    <li><h4>Upload Log</h4></li>
-                  </ul>
-                </div>  
-		  
-                <div class="form-group valid-row mb-5">
-                  <div class="resumable-drop" ondragenter="jQuery(this).addClass('resumable-dragover');" ondragend="jQuery(this).removeClass('resumable-dragover');" ondrop="jQuery(this).removeClass('resumable-dragover');">
-                  <div class="position-relative m-5 p-4">
-                    <img class="p-2 position-absolute top-50 start-50 translate-middle img-fluid" src="simple/upload_background.png" alt="Upload new media">
-                    <img class="p-2 position-absolute top-50 start-50 translate-middle img-fluid uploadBox__moving-image" src="simple/upload_arrow.png" alt="Upload arrow">
-                  </div>
 
-                  <div class="mt-2 p-4">
-                      <h2>Drag & Drop a file here</h2>
-                      <p class="text-muted">or</p> 
-                      <p><a class="resumable-browse btn btn-primary bdr">Choose a file to upload</a></p>
-                      <p>All common video, audio and image formats in all resolutions are accepted.</p>
+                        </tr>
+                      </table>
                     </div>
+        
+                    <div class="upload-speed"></div> 
+
+                    <div id="report" style="color: rgb(69, 145, 58);"></div>
+
+                        <div class="resumable-list mt-2">
+                          <span class ="li-margin"><h4>Upload Log</h4></span>
+                       </div>
+                  </div>  
+                   
+
+                 <div id ="upload-container" class="mb-5  drop_drag" >
+                  <div  class="resumable-drop displayme" ondragenter="jQuery(this).addClass('resumable-dragover');" ondragend="jQuery(this).removeClass('resumable-dragover');" ondrop="jQuery(this).removeClass('resumable-dragover');">
+                      <div class="position-relative m-5 p-2">
+                        <img class = "img-fluid" src="simple/upload_background.png" alt="Upload new media">
+                        <img class = "image2 img-fluid" src="simple/upload_arrow.png" >
+                      </div>
+                  
+                      <div class="mt-5 p-3">
+                 
+                          <h2>Drag & Drop a file here</h2>
+                          <p class="text-muted">or</p> 
+                          <p><a class="resumable-browse btn btn-primary btn-simple-color rounded">Choose a file to upload</a></p>
+                          <p>All common video, audio and image formats in all resolutions are accepted.</p>
+                      </div>
                   </div>
+                </div>
+                <div id="kplayer-container"> 
+                
+              
+                <video id ="videoload" width="320" height="240" controls autoplay style="display:none;">
+                  <source id ="kplayer" src="">
+                 
+                  Your browser does not support the video tag.
+                </video>
+                <!-- Status loading message for slower internet  speed-->
+                <div id="loading-overlay" style="display: none;">
+                <div id="loading-spinner"></div>
+                <div id="loading-message">Please wait while we create a copy of your video submission...</div>
+                </div>
+                <div id ="loading"  style ="display:none;" >
+                <div  class="alert alert-success" id="assignment-name">
+                </div>
+                <div id="media-processing_image" class ="rounded">
+                <img class="rounded mx-auto d-block" src="https://cfvod.cap2.ovp.kaltura.com/5.132.4.480/public/build0/img/processing.gif" width="260px" height="180px" aria-hidden="true">
                   </div>
-                  <div class="form-group valid-row">
+                <div>
+                  <button id="embedmedia"  type="button" onclick="SubmitVideo()" class="btn btn-primary rounded mt-2">Submit media</button>
+                </div>  
+              </div>
+
+                  </div>
+
+                <div class="form-group" hidden>
 		
                   <details>
                   <summary>Advanced options</summary>
@@ -205,54 +223,50 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 	                  </select>
 		              </div>
                 </details>
-                <div class="col-auto text-end mt-2">
-                <button type="button" class="btn btn-light backbutton" onClick="parent.location='mymedia.php'">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="14" fill="currentColor" class="bi bi-chevron-left clarete" viewBox="0 0 16 14">
-                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                  </svg> BACK TO MY MEDIA
-                </button> 
 	            </div>
 
-	            <div class="form-group valid-row">
+	            <div class="form-group ">
 
                 <?php if (isset($_GET["debug"])&&$_GET["debug"]==1) { ?>
                   <p class="text-muted">Kaltura Service URL: <?php echo $kconf->serviceUrl ?><br />
                 Partner ID: <?php echo $partnerId ?><br />
-                User: <?php echo $username ?><br />
+                User: <?php echo $user ?><br />
                 KS: <?php echo $ksession ?></p>
                 Category: <?php echo $category ?></p>
                 <?php } ?>
 
                 <input id="inputSimUploads" type="hidden" value="5"> 
                 <input class="form-control" id="serviceUrl" type="hidden" value="<?php echo $kconf->serviceUrl ?>" size="30">
-                <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $username ?>">
+                <input class="form-control" id="userId" type="hidden" size="30" value="<?php echo $user ?>">
                 <input class="form-control" id="partnerId" type="hidden" size="30" value="<?php echo $partnerId ?>">
                 <input class="form-control" id="inputKS" type="hidden" size="30" value="<?php echo $ksession ?>">
                 <input class="form-control" id="category" type="hidden" size="30" value="<?php echo $category ?>">
 	            </div>
 	          </div>
 	        </div>
-         
 	      </fieldset>
-      
-
       </div>
 	  </div>
- 
+
     <script>
+     var user = <?php echo json_encode($user); ?>;
+      var newEntryId;
+      var kalturadlplayerURL;           
 
-
+     var  is_update;
+      var entry_Id = null;
       var kalturaSessionKey = null;
 	    var kalturaPartnerId = null;
 	    var kalturaUserId = null;
       var kalturaServerBase = null; 
 	    var uploadToken = new Array();
       var lastUploadToken = null;
-
+      let isPaused = true; // Initial state
+                  
 	    // if you wish to report the stats to an SQLITE DB, set this to where you host process_upload_stats.php
       // you also need to create the SQLITE DB from the chunked_upload.sql schema and ensure the web server user has write permissions to it and the directory in which it resides	
 	    var statsReportingEndpoint = null;
-      var kalturaEntryId=null;
+
       function genKS(server,userId, password, partnerId){
         var params;
         if (partnerId){
@@ -270,7 +284,119 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
             }
         });
       }   
-       
+
+
+          function handleCancel() {
+          // Cancel any ongoing upload (if r is defined)
+          if (typeof r !== "undefined") {
+              r.cancel();
+          }
+
+          // Reset progress bar and text
+          const progressBar = document.querySelector('.progress-bar');
+          const progressText = document.querySelector('.progress-text');
+          if (progressBar) progressBar.style.width = '0%';
+          if (progressText) progressText.innerHTML = '';
+
+          // Hide the upload progress container
+          const progressContainer = document.querySelector('.resumable-progress');
+          if (progressContainer) progressContainer.style.display = 'none';
+          const uploadSpeed = document.querySelector('.upload-speed');
+          if (uploadSpeed) uploadSpeed.style.display = 'none'; 
+          const  resumablelist = document.querySelector('.resumable-list');
+          if ( resumablelist)  resumablelist.style.display = 'none';
+
+          const toggleIcon = document.getElementById('toggle-icon');
+          toggleIcon.src = 'simple/pause.png'; // Change to pause icon
+          isPaused = true;
+          // Reset upload list
+          const uploadList = document.querySelector('.resumable-list');
+          if (uploadList) uploadList.innerHTML = '<li class="li-margin"><h4>Upload Log</h4></li>';
+
+          // Hide video preview and reset the source
+          const videoElement = document.getElementById('videoload');
+          if (videoElement) {
+              videoElement.style.display = 'none';
+              videoElement.querySelector('#kplayer').src = '';
+          }
+
+          // Hide loading spinner and success messages
+          const loadingOverlay = document.getElementById('loading-overlay');
+          if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+          const loading = document.getElementById('loading');
+          if (loading) loading.style.display = 'none';
+
+          const report = document.getElementById('report');
+          if (report) report.style.display = 'none';
+
+          // Show the upload prompt again
+          const uploadContainer = document.getElementById('upload-container');
+          if (uploadContainer) {
+              uploadContainer.style.display = 'block'; // Make upload prompt visible
+          }
+
+          // Optionally reset other fields (e.g., category, partnerId, etc.)
+          const fileInput = document.querySelector('.resumable-browse');
+          if (fileInput) {
+              fileInput.style.display = 'block'; // Show the file input button again
+          }
+
+          // Reset hidden fields if necessary
+          document.getElementById('category').value = '';
+          document.getElementById('partnerId').value = '';
+
+          // Log completion of the reset
+          console.log('Modal has been reset to initial state');
+      }
+
+
+        // Disable the buttons after upload completion
+        function disableUploadButtons() {
+            // Disable the toggle (pause/resume) button
+            const toggleButton = document.querySelector('.progress-toggle-link');
+            if (toggleButton) {
+                toggleButton.style.pointerEvents = 'none'; // Prevent clicks
+                toggleButton.style.opacity = '0.5'; // Dim the button
+            }
+
+            // Disable the cancel button
+            const cancelButton = document.querySelector('.progress-cancel-link');
+            if (cancelButton) {
+                cancelButton.style.pointerEvents = 'none'; // Prevent clicks
+                cancelButton.style.opacity = '0.5'; // Dim the button
+            }
+        }
+
+
+
+        function toggleUpload() {
+            if (typeof r === "undefined") return;
+
+            const toggleIcon = document.getElementById('toggle-icon');
+            if (!toggleIcon) return;
+
+            if (isPaused) {
+                // Pause the upload
+                r.pause();
+                isPaused = false;
+                toggleIcon.src = 'simple/resume.png'; // Change to resume icon
+                toggleIcon.title = 'Resume upload';
+                console.log('Upload paused.');
+                
+            } else {
+              // Start the upload
+              r.upload();
+                isPaused = true;
+                toggleIcon.src = 'simple/pause.png'; // Change to pause icon
+                toggleIcon.title = 'Pause upload';
+                console.log('Upload started.');
+              
+            }
+        }
+
+
+
       function kDoJSONRequest(server, ks, path, queryString, callback) {
             
 	      if (ks){
@@ -287,7 +413,8 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
         };
         xhr.send();
       }
-        
+    
+
       function analyticsRequest(endpoint, query) {
         //do something with the upload stats for QoS
             
@@ -305,25 +432,24 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
         xhr.open("POST", url, true);
         xhr.send();
       }
-      
+
       function kAddUploadToNewMedia(server, ks, uploadToken, name, report) {
-            
+
+        
+
         kDoJSONRequest(server, ks, "/service/media/action/addFromUploadedFile", 
           "mediaEntry:name=" + name +"&mediaEntry:mediaType=1" +
           "&uploadTokenId=" + uploadToken, function(response) {
-         
-		   
+
+		      var kalturaEntryId=null;
 		      var reportDiv = document.getElementById("report");
           if (response.id){
             kalturaEntryId=response.id;
             reportDiv.style.color="rgb(69, 145, 58)";
             status_msg ="Last fully uploaded entry ID: <b>"+response.id + "</b>, Entry Name: <b>"+response.name+"</b>"; 
             report['entry_id']=kalturaEntryId;
-            kalturaEntryId = response.id;
             is_success = true;
-            const action ="Successfully uploaded entry ID:" + response.id + " file name: "+ response.name;
-            // Call the function to log the visit
-            logVisit(action, USER);
+              entry_Id = response.id;
 
             var iscategory = document.getElementById("category").value;
             //set category
@@ -352,24 +478,144 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
             reportDiv.style.color="red";
             status_msg ='Upload ERROR! Code: ' + response.code + 'Message: ' + response.message;
             is_success = false;
-            const action = status_msg;
-            // Call the function to log the visit
-            logVisit(action, USER);
             $('.upload-speed').hide();
-            
           }
-
+        
 		      //console.log('entry ID is '+kalturaEntryId);
 		      reportDiv.innerHTML=status_msg;
 		      report['last_status']=status_msg;
+
 		      // Reflect that the file upload has completed
+          if(is_success){ // if first upload was successfull
+            
+            var config = new KalturaConfiguration();
+              config.serviceUrl = 'https://api.ca.kaltura.com';
+              var client = new KalturaClient(config);
+
+              client.setKs(ks);
+          
+                var cloneOptions = []
+                
+                KalturaBaseEntryService.cloneAction(entry_Id, cloneOptions)
+                  .execute(client, function(success, results) {
+                    if (!success || (results && results.code && results.message)) {
+                      console.log('Kaltura Error', success, results);
+                      is_update = false;
+                    } else {
+                    
+                      is_update = true;
+                      newEntryId = results.id;
+                     
+                      console.log( "A duplicate copy of the entry was created with ID: " + newEntryId);
+                      var mediaEntry = {objectType: "KalturaMediaEntry"};
+                            
+                            mediaEntry.name = response.name+"_Assignment";
+                            mediaEntry.userId = user+"_assignment";
+
+                            KalturaMediaService.update(newEntryId, mediaEntry)
+                              .execute(client, function(success, resulta) {
+                                hideLoadingOverlay();
+                                if (!success || (resulta && resulta.code && resulta.message)) {
+                                  console.log('Kaltura Error', success, resulta);
+                                } else {
+                                
+                                  kalturadlplayerURL = resulta.downloadUrl;
+                                  status = resulta.status;
+                                  name = resulta.name;
+                                  entryid = resulta.id;
+                                   embedurlvideo(name,entryid,status);
+                                 console.log(status);
+                                  console.log(kalturadlplayerURL);
+                                }
+                               
+                              });
+                    
+                    }
+                  });
+
+          }
+
+
 		      if (statsReportingEndpoint){
 			      analyticsRequest(statsReportingEndpoint,report);
 		      }
 		      return is_success;
         });
+
       }
+     
+      //Status loading message for slower internet  speed
+      function showLoadingOverlay() {
+        var loadingOverlay = document.getElementById("loading-overlay");
+        loadingOverlay.style.display = "flex";
+      }
+
+      function hideLoadingOverlay() {
+        var loadingOverlay = document.getElementById("loading-overlay");
+        loadingOverlay.style.display = "none";
+      }
+     
+      
+      // embed video from simple uploader to kaltura  media assignment
+    function embedurlvideo(name,id,status){ 
         
+        var video = document.getElementById("videoload");
+        var loading = document.getElementById("loading");
+        var assign = document.getElementById("assignment-name");
+        document.getElementById("kplayer").src = kalturadlplayerURL;
+        video.load();
+        
+        if (status == 2) {
+          //media is ready display it
+          loading.style.display = "none";
+          video.style.display = "block";
+
+        } else {
+          //Media is still in preconvertion status
+          video.style.display = "none";
+          loading.style.display = "block";
+          assign.innerHTML = '<h5>Assignment: ' + name +'</h5> <hr> <p>Your assignment has been created successfully. Click "Submit Media" to submit your assignment. No need to wait for media conversion and processing to finish.</p>';
+          assign.style.backgroundColor ="#dfd7d7";
+        
+        }   
+        } 
+
+      //get the url from kaf config
+      var kafUrl = <?php echo $kafUrl_json; ?>;
+      //console.log(kafUrl)
+      function SubmitVideo() {
+       //we will use the kafuri in the configsettings
+        var src =  kafUrl+'/browseandembed/index/media/entryid/'+newEntryId+'/showDescription/false/showTitle/false/showTags/false/showDuration/false/showOwner/false/showUploadDate/false/playerSize/608x402/playerSkin/23448540/'
+       //  console.log(src)
+         document.getElementById("entry_id").value = newEntryId;
+         document.getElementById("width").value = 600;
+         document.getElementById("height").value = 450;
+         document.getElementById("source").value = src;
+         
+         var urlArray = src.split("/");
+          var playerSizeIndex = urlArray.findIndex(function(element) {
+            return element === "playerSize";
+          });
+          var playerSize = urlArray[playerSizeIndex + 1].split("x");
+          var width = playerSize[0];
+          var height = playerSize[1];
+      
+          var submitButton = document.getElementById('submit_video');
+          submitButton.removeAttribute('disabled');
+
+          var Vtmbnail = document.getElementById('video_thumbnail');
+         Vtmbnail.setAttribute('style', 'display: none;')
+         
+          // actually submit the video
+          document.getElementById("submit_video").click();
+        
+           // Hide the modal
+         $('#staticBackdrop').modal('hide');
+         
+      }
+   
+     
+
       function kUpload(server, ks, fileName, fileUniqueIdentifier, fileSize, resumable, report) {
 
         resumable.opts.target = server + "/service/uploadToken/action/upload";
@@ -425,6 +671,7 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
       if(!r.support) {
         $('.resumable-error').show();
       } else {
+
         // Show a place for dropping/selecting files
         $('.resumable-drop').show();
         r.assignDrop($('.resumable-drop')[0]);
@@ -432,35 +679,10 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 
         // Handle file add event
         r.on('fileAdded', function(file){
-          $('.extension-error').hide();
           var chunkSize = parseFloat(getInputValue("inputChunkSize"));
           if (chunkSize === -1) {
             chunkSize = VERY_BIG_CHUNK;
           }
-              // Get the file extension
-        var fileExtension = file.fileName.split('.').pop().toLowerCase();
-
-        // Check if the file extension is pptx or pdf
-        if (fileExtension === 'pptx' || fileExtension === 'pdf') {
-            // If it's pptx or pdf, prevent the upload
-            var errorMessage = file.fileName + " is not in a valid format. Only common video, audio, and image formats in all resolutions are accepted.";
-            // Display the error message in an HTML element
-            var errorMessage = '<div class="alert alert-danger" role="alert">' + errorMessage + '</div>';
-            // Reset upload token
-            uploadToken[file.uniqueIdentifier] = null;
-
-            $('.extension-error').show();
-            $('.extension-error').html(errorMessage);
-            r.files = [];
-            
-            // Reset the file input field
-            $('.resumable-browse input[type=file]').val('');
-            
-            console.log("Sorry, uploading .pptx and .pdf files is not allowed.");
-          
-            return;
-        }
-
           r.opts.chunkSize = chunkSize*1024;
           r.opts.simultaneousUploads = parseInt(getInputValue("inputSimUploads"));
           file.bootstrap();
@@ -475,6 +697,15 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
             kalturaPartnerId=response.partnerId;
             kalturaUserId=response.id;
 		      });
+
+          //dapiawej
+          //hide close buttons in modal once file has been added
+          $("#staticBackdrop .close").css("display", "none");
+          $("#staticBackdrop .close-modal").css("display", "none"); 
+          document.getElementById("upload-container").style.display ="none";
+          var divimagepro = document.getElementById("media-processing_image");
+          divimagepro.style.backgroundColor = "#f0e9e9";
+         
 
           // Show progress pabr
           $('.resumable-progress, .resumable-list').show();
@@ -500,28 +731,39 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
           };
 
           // Actually start the upload
-          kUpload(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
+          
+       kUpload(kalturaServerBase, kalturaSessionKey, file.fileName, file.uniqueIdentifier, file.size, r, report);
         });
+
+
+      document.querySelector(".resumable-browse input[type='file']").addEventListener("change", function(){
+                    if(this.value !== ""){
+                        document.querySelector(".resumable-drop").classList.add("disabled");
+                        document.querySelector(".resumable-browse").classList.add("disabled");
+                    }
+                });
+        
 
         r.on('pause', function(){
           // Show resume, hide pause
-          
           $('.resumable-progress .progress-resume-link').show();
           $('.resumable-progress .progress-pause-link').hide();
-         const action ="The user upload has been <strong>paused</strong>";
-            // Call the function to log the visit
-            logVisit(action, USER);
         });
         r.on('complete', function(){
           // Hide pause/resume when the upload has completed
           $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
         });
+       
         r.on('fileSuccess', function(file,message){
+          
           var duration = (Date.now() - lastUploadStartTime)/1000;
           var mbSize = file.size/1024/1024;
           var speed = mbSize/duration;
-          $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(3) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: '+ speed.toFixed(1)+ ' mb/s');
-	      
+          $('.resumable-file-' + file.uniqueIdentifier + ' .resumable-file-progress').html('completed! File size: ' + mbSize.toFixed(1) + 'MB , Upload duration: ' + duration.toFixed(1) + ' secs, Speed: ' + speed.toFixed(1) + ' mb/s');
+   
+          // Disable buttons after completion
+          disableUploadButtons();
+                  
           // add upload to new media
           var report = {
                   user_id: kalturaUserId, 
@@ -535,8 +777,8 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
                   filename: file.fileName, 
 
             };
-
             kAddUploadToNewMedia(kalturaServerBase, kalturaSessionKey, uploadToken[file.uniqueIdentifier], file.fileName, report);
+         
         });
         r.on('fileError', function(file, message){
           // Reflect that the file upload has resulted in error
@@ -547,9 +789,14 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
           // Handle progress for both the file and the overall upload
           $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
           $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
-			  
-			    // Write out upload speed
-			    //if (file.lengthComputable) {
+         
+          const overallProgress = Math.floor(r.progress() * 100);
+          $('.progress-bar').css({ width: overallProgress + '%' });
+          if (overallProgress >= 98) {
+              console.log('Upload is nearing completion!');
+              showLoadingOverlay();
+          }
+			   
 	        var duration = (Date.now() - lastUploadStartTime)/1000;
 	        var mbSize = file.size/1024/1024;
 	        var speed = mbSize/duration;
@@ -566,14 +813,11 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 					uploadedstr = stotal * sbytes / 1024 / 1024;
 			    lastNow = now;
 			    $('.upload-speed').text('' + duration.toFixed(1) + ' secs ' + uploadedstr.toFixed(1) + " MB (" + percent.toFixed(0) + "%) " + speed.toFixed(1) + " mb/s");
-					  //}
+				
         });
 
         r.on('cancel', function(){
           $('.resumable-file-progress').html('canceled');
-          const action ="The user upload has been <strong>canceled</strong>"
-            // Call the function to log the visit
-            logVisit(action, USER);
         });
 
         r.on('uploadStart', function(){
@@ -581,45 +825,10 @@ if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
 			    lastNow = new Date().getTime();
 			    lastKBytes = 0;
           // Show pause, hide resume
-       
           $('.resumable-progress .progress-resume-link').hide();
           $('.resumable-progress .progress-pause-link').show();
         });
       }
-
-
-    
-function logVisit(action, user) {
-
-const currentTime = new Date();
-const formattedTime = currentTime.toLocaleString(); 
-
- // Create a log entry
- const logEntry = {
-   'time': formattedTime,
-   'fullname': `${user.firstname} ${user.lastname}`,
-   'ip': user.lastip,
-   'user': user.username,
-   'action': action,
-   'site_url': SITE_URL 
- };
-
- // Send log entry to server-side script
- fetch('logs.php', {
-   method: 'POST',
-   body: JSON.stringify(logEntry)
- }).then(response => {
-   // Handle the response if needed
- }).catch(error => {
-   // Handle any errors
- });
-}
-
-
- const action ="Viewed the page";
-// Call the function to log the visit
-logVisit(action, USER);
-
 
     </script>
   </div>
