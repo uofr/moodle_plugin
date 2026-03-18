@@ -74,16 +74,26 @@ echo $OUTPUT->header();
         ?>
          </li>
         <?php
-              $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
-              if($hasAdminRole){
-                ?>
-              <li class="nav-item " forceintomoremenu ="true">
+            
+      $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
+      if($hasAdminRole){
+      ?>
+          <li class="nav-item " forceintomoremenu ="true">
               <a class="nav-link nav_border_bottom" target="contentframe" href="mymedia_logs.php">Logs</a>
-              </li>
-          <?php
+          </li>
+          <li class="nav-item " forceintomoremenu ="true">
+              <a class="nav-link nav_border_bottom" target="contentframe" href="media_list.php">Media list</a>
+          </li>
+             <li class="nav-item " forceintomoremenu ="true">
+              <a class="nav-link nav_border_bottom" target="contentframe" href="poodll_monitor.php">Poodll Dashboard</a>
+          </li>
+          <li class="nav-item">
+    <a class="nav-link nav_border_bottom" target="_self" href="zoom_media.php">Zoom Media</a>
+</li>
+      <?php
+      }
+      ?>
 
-        }
-        ?>
      <?php
               $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
               if($hasAdminRole){

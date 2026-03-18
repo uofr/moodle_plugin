@@ -103,8 +103,13 @@ logVisit($action, $visitLogFile);
 
 //using zoom plugin function to match the user
 $user = $USER;
+ $get_recording_service1 = new \mod_zoom\webservice();
+
 $get_usersInfo = zoom_get_user_zoomemail($user);
 $visited = isset($_SESSION['visited']);
+
+ $meetings_listed = $get_recording_service1->list_meetings_user($get_usersInfo->email);
+
 ?>
 <!-- hidden fields for emails accounts--> 
 <input type="hidden" name="ur_email" value ="<?php echo $get_usersInfo->email; ?>"> <br>
@@ -402,7 +407,7 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
             
             // Call the function and store the result in a variable
             $recordingStatus = $get_recording_service->get_user_meeting_recording($records->uuid);
-            
+          
             // Check the recording status and display conditional content
             if (!$recordingStatus) {
                 // If the recordings are private and not downloadable, only show the message and button
@@ -418,7 +423,7 @@ if (isset($_POST['datefrom']) && isset($_POST['dateto'])) {
                 html_writer::end_tag('form') .
                 // Now add the end tag for the div
                 html_writer::end_tag('div'), 
-                array('class' => 'text-center alert alert-info', 'id' => 'accordion-content-' . $records->uuid)
+                array('class' => 'text-center alert alert-info mb-0', 'id' => 'accordion-content-' . $records->uuid)
             );
            
             } else {
