@@ -36,15 +36,22 @@ $zoom_tool = $DB->get_record_select('lti_types', $select, ['url' => $zoomurl], '
 
 if ($zoom_tool) {
 
-    $launchurl = new moodle_url('/mod/lti/launch.php', ['id'=> 0, 'toolid' => $zoom_tool->id, 'container' => 'embed']);
-    $attr = [
-        'id' => 'contentframe',
-        'name' => 'contentframe',
-        'src' => $launchurl->out(false),
-        'width' => '100%',
-        'height' => '800px',
-        'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;'
-    ];
+$launchurl = new moodle_url('/mod/lti/launch.php', [
+    'typeid'    => $zoom_tool->id, 
+    'container' => 'embed'
+]);
+
+$attr = [
+    'id'               => 'contentframe',
+    'name'             => 'contentframe',
+    'src'              => $launchurl->out(false),
+    'width'            => '100%',
+    'height'           => '800px',
+    'allowfullscreen'  => 'true', 
+    'allow'            => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;'
+];
+
+echo html_writer::tag('iframe', '', $attr);
     echo html_writer::tag('iframe', '', $attr);
 } else {
     echo $OUTPUT->notification("Zoom LTI Tool not found on this server.", 'error');
