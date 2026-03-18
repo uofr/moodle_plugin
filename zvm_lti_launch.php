@@ -43,4 +43,6 @@ $launch['width'] = '300';
 $launch['height'] = '300';
 $launch['custom_publishdata'] = '';
 
+//echo $content = local_zvm_request_lti_launch($launch);
 echo $content = local_zvm_request_lti1p3_launch($launch);
+
