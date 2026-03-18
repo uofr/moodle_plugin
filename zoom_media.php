@@ -36,7 +36,7 @@ $zoom_tool = $DB->get_record_select('lti_types', $select, ['url' => $zoomurl], '
 
 if ($zoom_tool) {
 
-    $launchurl = new moodle_url('/mod/lti/launch.php', ['id' => $zoom_tool->id, 'container' => 'embed']);
+    $launchurl = new moodle_url('/mod/lti/launch.php', ['toolid' => $zoom_tool->id, 'container' => 'embed']);
     $attr = [
         'id' => 'contentframe',
         'name' => 'contentframe',
