@@ -68,13 +68,11 @@ $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
 
-$renderer = $PAGE->get_renderer('mod_kalvidpres');
-
-echo $OUTPUT->box_start('generalbox');
+//echo $OUTPUT->box_start('generalbox');
 
 //echo format_module_intro('kalvidpres', $kalvidpres, $cm->id);
 
-echo $OUTPUT->box_end();
+//echo $OUTPUT->box_end();
 
 // Require a YUI module to make the object tag be as large as possible.
 $params = array(
@@ -85,8 +83,34 @@ $params = array(
     'width' => $kalvidpres->width,
     'height' => $kalvidpres->height,
 );
-$PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
 
-echo $renderer->display_iframe($kalvidpres, $course->id);
+// for debugging, show the entry_id 
+echo '<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidpres->entry_id.'</div>';
+
+//if we have a zoom clip, use it instead
+if ($zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidpres->entry_id])) {
+
+    $cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
+
+    $zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
+	
+	// for debugging, show the clip and channel id
+    echo '<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>';
+    echo '<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>';
+
+	//echo '<pre>'.print_r($course,1).'</pre>';
+
+    echo "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center&channelId={$zoomchannel->value}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
+
+} else {
+	// fall back to showing the kaltura video
+    $renderer = $PAGE->get_renderer('mod_kalvidpres');
+
+    echo $renderer->display_iframe($kalvidpres, $course->id);
+
+    $PAGE->requires->yui_module('moodle-local_kaltura-lticontainer', 'M.local_kaltura.init', array($params), null, true);
+    $PAGE->requires->js(new moodle_url('/local/kaltura/js/bse_iframe_resize.js'));
+
+}
 
 echo $OUTPUT->footer();
