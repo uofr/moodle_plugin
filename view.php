@@ -85,7 +85,7 @@ $params = array(
 );
 
 // for debugging, show the entry_id 
-echo '<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidpres->entry_id.'</div>';
+echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidpres->entry_id.'</div>-->';
 
 //if we have a zoom clip, use it instead
 if ($zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidpres->entry_id])) {
@@ -95,8 +95,8 @@ if ($zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidpres->entr
     $zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
 	
 	// for debugging, show the clip and channel id
-    echo '<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>';
-    echo '<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>';
+    echo '<!--<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>-->';
+    echo '<!--<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>-->';
 
 	//echo '<pre>'.print_r($course,1).'</pre>';
 
