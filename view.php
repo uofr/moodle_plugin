@@ -86,11 +86,13 @@ $params = array(
     'height' => $kalvidres->height
 );
 
+$zoom_courses = array();
+
 // for debugging, show the entry_id 
 echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidres->entry_id.'</div>-->';
 
 //if we have a zoom clip, use it instead
-if ($zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidres->entry_id])) {
+if ($zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidres->entry_id])&&in_array($course->id,$zoom_courses)) {
 
    $cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
 
