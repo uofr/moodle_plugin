@@ -1,0 +1,21 @@
+<div class="col p-2">
+    <div class="card h-100">
+        <div>
+            <span class="badge badge-primary p-1" title="Zoom Media" style="position:absolute; top: 1.5em; left: 1.5em;">ZM</span>
+            <span class="badge badge-dark p-1" style="position:absolute; top: 1.5em; right: 1.5em;">{{friendlyduration}}</span>
+            <img class="card-img-top video-card-image" src="{{thumbnail_url}}" alt="{{video_name}}">
+        </div>
+        <div class="card-body">
+            <h6 class="card-title">{{video_name}}</h6>
+            <p class="card-text">
+                {{#str}} time_created, local_mymedia, {{createdrelative}} ({{created_time}}) {{/str}}<br>
+                {{#str}} time_modified, local_mymedia, {{modifiedrelative}} ({{modified_time}}) {{/str}}
+            </p>
+        </div>
+        <div class="card-footer">
+            {{#pix}} {{{sharescope}}}, local_mymedia {{/pix}}
+            {{sharescope_help}}
+        </div>
+        <a href="{{{play_link}}}" target="_blank" class="stretched-link"></a>
+    </div>
+</div>

@@ -86,3 +86,13 @@ function local_mymedia_extend_navigation($navigation) {
             break;
     }
 }
+
+function local_mymedia_get_fontawesome_icon_map() {
+    return [
+        'local_mymedia:share_scope_anyone' => 'fa-globe',
+        'local_mymedia:share_scope_same_organization' => 'fa-users',
+        'local_mymedia:share_scope_invited_members_only' => 'fa-envelope',
+        'local_mymedia:share_scope_private' => 'fa-lock',
+    ];
+}
+

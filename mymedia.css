@@ -11,7 +11,7 @@
       display: none;
     }
   }
-  
+
   /* show links on screens larger than 515px */
   @media (min-width: 515) {
     .nav-item[forceintomoremenu=true] {
@@ -23,8 +23,7 @@
     border-top-left-radius: 5px !important;
     border-top-right-radius: 5px !important;
   }
-  
+
   .moremenu .nav-link.active {
     border-bottom-color: #004f2e !important;
   }
-  

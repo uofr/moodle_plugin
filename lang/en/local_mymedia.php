@@ -35,3 +35,18 @@ $string['link_location_top_menu'] = 'Top navigation menu';
 $string['link_location_side_menu'] = 'Side navigation menu';
 $string['link_location_user_menu'] = 'User navigation menu';
 $string['privacy:metadata'] = 'My Media plugin does not store any personal data.';
+
+// Zoom Media
+$string['zoom_media'] = 'Zoom Media';
+$string['tab_videos'] = 'Videos';
+$string['tab_clips'] = 'Clips';
+$string['tab_channels'] = 'Channels';
+$string['tab_record'] = 'Record';
+$string['tab_upload'] = 'Upload';
+$string['time_created'] = 'Created: {$a}';
+$string['time_modified'] = 'Modified: {$a}';
+$string['share_scope_anyone'] = 'Anyone with a link can watch this.';
+$string['share_scope_same_organization'] = 'Anyone at the Unveristy of Regina with a link can watch this.';
+$string['share_scope_invited_members_only'] = 'Invited users can watch this.';
+$string['share_scope_private'] = 'The clip\'s owner and account administrators can watch this.';
+$string['zoom_video_search_help'] = 'Search Zoom videos';

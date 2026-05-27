@@ -1,0 +1,15 @@
+<form class="form-inline">
+  <div class="form-group">
+    <input type="text" class="form-control" id="zoom_video_search" placeholder="{{#str}}search{{/str}}">
+  </div>
+</form>
+<div id="zoom_media_videos_{{uniqid}}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+    {{> local_mymedia/zoom_media_video_list }}
+</div>
+<div id="zoom_media_load_more"></div>
+
+{{#js}}
+require(['local_mymedia/zoom_media_videos'], function(zoomMediaVideos) {
+    zoomMediaVideos.init('#zoom_media_videos_{{uniqid}}', '{{next_page_token}}');
+});
+{{/js}}

@@ -31,4 +31,12 @@ $capabilities = array(
             'user' => CAP_ALLOW
         )
     ),
+    'local/mymedia:viewzoomchannels' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_USER,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
 );
