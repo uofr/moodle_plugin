@@ -128,6 +128,47 @@ function xmldb_local_kaltura_upgrade($oldversion) {
 		
 		upgrade_plugin_savepoint(true, 2026031202, 'local', 'kaltura');
 	}
+	
+    if ($oldversion < 2026000100) {
+        
+
+        // Define table zoom_meeting_details to be created.
+        $table = new xmldb_table('ur_kaltura_archive');
+
+        // Adding fields to table zoom_meeting_details.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('entry_id', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+		
+        $table->add_field('username', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        
+        $table->add_field('title', XMLDB_TYPE_CHAR, '256', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, 'small', null, null, null, null);
+
+        $table->add_field('created', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
+        $table->add_field('lastupdated', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
+		
+
+        $table->add_field('plays', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('lastplayed', XMLDB_TYPE_INTEGER, '12', null, null, null, null);
+		
+        $table->add_field('tags', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
+        $table->add_field('categories', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
+		
+
+        // Adding keys to table zoom_meeting_details.
+        $table->add_key('id', XMLDB_KEY_UNIQUE, ['id']);
+        $table->add_key('id_primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('entry_id_unique', XMLDB_KEY_UNIQUE, ['entry_id', 'id']);
+        $table->add_index('username', XMLDB_INDEX_NOTUNIQUE, ['username']);
+        
+        // Conditionally launch create table for zoom_meeting_details.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026000100, 'local', 'kaltura');
+    }
+	
 
     return true;
 }
