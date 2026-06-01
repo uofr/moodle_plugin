@@ -128,6 +128,20 @@ function xmldb_local_kaltura_upgrade($oldversion) {
 		
 		upgrade_plugin_savepoint(true, 2026031202, 'local', 'kaltura');
 	}
+	
+	
+    if ($oldversion < 2026050601) {
+        
+        $table = new xmldb_table('ur_kaltura_zoom');
+        $field = new xmldb_field('transferred', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'categories');
+		
+        // Conditionally launch add field source.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+		
+		upgrade_plugin_savepoint(true, 2026050601, 'local', 'kaltura');
+	}
 
     return true;
 }
