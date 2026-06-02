@@ -50,3 +50,9 @@ $string['share_scope_same_organization'] = 'Anyone at the Unveristy of Regina wi
 $string['share_scope_invited_members_only'] = 'Invited users can watch this.';
 $string['share_scope_private'] = 'The clip\'s owner and account administrators can watch this.';
 $string['zoom_video_search_help'] = 'Search Zoom videos';
+
+//upload language strings
+$string['uploadvideo'] = 'Upload a Video';
+$string['title'] = 'Video Title';
+$string['file'] = 'Video File';
+$string['upload'] = 'Upload';
