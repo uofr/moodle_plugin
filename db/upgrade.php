@@ -129,7 +129,7 @@ function xmldb_local_kaltura_upgrade($oldversion) {
 		upgrade_plugin_savepoint(true, 2026031202, 'local', 'kaltura');
 	}
 	
-    if ($oldversion < 2026000100) {
+    if ($oldversion < 2026060101) {
         
 
         // Define table zoom_meeting_details to be created.
@@ -166,7 +166,7 @@ function xmldb_local_kaltura_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        upgrade_plugin_savepoint(true, 2026000100, 'local', 'kaltura');
+        upgrade_plugin_savepoint(true, 2026060101, 'local', 'kaltura');
     }
 	
 
