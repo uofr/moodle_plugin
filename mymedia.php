@@ -101,7 +101,7 @@ echo $OUTPUT->header();
                if($hasAdminRole){
                  ?>
                <li class="nav-item " forceintomoremenu ="true">
-               <a class="nav-link nav_border_bottom" target="contentframe" href="my_zoom_media.php">My Zoom Media</a>
+               <a class="nav-link nav_border_bottom" target="contentframe" href="zoom_media.php">My Zoom Media</a>
                </li>
            <?php
 
