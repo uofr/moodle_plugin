@@ -30,7 +30,8 @@ class check_zoom_video_status extends \core\task\adhoc_task {
     /**
      * Executes the task to poll the Zoom API for video status.
      * Updates the local database and handles ownership transfer upon completion.
-     * * @return void
+     *
+     * @return void
      */
     public function execute() {
         global $DB;
@@ -61,14 +62,24 @@ class check_zoom_video_status extends \core\task\adhoc_task {
             return;
         }
 
-        $status = $video['video_status'] ?? 'PROCESSING';
+        // ---STATUS CHECK ---
+        if (isset($video['video_status']) && $video['video_status'] === 'COMPLETED') {
+            // Zoom gives us the explicit completed flag
+            $status = 'COMPLETED';
+        } elseif (!empty($video['thumbnails']) && !empty($video['duration'])) {
+            // Zoom forgot the flag, but gave us the actual video link
+            $status = 'COMPLETED';
+        } else {
+            // The video is still genuinely processing
+            $status = 'PROCESSING';
+        }
 
         if ($status === 'COMPLETED') {
             $user = $DB->get_record('user', ['id' => $record->userid]);
             $target_zoom_id = $api->get_user_id_by_email($user->email);
             $admin_id = $api->get_admin_user_id();
 
-            // Perform Ownership Transfer
+            // Perform Ownership Transfer 
             $task_id = $api->transfer_clip_ownership($record->clip_id, $target_zoom_id, $admin_id);
             
             if ($task_id) {
