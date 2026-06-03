@@ -1,15 +1,29 @@
-<form class="form-inline">
+<form class="form-inline mb-2">
   <div class="form-group">
-    <input type="text" class="form-control" id="zoom_video_search" placeholder="{{#str}}search{{/str}}">
+    <input type="text" class="form-control" id="zoom_video_search" autocomplete="off" placeholder="{{#str}}search{{/str}}">
+    <div class="input-group-append">
+      <button class="btn btn-close ml-2" data-action="zoom_video_clear_search" style="display: none;">
+        <span aria-hidden="true">&times;</span>
+        <span class="sr-only">{{#str}}clear_search, local_mymedia{{/str}}</span>
+      </button>
+    </div>
   </div>
 </form>
-<div id="zoom_media_videos_{{uniqid}}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-    {{> local_mymedia/zoom_media_video_list }}
+<div id="zoom_video_search_header" style="display: none;">
+  <h2 class="zoom-video-search-header"></h2>
+  <a href="#" data-action="zoom_video_clear_search">
+    {{#str}}clear_search, local_mymedia{{/str}}
+  </a>
 </div>
-<div id="zoom_media_load_more"></div>
+<div id="zoom_videos_container" class="zoom-videos-container mt-3">
+  <div id="zoom_media_videos_{{uniqid}}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+      {{> local_mymedia/zoom_media_video_list }}
+  </div>
+  <div id="zoom_media_load_more" class="d-flex justify-content-center"></div>
+</div>
 
 {{#js}}
 require(['local_mymedia/zoom_media_videos'], function(zoomMediaVideos) {
-    zoomMediaVideos.init('#zoom_media_videos_{{uniqid}}', '{{next_page_token}}');
+    zoomMediaVideos.init('#zoom_media_videos_{{uniqid}}', '{{next_page_token}}', {{total_records}});
 });
 {{/js}}

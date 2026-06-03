@@ -2,3 +2,42 @@
   height: 200px;
   object-fit: cover;
 }
+
+.zoom-videos-container {
+  position: relative;
+  width: 100%;
+}
+.zoom-media-loading-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 50%;
+}
+
+.zoom-media-loader {
+  border: 0.35rem solid #f3f3f3;
+  border-top: 0.35rem solid #000000;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  animation: zoom-media-spin 1s linear infinite;
+}
+
+@keyframes zoom-media-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.zoom-media-loading-cover .zoom-media-loader {
+  position: relative;
+  top: 10rem;
+}
+
+.zoom-video-clear-search {
+  display: none;
+}
