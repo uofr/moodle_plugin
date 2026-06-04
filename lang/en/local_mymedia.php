@@ -51,4 +51,4 @@ $string['share_scope_invited_members_only'] = 'Invited users can watch this.';
 $string['share_scope_private'] = 'The clip\'s owner and account administrators can watch this.';
 $string['zoom_video_search_help'] = 'Search Zoom videos';
 $string['clear_search'] = 'Clear Search';
-$string['showing_results_for'] = 'Showing results for: {$a}';
+$string['showing_results_for'] = '{$a->total} results for: {$a->search}';
