@@ -56,9 +56,9 @@ const registerEventListeners = () => {
                 const searchHeader = document.querySelector(SELECTORS.SEARCH_HEADER_AREA);
                 const searchHeaderText = searchHeader.querySelector(SELECTORS.SEARCH_HEADER);
                 clearSearch.forEach((button) => {
-                    button.style.display = 'block';
+                    button.style.display = 'inline';
                 });
-                searchHeader.style.display = 'block';
+                searchHeader.style.display = 'inline-block';
                 searchHeaderText.textContent = await getString('showing_results_for', 'local_mymedia', _search);
             }
         }

@@ -1,14 +1,14 @@
-<form class="form-inline mb-2">
-  <div class="form-group">
-    <input type="text" class="form-control" id="zoom_video_search" autocomplete="off" placeholder="{{#str}}search{{/str}}">
-    <div class="input-group-append">
-      <button class="btn btn-close ml-2" data-action="zoom_video_clear_search" style="display: none;">
-        <span aria-hidden="true">&times;</span>
-        <span class="sr-only">{{#str}}clear_search, local_mymedia{{/str}}</span>
-      </button>
-    </div>
+<div class="row mb-2 mt-2">
+  <div class="col-md-6 col-lg-4 d-flex align-items-center" style="position: relative;">
+    <input type="text" class="form-control w-100" id="zoom_video_search" autocomplete="off" placeholder="{{#str}}search{{/str}}">
+    <button class="btn btn-close" data-action="zoom_video_clear_search" style="display: none; position: absolute; right: 1rem; font-size: 0.95rem">
+      <span aria-hidden="true">
+        {{#pix}}zoom_video_search_clear, local_mymedia{{/pix}}
+      </span>
+      <span class="sr-only">{{#str}}clear_search, local_mymedia{{/str}}</span>
+    </button>
   </div>
-</form>
+</div>
 <div id="zoom_video_search_header" style="display: none;">
   <h2 class="zoom-video-search-header"></h2>
   <a href="#" data-action="zoom_video_clear_search">
