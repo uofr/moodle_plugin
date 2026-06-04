@@ -56,7 +56,7 @@ const registerEventListeners = () => {
                 const searchHeader = document.querySelector(SELECTORS.SEARCH_HEADER_AREA);
                 const searchHeaderText = searchHeader.querySelector(SELECTORS.SEARCH_HEADER);
                 const searchString = await getString(
-                    'showing_results_for',
+                    _totalRecords == 1 ? 'showing_result_for' : 'showing_results_for',
                     'local_mymedia',
                     {total: _totalRecords, search: _search}
                 );
