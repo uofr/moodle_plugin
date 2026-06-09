@@ -53,3 +53,6 @@ $string['zoom_video_search_help'] = 'Search Zoom videos';
 $string['clear_search'] = 'Clear Search';
 $string['showing_results_for'] = '{$a->total} results for: {$a->search}';
 $string['showing_result_for'] = '{$a->total} result for: {$a->search}';
+$string['channel_video_count'] = 'Videos: {$a}';
+$string['channel_status'] = 'Status: {$a}';
+$string['email_or_username'] = 'Username or email';

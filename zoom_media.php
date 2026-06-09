@@ -41,7 +41,8 @@ $api = new \mod_zoomvideo\api();
 
 switch ($activetab) {
     case 'channels':
-        $view = new local_mymedia\output\zoom_media_channels();
+        $cansearch = has_capability('local/mymedia:searchzoomchannels', $context);
+        $view = new local_mymedia\output\zoom_media_channels($cansearch);
     break;
     case 'clips':
         $view = new local_mymedia\output\zoom_media_clips();

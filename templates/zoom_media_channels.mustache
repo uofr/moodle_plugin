@@ -1,1 +1,36 @@
-CHANNELS
+{{#cansearch}}
+    <form id="zoom_channel_search_form">
+        <div class="row mb-2 mt-2">
+            <div class="col-md-6 col-lg-4 d-flex align-items-center" style="position: relative;">
+                <input
+                    type="text"
+                    class="form-control w-100"
+                    id="zoom_channel_search_field"
+                    name="zoom_channel_search_field"
+                    autocomplete="off"
+                    placeholder="{{#str}}email_or_username, local_mymedia{{/str}}"
+                >
+                <button class="btn btn-primary" data-action="zoom_channel_clear_search">
+                    {{#str}}search{{/str}}
+                </button>
+                <button class="btn btn-close" data-action="zoom_channel_clear_search" style="display: none; position: absolute; right: 1rem; font-size: 0.95rem">
+                <span aria-hidden="true">
+                    {{#pix}}zoom_video_search_clear, local_mymedia{{/pix}}
+                </span>
+                <span class="sr-only">{{#str}}clear_search, local_mymedia{{/str}}</span>
+                </button>
+            </div>
+        </div>
+    </form>
+{{/cansearch}}
+<div data-region="zoom-channels-area" style="position: relative;">
+    <div id="zoom_media_channels_{{uniqid}}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4" style="position: relative;">
+    </div>
+</div>
+<div id="zoom_media_load_more" class="d-flex justify-content-center"></div>
+
+{{#js}}
+require(['local_mymedia/zoom_media_channels'], function(zoomMediaChannels) {
+    zoomMediaChannels.init('#zoom_media_channels_{{uniqid}}');
+});
+{{/js}}

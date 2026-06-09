@@ -39,4 +39,8 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
         )
     ),
+    'local/mymedia:searchzoomchannels' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_USER,
+    ),
 );

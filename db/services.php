@@ -21,5 +21,40 @@ $functions = [
         'description'   => 'Get user videos.',
         'type'          => 'read',
         'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_get_channels' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_channels',
+        'methodname'    => 'execute',
+        'description'   => 'Get user channels.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_get_channel_info' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_channel_info',
+        'methodname'    => 'execute',
+        'description'   => 'Get channel info.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_get_channel_videos' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_channel_videos',
+        'methodname'    => 'execute',
+        'description'   => 'Get channel videos.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_get_channel_course_info' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_channel_course_info',
+        'methodname'    => 'execute',
+        'description'   => 'Get channel course info.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_search_channels' => [
+        'classname'     => 'local_mymedia\external\zoom_media_search_channels',
+        'methodname'    => 'execute',
+        'description'   => 'Search channels by username or email.',
+        'type'          => 'read',
+        'ajax'          => true,
     ]
 ];
