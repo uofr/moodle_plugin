@@ -48,23 +48,27 @@ class zoom_media_search_channels extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'total_records' => new external_value(PARAM_INT),
-            'next_page_token' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
-            'channels' => new external_multiple_structure(
-                new external_single_structure([
-                    'channel_id' => new external_value(PARAM_TEXT),
-                    'name' => new external_value(PARAM_TEXT),
-                    'description' => new external_value(PARAM_TEXT),
-                    'owner_id' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
-                    'status' => new external_value(PARAM_TEXT),
-                    'categories' => new external_multiple_structure(
-                        new external_value(PARAM_TEXT),
-                        '',
-                        VALUE_OPTIONAL
-                    )
-                ])
-            )
-        ], '', VALUE_OPTIONAL);
+            'response' => new external_single_structure([
+                'total_records' => new external_value(PARAM_INT),
+                'next_page_token' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'channels' => new external_multiple_structure(
+                    new external_single_structure([
+                        'channel_id' => new external_value(PARAM_TEXT),
+                        'name' => new external_value(PARAM_TEXT),
+                        'description' => new external_value(PARAM_TEXT),
+                        'owner_id' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                        'status' => new external_value(PARAM_TEXT),
+                        'categories' => new external_multiple_structure(
+                            new external_value(PARAM_TEXT),
+                            '',
+                            VALUE_OPTIONAL
+                        )
+                    ])
+                )
+            ], '', VALUE_OPTIONAL),
+            'username' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+            'email' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL)
+        ]);
     }
 
     /**
@@ -88,17 +92,21 @@ class zoom_media_search_channels extends external_api {
         if (strpos($params['search'], '@') === false) {
             $user = $DB->get_record('user', ['username' => $params['search']]);
             if (!$user) {
-                return [];
+                return ['username' => '', 'email' => $params['search']];
             }
             $email = $user->email;
         }
         else {
+            $user = $DB->get_record('user', ['email' => $params['search']]);
+            if (!$user) {
+                return ['username' => $params['search'], 'email' => ''];
+            }
             $email = $params['search'];
         }
 
         $api = new \mod_zoomvideo\api();
         $response = $api->get_user_channels_list($email, $params['next_page_token']);
 
-        return $response;
+        return ['response' => $response, 'username' => $user->username, 'email' => $email];
     }
 }

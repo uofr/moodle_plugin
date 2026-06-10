@@ -1,6 +1,7 @@
 import Ajax from 'core/ajax';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
+import {getString} from 'core/str';
 
 let _root;
 let _nextPageToken;
@@ -13,7 +14,10 @@ const SELECTORS = {
     LOADINGCOVER: '.zoom-media-loading-cover',
     SEARCHFORM: '#zoom_channel_search_form',
     SEARCHTEXT: '#zoom_channel_search_field',
-    CHANNELSAREA: '[data-region="zoom-channels-area"]'
+    CHANNELSAREA: '[data-region="zoom-channels-area"]',
+    CLEAR_SEARCH: '[data-action="zoom_channel_clear_search"]',
+    SEARCH_HEADER_AREA: '#zoom_channel_search_header',
+    SEARCH_HEADER_TEXT: '.zoom-channel-search-header'
 };
 
 const TEMPLATES = {
@@ -40,10 +44,31 @@ const registerEventListeners = () => {
             _search = searchText;
             if (_search == '') {
                 initChannels();
+                document.querySelector(SELECTORS.CLEAR_SEARCH).style.display = 'none';
+                const searchheader = document.querySelector(SELECTORS.SEARCH_HEADER_AREA);
+                searchheader.style.display = 'none';
+                searchheader.querySelector(SELECTORS.SEARCH_HEADER_TEXT).textContent = '';
             }
             else {
+                document.querySelector(SELECTORS.CLEAR_SEARCH).style.display = 'inline';
                 searchChannels();
             }
+        });
+    }
+
+    const searchClear = document.querySelectorAll(SELECTORS.CLEAR_SEARCH);
+    if (searchClear) {
+        searchClear.forEach((clearbutton) => {
+            clearbutton.addEventListener('click', (event) => {
+                event.preventDefault();
+                _search = '';
+                document.querySelector(SELECTORS.SEARCHTEXT).value = '';
+                initChannels();
+                document.querySelector(SELECTORS.CLEAR_SEARCH).style.display = 'none';
+                const searchheader = document.querySelector(SELECTORS.SEARCH_HEADER_AREA);
+                searchheader.style.display = 'none';
+                searchheader.querySelector(SELECTORS.SEARCH_HEADER_TEXT).textContent = '';
+            });
         });
     }
 
@@ -138,7 +163,11 @@ const searchChannels = async () => {
         const {html, js} = await Templates.renderForPromise(TEMPLATES.LOADING_COVER, {});
         Templates.appendNodeContents(channelarea, html, js);
 
-        const response = await getChannelsSearch(_search, _nextPageToken);
+        const {response, username, email} = await getChannelsSearch(_search, _nextPageToken);
+        if (!response) {
+            return;
+        }
+
         if (response.next_page_token) {
             _nextPageToken = response.next_page_token;
         }
@@ -150,6 +179,32 @@ const searchChannels = async () => {
         const channelDataMap = getChannelDataMap(responses);
 
         renderChannels(response, channelDataMap);
+
+        let resultsString;
+        if (response.total_records == 1) {
+            resultsString = await getString(
+                'showing_result_for',
+                'local_mymedia',
+                {
+                    total: response.total_records,
+                    search: `${username}(${email})`
+                }
+            );
+        }
+        else {
+            resultsString = await getString(
+                'showing_results_for',
+                'local_mymedia',
+                {
+                    total: response.total_records,
+                    search: `${username}(${email})`
+                }
+            );
+        }
+
+        const searchheader = document.querySelector(SELECTORS.SEARCH_HEADER_AREA);
+        searchheader.style.display = 'block';
+        searchheader.querySelector(SELECTORS.SEARCH_HEADER_TEXT).textContent = resultsString;
     }
     catch (error) {
         Notification.exception(error);

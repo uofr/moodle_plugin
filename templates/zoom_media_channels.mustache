@@ -10,7 +10,12 @@
                     autocomplete="off"
                     placeholder="{{#str}}email_or_username, local_mymedia{{/str}}"
                 >
-                <button class="btn btn-primary" data-action="zoom_channel_clear_search">
+                <button class="btn btn-close" data-action="zoom_channel_clear_search" style="display: none; position: absolute; right: 5.5rem; font-size: 0.95rem">
+                    <span aria-hidden="true">
+                        {{#pix}}zoom_video_search_clear, local_mymedia{{/pix}}
+                    </span>
+                    </button>
+                <button class="btn btn-primary">
                     {{#str}}search{{/str}}
                 </button>
                 <button class="btn btn-close" data-action="zoom_channel_clear_search" style="display: none; position: absolute; right: 1rem; font-size: 0.95rem">
@@ -22,6 +27,12 @@
             </div>
         </div>
     </form>
+    <div id="zoom_channel_search_header" style="display: none;">
+    <h2 class="zoom-channel-search-header"></h2>
+    <a href="#" data-action="zoom_channel_clear_search">
+        {{#str}}clear_search, local_mymedia{{/str}}
+    </a>
+    </div>
 {{/cansearch}}
 <div data-region="zoom-channels-area" style="position: relative;">
     <div id="zoom_media_channels_{{uniqid}}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4" style="position: relative;">
