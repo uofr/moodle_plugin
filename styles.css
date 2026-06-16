@@ -41,3 +41,21 @@
 .zoom-video-clear-search {
   display: none;
 }
+
+.zoom-media-tab-videos {
+  position: relative;
+}
+
+.zoom-media-tab-channels {
+  position: relative;
+}
+
+.zoom-media-searchbar .btn-clear .icon {
+  margin: 0;
+}
+
+.zoom-media-searchbar .btn-clear {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+}

@@ -1,0 +1,16 @@
+<div data-region="zoom-video-search">
+    {{>local_mymedia/zoom_media_search}}
+    <h2 data-region="zoom-video-search-header"></h2>
+</div>
+
+<div class='zoom-media-tab-videos' data-region="zoom-media-tab-videos">
+    <div class='zoom-media-video-list row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4' data-region="zoom-media-video-list">
+    </div>
+    {{>local_mymedia/zoom_media_load_more}}
+</div>
+
+{{#js}}
+    require(['local_mymedia/zoom_media_tab_videos'], function(zoomMediaTabVideos) {
+        zoomMediaTabVideos.init('[data-region="zoom-media-tab-videos"]');
+    });
+{{/js}}

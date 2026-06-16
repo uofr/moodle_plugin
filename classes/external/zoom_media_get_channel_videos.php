@@ -34,7 +34,7 @@ class zoom_media_get_channel_videos extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'channelid' => new external_value(PARAM_TEXT)
+            'channel_id' => new external_value(PARAM_TEXT)
         ]);
     }
 
@@ -52,7 +52,7 @@ class zoom_media_get_channel_videos extends external_api {
                 'video_source'  => new external_value(PARAM_TEXT)
             ])),
             'next_page_token' => new external_value(PARAM_TEXT),
-            'total_records' => new external_value(PARAM_INT),
+            'total_records' => new external_value(PARAM_TEXT),
             'channel_id' => new external_value(PARAM_TEXT)
         ]);
     }
@@ -62,17 +62,17 @@ class zoom_media_get_channel_videos extends external_api {
      *
      * @return array test
      */
-    public static function execute($channelid): array {
+    public static function execute($channel_id): array {
         $params = self::validate_parameters(self::execute_parameters(), [
-            'channelid' => $channelid
+            'channel_id' => $channel_id
         ]);
 
         $context = \context_system::instance();
         self::validate_context($context);
 
         $api = new \mod_zoomvideo\api();
-        $response = $api->get_channel_videos($params['channelid']);
-        $response['channel_id'] = $params['channelid'];
+        $response = $api->get_channel_videos($params['channel_id']);
+        $response['channel_id'] = $params['channel_id'];
 
         return $response;
     }

@@ -16,15 +16,35 @@
 
 namespace local_mymedia\output;
 
+use stdClass;
+
 class zoom_media_channels implements \renderable, \templatable {
-    private bool $cansearch;
-    public function __construct($cansearch) {
-        $this->cansearch = $cansearch;
+    private $response;
+
+    public function __construct($response) {
+        $this->response = $response;
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
-        $data = new \stdClass();
-        $data->cansearch = $this->cansearch;
+        $data = [];
+
+        $data['next_page_token'] = $this->response['next_page_token'];
+        $data['total_records'] = $this->response['total_records'];
+
+        $data['channels'] = [];
+        foreach ($this->response['channels'] as $channel) {
+            $channel['publishstatus'] = self::get_publish_status($channel['status']);
+            $data['channels'][] = $channel;
+        }
+
         return $data;
+    }
+
+    private static function get_publish_status($status): string {
+        $publishstatus = [
+            'DRAFT' => get_string('publishstatus_draft', 'local_mymedia'),
+            'PUBLISH' => get_string('publishstatus_published', 'local_mymedia'),
+        ];
+        return $publishstatus[$status] ?? '';
     }
 }

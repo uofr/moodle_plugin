@@ -17,6 +17,7 @@
 namespace local_mymedia\output;
 
 use DateTimeImmutable;
+use DateTimeZone;
 class zoom_media_videos implements \renderable, \templatable {
     private $response;
 
@@ -65,7 +66,8 @@ class zoom_media_videos implements \renderable, \templatable {
         $format = '%y,%m,%d,%h,%i,%s';
 
         $now = \core\di::get(\core\clock::class)->now();
-        $date = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s\Z', $timestring);
+        $utctimezone = new DateTimeZone('UTC');
+        $date = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s\Z', $timestring, $utctimezone);
         $date_interval = $now->diff($date);
         $date_relative_array = explode(',', $date_interval->format($format));
         for ($i = 0; $i < 6; $i++) {

@@ -42,7 +42,7 @@ $api = new \mod_zoomvideo\api();
 switch ($activetab) {
     case 'channels':
         $cansearch = has_capability('local/mymedia:searchzoomchannels', $context);
-        $view = new local_mymedia\output\zoom_media_channels($cansearch);
+        $view = new local_mymedia\output\zoom_media_tab_channels($cansearch);
     break;
     case 'clips':
         $view = new local_mymedia\output\zoom_media_clips();
@@ -54,8 +54,7 @@ switch ($activetab) {
         $view = new local_mymedia\output\zoom_media_upload();
     break;
     default: //videos
-        $response = $api->get_video_list($USER->email);
-        $view = new local_mymedia\output\zoom_media_videos($response);
+        $view = new local_mymedia\output\zoom_media_tab_videos();
     break;
 }
 

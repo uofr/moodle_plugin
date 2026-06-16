@@ -93,7 +93,7 @@ function local_mymedia_get_fontawesome_icon_map() {
         'local_mymedia:share_scope_same_organization' => 'fa-users',
         'local_mymedia:share_scope_invited_members_only' => 'fa-envelope',
         'local_mymedia:share_scope_private' => 'fa-lock',
-        'local_mymedia:zoom_video_search_clear' => 'fa-x'
+        'local_mymedia:zoom_video_search_clear' => 'fa-xmark'
     ];
 }
 

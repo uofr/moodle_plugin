@@ -23,7 +23,7 @@ use core_external\external_function_parameters;
 use core_external\external_value;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
-use stdClass;
+use moodle_url;
 
 class zoom_media_get_channels extends external_api {
 
@@ -34,7 +34,8 @@ class zoom_media_get_channels extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'next_page_token' => new external_value(PARAM_TEXT)
+            'next_page_token' => new external_value(PARAM_TEXT),
+            'user_search' => new external_value(PARAM_TEXT)
         ]);
     }
 
@@ -45,7 +46,7 @@ class zoom_media_get_channels extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'total_records' => new external_value(PARAM_INT),
+            'total_records' => new external_value(PARAM_INT, '', VALUE_OPTIONAL),
             'next_page_token' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
             'channels' => new external_multiple_structure(
                 new external_single_structure([
@@ -58,9 +59,13 @@ class zoom_media_get_channels extends external_api {
                         new external_value(PARAM_TEXT),
                         '',
                         VALUE_OPTIONAL
-                    )
-                ])
-            )
+                    ),
+                    'courselink' => new external_value(PARAM_URL, '', VALUE_OPTIONAL),
+                    'coursename' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                    'publishstatus' => new external_value(PARAM_TEXT)
+                ]), '', VALUE_OPTIONAL
+            ),
+            'error' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL)
         ]);
     }
 
@@ -69,19 +74,59 @@ class zoom_media_get_channels extends external_api {
      *
      * @return array test
      */
-    public static function execute($next_page_token): array {
-        global $USER;
+    public static function execute($next_page_token, $user_search): array {
+        global $DB, $USER, $PAGE;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'next_page_token' => $next_page_token
+            'next_page_token' => $next_page_token,
+            'user_search' => $user_search
         ]);
 
         $context = \context_system::instance();
         self::validate_context($context);
 
-        $api = new \mod_zoomvideo\api();
-        $response = $api->get_user_channels_list($USER, $params['next_page_token']);
+        $renderer = $PAGE->get_renderer('local_mymedia');
 
-        return $response;
+        if ($params['user_search']) {
+            require_capability('local/mymedia:searchzoomchannels', $context);
+
+            if (strpos($params['user_search'], '@')) { // search by email
+                $user = $DB->get_record('user', ['email' => $params['user_search']]);
+                if (!$user) {
+                    return ['error' => get_string('could_not_find_email', 'local_mymedia', $params['user_search'])];
+                }
+            }
+            else { // search by username
+                $user = $DB->get_record('user', ['username' => $params['user_search']]);
+                if (!$user) {
+                    return ['error' => get_string('could_not_find_username', 'local_mymedia', $params['user_search'])];
+                }
+            }
+        }
+        else {
+            $user = $USER;
+        }
+
+        $api = new \mod_zoomvideo\api();
+        $response = $api->get_user_channels_list($user, $params['next_page_token']);
+
+        if ($response && !empty($response['channels'])) {
+            $customfieldid = get_config('mod_zoomvideo', 'channelcustomfield');
+            foreach ($response['channels'] as &$channel) {
+                $channel_id = $channel['channel_id'];
+                $customfield_data = $DB->get_record('customfield_data', ['fieldid' => $customfieldid, 'charvalue' => $channel_id]);
+                if ($customfield_data) {
+                    $courseid = $customfield_data->instanceid;
+                    $course = get_course($courseid);
+                    $courselink = new moodle_url('/course/view.php', ['id' => $courseid]);
+                    $channel['courselink'] = $courselink->out();
+                    $channel['coursename'] = $course->fullname;
+                }
+            }
+        }
+
+        $zoom_media_channels = new \local_mymedia\output\zoom_media_channels($response);
+
+        return $zoom_media_channels->export_for_template($renderer);
     }
 }

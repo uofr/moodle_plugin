@@ -34,7 +34,7 @@ class zoom_media_get_channel_info extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'channelid' => new external_value(PARAM_TEXT)
+            'channel_id' => new external_value(PARAM_TEXT)
         ]);
     }
 
@@ -72,16 +72,16 @@ class zoom_media_get_channel_info extends external_api {
      *
      * @return array test
      */
-    public static function execute($channelid): array {
+    public static function execute($channel_id): array {
         $params = self::validate_parameters(self::execute_parameters(), [
-            'channelid' => $channelid
+            'channel_id' => $channel_id
         ]);
 
         $context = \context_system::instance();
         self::validate_context($context);
 
         $api = new \mod_zoomvideo\api();
-        $response = $api->get_channel_info($params['channelid']);
+        $response = $api->get_channel_info($params['channel_id']);
 
         return $response;
     }

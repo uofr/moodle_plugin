@@ -1,0 +1,18 @@
+{{#cansearch}}
+    <div data-region="zoom-channel-search">
+        {{>local_mymedia/zoom_media_search}}
+        <h2 data-region="zoom-channel-search-header"></h2>
+    </div>
+{{/cansearch}}
+
+<div class='zoom-media-tab-channels' data-region="zoom-media-tab-channels">
+    <div class='zoom-media-channel-list row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4' data-region="zoom-media-channel-list">
+    </div>
+    {{>local_mymedia/zoom_media_load_more}}
+</div>
+
+{{#js}}
+    require(['local_mymedia/zoom_media_tab_channels'], function(zoomMediaTabChannels) {
+        zoomMediaTabChannels.init('[data-region="zoom-media-tab-channels"]');
+    });
+{{/js}}

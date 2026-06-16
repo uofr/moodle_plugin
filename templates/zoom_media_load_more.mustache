@@ -1,0 +1,7 @@
+<div data-action="zoom-media-load-more" class="d-flex justify-content-center"></div>
+
+{{#js}}
+    require(['local_mymedia/zoom_media_lazy_loader'], function(zoomMediaLazyLoad) {
+        zoomMediaLazyLoad.init('[data-action="zoom-media-load-more"]');
+    });
+{{/js}}

@@ -50,11 +50,4 @@ $functions = [
         'type'          => 'read',
         'ajax'          => true,
     ],
-    'local_mymedia_zoom_media_search_channels' => [
-        'classname'     => 'local_mymedia\external\zoom_media_search_channels',
-        'methodname'    => 'execute',
-        'description'   => 'Search channels by username or email.',
-        'type'          => 'read',
-        'ajax'          => true,
-    ]
 ];

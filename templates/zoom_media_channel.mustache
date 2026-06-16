@@ -1,8 +1,8 @@
-<div class="col pb-4" data-item="zoom_channel">
+<div class="col pb-4" data-item="zoom_channel" data-channel-id="{{channel_id}}">
     <div class="card h-100">
         <div>
-            <a href="{{{channellink}}}">
-                <img class="card-img-top video-card-image" src="{{thumbnailurl}}" alt="{{name}}">
+            <a data-region="zoom-channel-thumbnail" href="{{{channellink}}}">
+                <div class="bg-pulse-grey card-img w-100" style="height: 11rem;"></div>
             </a>
         </div>
         <div class="card-body">
@@ -11,18 +11,22 @@
             </a>
             <p class="card-text">
                 <div>
-                    <a href="{{{courselink}}}">
-                        {{coursename}}
-                    </a>
+                    {{#courselink}}
+                        <a href="{{{courselink}}}">
+                            {{coursename}}
+                        </a>
+                    {{/courselink}}
                 </div>
                 <div>
-                    <span>{{#str}}channel_video_count, local_mymedia, {{videocount}}{{/str}}</span>
+                    <div data-region="zoom-channel-video-count">
+                        <div class="bg-pulse-grey w-100" style="height: 1rem;"></div>
+                    </div>
                 </div>
             </p>
         </div>
         <div class="card-footer">
             <div>
-                <span>{{#str}}channel_status, local_mymedia, {{status}}{{/str}}</span>
+                <span>{{publishstatus}}</span>
             </div>
         </div>
     </div>
