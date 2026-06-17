@@ -1,7 +1,12 @@
 <form class="mt-3 mb-3" data-form="zoom-media-search-form">
     <div class="d-flex">
         <div class="input-group searchbar zoom-media-searchbar w-100">
-            <input type="text" class="form-control withclear rounded" autocomplete="off" name="zoom-media-search-text" />
+            <input
+                type="text"
+                class="form-control withclear rounded"
+                autocomplete="off"
+                name="zoom-media-search-text"
+                placeholder="{{$placeholdertext}}{{/placeholdertext}}"/>
             <button class="btn btn-clear" type="reset" style="display: none;">
                 {{#pix}}zoom_video_search_clear, local_mymedia{{/pix}}
             </button>

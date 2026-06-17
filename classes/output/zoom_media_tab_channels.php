@@ -18,13 +18,18 @@ namespace local_mymedia\output;
 
 class zoom_media_tab_channels implements \renderable, \templatable {
     private bool $cansearch;
-    public function __construct($cansearch) {
+
+    private string $userzoomid;
+
+    public function __construct($cansearch, $userzoomid) {
         $this->cansearch = $cansearch;
+        $this->userzoomid = $userzoomid;
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
         $data = new \stdClass();
         $data->cansearch = $this->cansearch;
+        $data->userzoomid = $this->userzoomid;
         return $data;
     }
 }

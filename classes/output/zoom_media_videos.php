@@ -21,8 +21,11 @@ use DateTimeZone;
 class zoom_media_videos implements \renderable, \templatable {
     private $response;
 
-    public function __construct($response) {
+    private $useremail;
+
+    public function __construct($response, $useremail) {
         $this->response = $response;
+        $this->useremail = $useremail;
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
@@ -37,6 +40,7 @@ class zoom_media_videos implements \renderable, \templatable {
             $video['modifiedrelative'] = self::get_relative_time($video['modified_time']);
             $video['sharescope'] = self::get_share_scope($video['share_scope']);
             $video['sharescope_help'] = $video['share_scope'] ? get_string($video['sharescope'], 'local_mymedia') : '';
+            $video['ownership'] = self::get_video_ownership($this->useremail, $video['owner_email']);
             $data->videos[] = $video;
         }
 
@@ -90,5 +94,14 @@ class zoom_media_videos implements \renderable, \templatable {
             'PRIVATE' => 'share_scope_private'
         ];
         return $sharescopes[$share_scope] ?? '';
+    }
+
+    private static function get_video_ownership($useremail, $owneremail) {
+        if ($useremail == $owneremail) {
+            return get_string('owned_video', 'local_mymedia');
+        }
+        else {
+            return get_string('shared_video', 'local_mymedia');
+        }
     }
 }

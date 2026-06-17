@@ -13,12 +13,15 @@ let _userSearch = '';
 let _nextPageToken = '';
 let _root = null;
 let _loading = false;
+let _userZoomId = '';
+let _searchZoomId = '';
 
 const SELECTORS = {
     ZOOM_MEDIA_CHANNEL_LIST: '[data-region="zoom-media-channel-list"]',
     ZOOM_MEDIA_CHANNEL: '[data-item="zoom_channel"]',
     ZOOM_MEDIA_CHANNEL_THUMBNAIL: '[data-region="zoom-channel-thumbnail"]',
     ZOOM_MEDIA_CHANNEL_VIDEO_COUNT: '[data-region="zoom-channel-video-count"]',
+    ZOOM_MEDIA_CHANNEL_OWNERSHIP: '[data-region="zoom-media-channel-onwership"]',
     SEARCH_HEADER: '[data-region="zoom-channel-search-header"]',
 };
 
@@ -54,8 +57,25 @@ const setLoading = (loading) => {
     _loading = loading;
 };
 
-export const init = (rootSelector) => {
+const getUserZoomId = () => {
+    return _userZoomId;
+};
+
+const setUserZoomId = (userZoomId) => {
+    _userZoomId = userZoomId;
+};
+
+const getSearchZoomId = () => {
+    return _searchZoomId;
+};
+
+const setSearchZoomId = (searchZoomId) => {
+    _searchZoomId = searchZoomId;
+};
+
+export const init = (rootSelector, userZoomId) => {
     setRoot(rootSelector);
+    setUserZoomId(userZoomId);
     renderChannels();
     registerEventListeners();
 };
@@ -130,9 +150,16 @@ const loadChannels = async (renderArea, renderCallback, loadingArea, loadingCall
             setNextPageToken('');
         }
 
+        if (response.searchzoomid) {
+            setSearchZoomId(response.searchzoomid);
+        }
+        else {
+            setSearchZoomId('');
+        }
+
         if (response.channels.length) {
             const channelIds = response.channels.map(channel => channel.channel_id);
-            loadThumbnails(channelIds);
+            loadChannelInfo(channelIds);
             getChannelVideoCounts(channelIds);
         }
 
@@ -165,12 +192,43 @@ const loadChannels = async (renderArea, renderCallback, loadingArea, loadingCall
     }
 };
 
-const loadThumbnails = async (channelIds) => {
+const loadChannelInfo = async (channelIds) => {
     const channelInfo = await Promise.all(getChannelInfo(channelIds));
+    const userZoomId = getUserZoomId();
+
+    channelInfo.forEach(async (channel) => {
+        const channelSelector = `[data-channel-id="${channel.channel_id}"]`;
+        const ownershipSelector = `${channelSelector} ${SELECTORS.ZOOM_MEDIA_CHANNEL_OWNERSHIP}`;
+        const searchZoomId = getSearchZoomId();
+
+        const onwershipRegion = document.querySelector(ownershipSelector);
+        if (!onwershipRegion) {
+            return;
+        }
+
+        onwershipRegion.innerHTML = '';
+        if (searchZoomId == '') {
+            if (channel.owner_id == userZoomId) {
+                onwershipRegion.textContent = await getString('owned_channel', 'local_mymedia');
+            }
+            else {
+                onwershipRegion.textContent = await getString('shared_channel', 'local_mymedia');
+            }
+        }
+        else {
+            if (channel.owner_id == searchZoomId) {
+                onwershipRegion.textContent = await getString('user_owned_channel', 'local_mymedia', getUserSearch());
+            }
+            else {
+                onwershipRegion.textContent = await getString('user_shared_channel', 'local_mymedia', getUserSearch());
+            }
+        }
+    });
 
     channelInfo.forEach((channel) => {
         const channelSelector = `[data-channel-id="${channel.channel_id}"]`;
         const thumbnailSelector = `${channelSelector} ${SELECTORS.ZOOM_MEDIA_CHANNEL_THUMBNAIL}`;
+
         const thumbnailRegion = document.querySelector(thumbnailSelector);
         if (!thumbnailRegion) {
             return;

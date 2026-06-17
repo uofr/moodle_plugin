@@ -59,11 +59,13 @@ class zoom_media_get_user_videos extends external_api {
                 'duration'          => new external_value(PARAM_INT),
                 'play_link'         => new external_value(PARAM_URL),
                 'share_scope'       => new external_value(PARAM_TEXT),
+                'owner_email'       => new external_value(PARAM_TEXT),
                 'friendlyduration'  => new external_value(PARAM_TEXT),
                 'createdrelative'   => new external_value(PARAM_TEXT),
                 'modifiedrelative'  => new external_value(PARAM_TEXT),
                 'sharescope'        => new external_value(PARAM_TEXT),
-                'sharescope_help'   => new external_value(PARAM_TEXT)
+                'sharescope_help'   => new external_value(PARAM_TEXT),
+                'ownership'         => new external_value(PARAM_TEXT)
             ]))
         ]);
     }
@@ -90,7 +92,8 @@ class zoom_media_get_user_videos extends external_api {
 
         $api = new \mod_zoomvideo\api();
         $response = $api->get_video_list($USER->email, $params['nextpagetoken'], $params['search']);
-        $zoom_media_videos = new \local_mymedia\output\zoom_media_videos($response);
+
+        $zoom_media_videos = new \local_mymedia\output\zoom_media_videos($response, $USER->email);
 
         return $zoom_media_videos->export_for_template($renderer);
     }

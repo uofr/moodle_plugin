@@ -21,8 +21,11 @@ use stdClass;
 class zoom_media_channels implements \renderable, \templatable {
     private $response;
 
-    public function __construct($response) {
+    private $searchzoomid;
+
+    public function __construct($response, $searchzoomid) {
         $this->response = $response;
+        $this->searchzoomid = $searchzoomid;
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
@@ -35,6 +38,10 @@ class zoom_media_channels implements \renderable, \templatable {
         foreach ($this->response['channels'] as $channel) {
             $channel['publishstatus'] = self::get_publish_status($channel['status']);
             $data['channels'][] = $channel;
+        }
+
+        if ($this->searchzoomid) {
+            $data['searchzoomid'] = $this->searchzoomid;
         }
 
         return $data;

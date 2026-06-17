@@ -62,10 +62,11 @@ class zoom_media_get_channels extends external_api {
                     ),
                     'courselink' => new external_value(PARAM_URL, '', VALUE_OPTIONAL),
                     'coursename' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
-                    'publishstatus' => new external_value(PARAM_TEXT)
+                    'publishstatus' => new external_value(PARAM_TEXT),
                 ]), '', VALUE_OPTIONAL
             ),
-            'error' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL)
+            'error' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+            'searchzoomid' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL)
         ]);
     }
 
@@ -86,7 +87,9 @@ class zoom_media_get_channels extends external_api {
         self::validate_context($context);
 
         $renderer = $PAGE->get_renderer('local_mymedia');
+        $api = new \mod_zoomvideo\api();
 
+        $searchzoomid = null;
         if ($params['user_search']) {
             require_capability('local/mymedia:searchzoomchannels', $context);
 
@@ -102,12 +105,12 @@ class zoom_media_get_channels extends external_api {
                     return ['error' => get_string('could_not_find_username', 'local_mymedia', $params['user_search'])];
                 }
             }
+            $searchzoomid = $api->get_user_id_by_email($user->email);
         }
         else {
             $user = $USER;
         }
 
-        $api = new \mod_zoomvideo\api();
         $response = $api->get_user_channels_list($user, $params['next_page_token']);
 
         if ($response && !empty($response['channels'])) {
@@ -125,7 +128,7 @@ class zoom_media_get_channels extends external_api {
             }
         }
 
-        $zoom_media_channels = new \local_mymedia\output\zoom_media_channels($response);
+        $zoom_media_channels = new \local_mymedia\output\zoom_media_channels($response, $searchzoomid);
 
         return $zoom_media_channels->export_for_template($renderer);
     }

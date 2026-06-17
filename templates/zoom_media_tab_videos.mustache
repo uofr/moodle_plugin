@@ -1,5 +1,7 @@
 <div data-region="zoom-video-search">
-    {{>local_mymedia/zoom_media_search}}
+    {{<local_mymedia/zoom_media_search}}
+        {{$placeholdertext}}{{#str}}search_by_videos, local_mymedia{{/str}}{{/placeholdertext}}
+    {{/local_mymedia/zoom_media_search}}
     <h2 data-region="zoom-video-search-header"></h2>
 </div>
 

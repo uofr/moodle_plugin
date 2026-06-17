@@ -131,6 +131,7 @@ const loadVideos = async (renderArea, renderCallback, loadingArea, loadingCallba
         loadingCallback(loadingArea);
 
         const response = await getUserVideos(search, nextPageToken);
+        console.log(response);
         setTotalRecords(response.total_records);
         if (response.next_page_token) {
             setNextPageToken(response.next_page_token);
