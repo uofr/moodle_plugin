@@ -50,4 +50,11 @@ $functions = [
         'type'          => 'read',
         'ajax'          => true,
     ],
+    'local_mymedia_get_transfer_status' => [
+        'classname'   => 'local_mymedia\external\zoom_media_get_transfer_status',
+        'methodname'  => 'execute',
+        'description' => 'Returns the status of a zoom transfer',
+        'ajax'        => true,
+        'loginrequired' => true,
+    ],
 ];

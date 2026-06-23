@@ -69,3 +69,9 @@ $string['owned_channel'] = 'You own this channel.';
 $string['shared_channel'] = 'This channel has been shared with you.';
 $string['user_owned_channel'] = '{$a} owns this channel.';
 $string['user_shared_channel'] = 'This channel has been shared with {$a}.';
+
+//upload language strings
+$string['uploadvideo'] = 'Upload a Video';
+$string['title'] = 'Video Title';
+$string['file'] = 'Video File';
+$string['upload'] = 'Upload';

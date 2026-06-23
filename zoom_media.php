@@ -26,7 +26,7 @@ $PAGE->set_context($context);
 
 $url = new moodle_url('/local/mymedia/zoom_media.php', ['activetab' => $activetab]);
 $PAGE->set_url($url);
-
+$PAGE->set_pagelayout('embedded');
 $title = get_string('zoom_media', 'local_mymedia');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
@@ -52,8 +52,10 @@ switch ($activetab) {
         $view = new local_mymedia\output\zoom_media_record();
     break;
     case 'upload':
-        $view = new local_mymedia\output\zoom_media_upload();
-    break;
+        $PAGE->requires->js(new moodle_url('/local/mymedia/js/zoom_upload.js'));
+        $view = new local_mymedia\output\zoom_media_upload(); 
+        break;
+  
     default: //videos
         $view = new local_mymedia\output\zoom_media_tab_videos();
     break;
