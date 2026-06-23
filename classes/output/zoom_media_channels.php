@@ -16,7 +16,7 @@
 
 namespace local_mymedia\output;
 
-use stdClass;
+use moodle_url;
 
 class zoom_media_channels implements \renderable, \templatable {
     private $response;
@@ -37,6 +37,7 @@ class zoom_media_channels implements \renderable, \templatable {
         $data['channels'] = [];
         foreach ($this->response['channels'] as $channel) {
             $channel['publishstatus'] = self::get_publish_status($channel['status']);
+            $channel['channellink'] = self::get_channel_link($channel['channel_id']);
             $data['channels'][] = $channel;
         }
 
@@ -53,5 +54,10 @@ class zoom_media_channels implements \renderable, \templatable {
             'PUBLISH' => get_string('publishstatus_published', 'local_mymedia'),
         ];
         return $publishstatus[$status] ?? '';
+    }
+
+    private static function get_channel_link($channel_id) {
+        $url = new moodle_url('https://videos.zoom.us/e/channels/' . $channel_id);
+        return $url->out();
     }
 }

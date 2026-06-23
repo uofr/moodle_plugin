@@ -63,6 +63,7 @@ class zoom_media_get_channels extends external_api {
                     'courselink' => new external_value(PARAM_URL, '', VALUE_OPTIONAL),
                     'coursename' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                     'publishstatus' => new external_value(PARAM_TEXT),
+                    'channellink' => new external_value(PARAM_URL)
                 ]), '', VALUE_OPTIONAL
             ),
             'error' => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
