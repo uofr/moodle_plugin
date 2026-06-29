@@ -1,10 +1,10 @@
-<div class="col pb-4" data-item="zoom_video">
+<div class="col pb-4" data-item="zoom_video" data-video-id="{{video_id}}">
     <div class="card h-100">
         <div>
             <span class="badge badge-primary p-1" title="Zoom Media" style="position:absolute; top: 1.5em; left: 1.5em;">ZM</span>
             <span class="badge badge-dark p-1" style="position:absolute; top: 1.5em; right: 1.5em;">{{friendlyduration}}</span>
-            <a href="{{{play_link}}}" target="_blank">
-                <img class="card-img-top video-card-image" src="{{thumbnail_url}}" alt="{{video_name}}">
+            <a href="{{{play_link}}}" target="_blank" data-region="thumbnail">
+                <div class="bg-pulse-grey card-img w-100" style="height: 11rem;"></div>
             </a>
         </div>
         <div class="card-body">
@@ -17,9 +17,8 @@
             </p>
         </div>
         <div class="card-footer">
-            <div>
-                {{#pix}} {{{sharescope}}}, local_mymedia {{/pix}}
-                {{sharescope_help}}
+            <div data-region="sharescope-info">
+                <div class="bg-pulse-grey w-100" style="height: 1rem;"></div>
             </div>
             <div>
                 <span>{{ownership}}</span>

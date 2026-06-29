@@ -52,19 +52,15 @@ class zoom_media_get_user_videos extends external_api {
             'videos'            => new external_multiple_structure(new external_single_structure([
                 'video_id'          => new external_value(PARAM_TEXT),
                 'video_name'        => new external_value(PARAM_TEXT),
-                'thumbnail_url'     => new external_value(PARAM_URL),
                 'video_source'      => new external_value(PARAM_TEXT),
                 'created_time'      => new external_value(PARAM_TEXT),
                 'modified_time'     => new external_value(PARAM_TEXT),
                 'duration'          => new external_value(PARAM_INT),
                 'play_link'         => new external_value(PARAM_URL),
-                'share_scope'       => new external_value(PARAM_TEXT),
                 'owner_email'       => new external_value(PARAM_TEXT),
                 'friendlyduration'  => new external_value(PARAM_TEXT),
                 'createdrelative'   => new external_value(PARAM_TEXT),
                 'modifiedrelative'  => new external_value(PARAM_TEXT),
-                'sharescope'        => new external_value(PARAM_TEXT),
-                'sharescope_help'   => new external_value(PARAM_TEXT),
                 'ownership'         => new external_value(PARAM_TEXT)
             ]))
         ]);
@@ -91,7 +87,7 @@ class zoom_media_get_user_videos extends external_api {
         $renderer = $PAGE->get_renderer('local_mymedia');
 
         $api = new \mod_zoomvideo\api();
-        $response = $api->get_video_list($USER->email, $params['nextpagetoken'], $params['search']);
+        $response = $api->get_videos($USER->email, $params['nextpagetoken'], $params['search']);
 
         $zoom_media_videos = new \local_mymedia\output\zoom_media_videos($response, $USER->email);
 

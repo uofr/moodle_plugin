@@ -38,8 +38,6 @@ class zoom_media_videos implements \renderable, \templatable {
             $video['friendlyduration'] = self::get_friendly_duration($video['duration']);
             $video['createdrelative'] = self::get_relative_time($video['created_time']);
             $video['modifiedrelative'] = self::get_relative_time($video['modified_time']);
-            $video['sharescope'] = self::get_share_scope($video['share_scope']);
-            $video['sharescope_help'] = $video['share_scope'] ? get_string($video['sharescope'], 'local_mymedia') : '';
             $video['ownership'] = self::get_video_ownership($this->useremail, $video['owner_email']);
             $data->videos[] = $video;
         }

@@ -23,5 +23,6 @@ export default {
     ZOOM_MEDIA_LOADING_SPINNER: 'local_mymedia/zoom_media_loader',
     ZOOM_MEDIA_LOADING_OVERLAY: 'local_mymedia/zoom_media_loading_cover',
     ZOOM_MEDIA_VIDEO_LIST: 'local_mymedia/zoom_media_video_list',
-    ZOOM_MEDIA_CHANNEL_LIST: 'local_mymedia/zoom_media_channel_list'
+    ZOOM_MEDIA_CHANNEL_LIST: 'local_mymedia/zoom_media_channel_list',
+    ZOOM_MEDIA_VIDEO_SHARE_INFO: 'local_mymedia/zoom_media_video_shareinfo'
 };

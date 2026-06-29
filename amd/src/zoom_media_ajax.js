@@ -10,6 +10,30 @@ export const getUserVideos = (search, nextPageToken) => {
     }])[0];
 };
 
+export const getVideoMetadata = (videoids) => {
+    const requests = videoids.map((videoid) => {
+        return {
+            methodname: 'local_mymedia_zoom_media_get_video_metadata',
+            args: {
+                videoid: videoid
+            }
+        };
+    });
+    return Ajax.call(requests);
+};
+
+export const getClips = (videoids) => {
+    const requests = videoids.map((videoid) => {
+        return {
+            methodname: 'local_mymedia_zoom_media_get_clip',
+            args: {
+                videoid: videoid
+            }
+        };
+    });
+    return Ajax.call(requests);
+};
+
 export const getUserChannels = (nextPageToken, userSearch) => {
     return Ajax.call([{
         methodname: 'local_mymedia_zoom_media_get_channels',

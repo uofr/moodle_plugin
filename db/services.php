@@ -22,6 +22,20 @@ $functions = [
         'type'          => 'read',
         'ajax'          => true,
     ],
+    'local_mymedia_zoom_media_get_video_metadata' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_video_metadata',
+        'methodname'    => 'execute',
+        'description'   => 'Get video metadata.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
+    'local_mymedia_zoom_media_get_clip' => [
+        'classname'     => 'local_mymedia\external\zoom_media_get_clip',
+        'methodname'    => 'execute',
+        'description'   => 'Get video metadata.',
+        'type'          => 'read',
+        'ajax'          => true,
+    ],
     'local_mymedia_zoom_media_get_channels' => [
         'classname'     => 'local_mymedia\external\zoom_media_get_channels',
         'methodname'    => 'execute',

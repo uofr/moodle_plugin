@@ -5,7 +5,7 @@ import ZoomMediaSelectors from 'local_mymedia/zoom_media_selectors';
 
 import Notification from 'core/notification';
 import Templates from 'core/templates';
-import {getUserVideos} from 'local_mymedia/zoom_media_ajax';
+import {getUserVideos, getVideoMetadata, getClips} from 'local_mymedia/zoom_media_ajax';
 import {subscribe} from 'core/pubsub';
 import {getString} from 'core/str';
 
@@ -18,7 +18,16 @@ let _root = null;
 const SELECTORS = {
     ZOOM_MEDIA_VIDEO_LIST: '[data-region="zoom-media-video-list"]',
     ZOOM_MEDIA_VIDEO: '[data-item="zoom_video"]',
-    SEARCH_HEADER: '[data-region="zoom-video-search-header"]'
+    ZOOM_MEDIA_VIDEO_THUMBNAIL: '[data-region="thumbnail"]',
+    ZOOM_MEDIA_VIDEO_SHARE_INFO: '[data-region="sharescope-info"]',
+    SEARCH_HEADER: '[data-region="zoom-video-search-header"]',
+};
+
+const SHARESCOPE = {
+    ANYONE: 'share_scope_anyone',
+    SAME_ORGANIZATON: 'share_scope_same_organization',
+    INVITED_MEMBERS_ONLY: 'share_scope_invited_members_only',
+    PRIVATE: 'share_scope_private'
 };
 
 const getSearch = () => {
@@ -131,13 +140,18 @@ const loadVideos = async (renderArea, renderCallback, loadingArea, loadingCallba
         loadingCallback(loadingArea);
 
         const response = await getUserVideos(search, nextPageToken);
-        console.log(response);
         setTotalRecords(response.total_records);
         if (response.next_page_token) {
             setNextPageToken(response.next_page_token);
         }
         else {
             setNextPageToken('');
+        }
+
+        if (response.videos.length) {
+            const videoIds = response.videos.map(video => video.video_id);
+            loadVideoMetadata(videoIds);
+            loadClipData(videoIds);
         }
 
         const {html, js} = await Templates.renderForPromise(ZoomMediaTemplates.ZOOM_MEDIA_VIDEO_LIST, response);
@@ -163,6 +177,61 @@ const loadVideos = async (renderArea, renderCallback, loadingArea, loadingCallba
     finally {
         ZoomMediaLoading.removeLoadingSpinners(loadingArea);
         setLoading(false);
+    }
+};
+
+const loadVideoMetadata = async (videoids) => {
+    try {
+        const responses = await Promise.all(getVideoMetadata(videoids));
+        const root = getRoot();
+        responses.forEach((response) => {
+            const videoSelector = `[data-video-id="${response.video_id}"]`;
+            const thumbnailSelector = `${videoSelector} ${SELECTORS.ZOOM_MEDIA_VIDEO_THUMBNAIL}`;
+            const thumbnailRegion = root.querySelector(thumbnailSelector);
+            if (!thumbnailRegion) {
+                return;
+            }
+
+            thumbnailRegion.innerHTML = '';
+
+            const thumbnailImage = document.createElement('img');
+            const thumbnailSrc = response.thumbnails.shift().file_url;
+            thumbnailImage.src = thumbnailSrc;
+            thumbnailImage.classList.add('card-img-top');
+            thumbnailImage.classList.add('video-card-image');
+            thumbnailRegion.appendChild(thumbnailImage);
+        });
+    }
+    catch (error) {
+        Notification.exception(error);
+    }
+};
+
+const loadClipData = async (videoIds) => {
+    try {
+        const responses = await Promise.all(getClips(videoIds));
+        responses.forEach(async (response) => {
+            const root = getRoot();
+            const videoSelector = `[data-video-id="${response.video_id}"]`;
+            const sharescopeSelector = `${videoSelector} ${SELECTORS.ZOOM_MEDIA_VIDEO_SHARE_INFO}`;
+            const sharescopeRegion = root.querySelector(sharescopeSelector);
+            if (!sharescopeRegion) {
+                return;
+            }
+
+            sharescopeRegion.innerHTML = '';
+
+            const sharescope = SHARESCOPE[response.share_link_settings.share_scope];
+            const sharescopehelp = await getString(sharescope, 'local_mymedia');
+            const {html, js} = await Templates.renderForPromise(
+                ZoomMediaTemplates.ZOOM_MEDIA_VIDEO_SHARE_INFO,
+                { sharescope: sharescope, sharescopehelp: sharescopehelp }
+            );
+            Templates.appendNodeContents(sharescopeRegion, html, js);
+        });
+    }
+    catch (error) {
+        Notification.exception(error);
     }
 };
 
