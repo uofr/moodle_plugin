@@ -69,9 +69,14 @@ $string['owned_channel'] = 'You own this channel.';
 $string['shared_channel'] = 'This channel has been shared with you.';
 $string['user_owned_channel'] = '{$a} owns this channel.';
 $string['user_shared_channel'] = 'This channel has been shared with {$a}.';
+$string['recordvideo'] = 'Record a Zoom Clip';
 
 //upload language strings
 $string['uploadvideo'] = 'Upload a Video';
+$string['uploadvideo_desc'] = 'Upload video to your Zoom Clips library';
 $string['title'] = 'Video Title';
 $string['file'] = 'Video File';
 $string['upload'] = 'Upload';
+
+$string['dragdrop_prompt'] = 'Drag and drop videos here';
+$string['upload_browse_prompt'] = 'or click to browse your computer';

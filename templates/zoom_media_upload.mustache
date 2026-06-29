@@ -3,14 +3,14 @@
         <div class="card-body p-5">
             
             <h3 class="font-weight-bold mb-4 text-dark">{{#str}} uploadvideo, local_mymedia {{/str}}</h3>
-            
+            <p>{{#str}} uploadvideo_desc, local_mymedia {{/str}}</p>
             <form id="customZoomUploadForm">
                 <div class="form-group mb-4">
                     <div id="dropZone" class="text-center p-5 rounded" style="border: 2px dashed #adb5bd; background-color: #f8f9fa; position: relative; transition: 0.3s;">
                         <input type="file" id="videoFile" accept="video/*" multiple style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
                         <div id="dropZoneContent">
-                            <h5 class="text-secondary">Drag and drop videos here</h5>
-                            <p class="text-muted small mb-0">or click to browse your computer</p>
+                            <h5 class="text-secondary">{{#str}} dragdrop_prompt, local_mymedia {{/str}}</h5>
+                            <p class="text-muted small mb-0">{{#str}} upload_browse_prompt, local_mymedia {{/str}}</p>
                         </div>
                     </div>
                 </div>
