@@ -47,114 +47,7 @@ $PAGE->requires->css('/local/mymedia/mymedia.css');
 $pageclass = 'kaltura-mediagallery-body';
 $PAGE->add_body_class($pageclass);
 
-$PAGE->add_body_class($pageclass);
-
 echo $OUTPUT->header();
-
-
-?>
-<div class="secondary-navigation d-print-none">
-  <nav class="moremenu navigation observed">
-    <ul role="menubar" id ="moremenu" class="nav more-nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link nav_border_bottom" aria-current="page" target="contentframe" href="simple_uploader.php">Trouble uploading?</a>
-      </li>
-      <li class="nav-item " forceintomoremenu ="true">
-        <a class="nav-link nav_border_bottom" target="contentframe" href="get_h5p_link.php">URLs for H5P</a>
-      </li>
-      <li class="nav-item" forceintomoremenu ="true">
-        <?php
-        //Quick hack for CCE Community, will need to think how it should work for them
-        error_log(print_r($SITE->shortname,TRUE));
-        if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
-        ?>
-        <a class="nav-link nav_border_bottom" target="contentframe" href="get_zoom_url.php">Import Zoom Recordings</a>
-      <?php
-        }
-        ?>
-         </li>
-        <?php
-              $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
-              if($hasAdminRole){
-                ?>
-              <li class="nav-item " forceintomoremenu ="true">
-              <a class="nav-link nav_border_bottom" target="contentframe" href="mymedia_logs.php">Logs</a>
-              </li>
-          <?php
-
-        }
-        ?>
-     <?php
-              $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
-              if($hasAdminRole){
-                ?>
-              <li class="nav-item " forceintomoremenu ="true">
-              <a class="nav-link nav_border_bottom" target="contentframe" href="migrate_kaltura.php">Migrate Kaltura Videos</a>
-              </li>
-          <?php
-
-        }
-        ?>
-		
-      <?php
-               $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
-               if($hasAdminRole){
-                 ?>
-               <li class="nav-item " forceintomoremenu ="true">
-               <a class="nav-link nav_border_bottom" target="contentframe" href="zoom_media.php">My Zoom Media</a>
-               </li>
-           <?php
-
-         }
-         ?>
-      
-      <li class="nav-item dropdown moremen">
-        <a class="nav-link dropdown-toggle nav_border_bottom" data-toggle="dropdown" href="#" role="button" aria-expanded="false">More</a>
-        <ul class="dropdown-menu dropdown-bdr">
-        <a class="dropdown-item " target="contentframe" href="get_h5p_link.php">URLs for H5P</a>
-        <?php
-        //Quick hack for CCE Community, will need to think how it should work for them
-        error_log(print_r($SITE->shortname,TRUE));
-        if($SITE->shortname != "CCE Community" && $SITE->shortname != "UR Community"){
-        ?>
-        <a class="dropdown-item" target="contentframe" href="get_zoom_url.php">Import Zoom Recordings</a>
-      <?php
-        }
-        $hasAdminRole = has_capability('moodle/site:config', context_system::instance()); 
-        if($hasAdminRole){
-          ?>
-     
-        <a class="dropdown-item " target="contentframe" href="mymedia_logs.php">Logs</a>
-        
-        <?php
-        }
-        ?>
-        </ul>
-      </li>
-
-    </ul>
-  </nav>
-</div>
-
-<script>
-  const navLinks = document.querySelectorAll('.nav_border_bottom');
-
-navLinks.forEach(link => {
-  link.addEventListener('click', function() {
-    // Remove the active class from all other nav-links
-    navLinks.forEach(link => {
-      link.classList.remove('active');
-    });
-
-    // Add the active class to the clicked nav-link
-    this.classList.add('active');
-  });
-});
-
-</script>
-
-
-<?php
  
 // Request the launch content with an iframe tag.
 $attr = array(
@@ -163,7 +56,7 @@ $attr = array(
     'height' => '600px',
     'width' => '100%',
     'allowfullscreen' => 'true',
-    'src' => 'lti_launch.php',
+    'src' => 'zoom_media.php',
     'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *;',
 );
 echo html_writer::tag('iframe', '', $attr);
