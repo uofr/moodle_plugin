@@ -56,7 +56,7 @@ function local_mymedia_extend_navigation($navigation) {
 
     $linkLocation = get_config('local_mymedia', 'link_location');
     $mymediaString = get_string('nav_mymedia', 'local_mymedia');
-    $mymediaUrl = '/local/mymedia/mymedia.php';
+    $mymediaUrl = '/local/mymedia/zoommedia.php';
     $fullMenuItem = "\n$mymediaString|$mymediaUrl";
 
     // handle link placement based on link_location configuration

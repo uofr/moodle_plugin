@@ -29,7 +29,7 @@ class zoom_media_tabs implements \renderable, \templatable {
 
     public function export_for_template(\core\output\renderer_base $output) {
         $activetab = $this->url->get_param('activetab');
-        $tabs = ['videos', 'channels', 'clips', 'record', 'upload'];
+        $tabs = ['videos', 'channels', 'clips', 'record', 'upload','kaltura'];
 
         $data = new \stdClass();
 

@@ -43,6 +43,7 @@ $string['tab_clips'] = 'Clips';
 $string['tab_channels'] = 'Channels';
 $string['tab_record'] = 'Record';
 $string['tab_upload'] = 'Upload';
+$string['tab_kaltura'] = 'Kaltura';
 $string['time_created'] = 'Created: {$a}';
 $string['time_modified'] = 'Modified: {$a}';
 $string['share_scope_anyone'] = 'Anyone with a link can watch this.';
