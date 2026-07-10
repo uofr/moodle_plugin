@@ -65,7 +65,8 @@ class zoom_media_get_user_videos extends external_api {
                 'modifiedrelative'  => new external_value(PARAM_TEXT),
                 'sharescope'        => new external_value(PARAM_TEXT),
                 'sharescope_help'   => new external_value(PARAM_TEXT),
-                'ownership'         => new external_value(PARAM_TEXT)
+                'ownership'         => new external_value(PARAM_TEXT),
+                'origin'         => new external_value(PARAM_TEXT)
             ]))
         ]);
     }

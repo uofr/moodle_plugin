@@ -1,3 +1,30 @@
+
 {{#videos}}
     {{>local_mymedia/zoom_media_video}}
+{{/videos}}
+{{^videos}}
+
+<div class="container">
+  <div class="row">
+    <div class="card shadow border-0" style="border-radius: 12px;">
+        <div class="card-body p-5">
+            
+				<h4>No videos have been found in your Zoom library.</h4>
+	
+			<p>You can <a href="zoom_media.php?activetab=upload"><strong>Upload a video</strong></a> or <a href="zoom_media.php?activetab=record"><strong>Record a Clip</strong></a> to have it appear in your Zoom library.</p>
+	
+			<p><a class="btn btn-primary" href="zoom_media.php?activetab=upload">Upload a video</a> <a class="btn btn-primary" href="zoom_media.php?activetab=record">Record a Clip</a></p>
+	
+			<p>Videos matching the following criteria are still being migrated from Kaltura to Zoom.</p>
+	
+			<ul>
+			<li>Videos with at least one play since January 1, 2024.</li>
+			<li>Videos created on January 1, 2025 or later.</li>
+			</ul>
+	
+			<p>If you need to expedite the migration of your videos, or have any questions or concerns, please contact the <a href="mailto:service.desk@uregina.ca"><strong>Service Desk</strong></a>.</p>
+
+        </div>
+    </div>
+</div>
 {{/videos}}

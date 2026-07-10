@@ -41,6 +41,8 @@ class zoom_media_videos implements \renderable, \templatable {
             $video['sharescope'] = self::get_share_scope($video['share_scope']);
             $video['sharescope_help'] = $video['share_scope'] ? get_string($video['sharescope'], 'local_mymedia') : '';
             $video['ownership'] = self::get_video_ownership($this->useremail, $video['owner_email']);
+			$video['origin'] = self::get_video_source($video['video_id']);
+			//error_log('ZVM VIDEO:'.print_r($video,1));
             $data->videos[] = $video;
         }
 
@@ -104,4 +106,17 @@ class zoom_media_videos implements \renderable, \templatable {
             return get_string('shared_video', 'local_mymedia');
         }
     }
+	
+	private static function get_video_source($video_id) {
+		global $DB;
+		
+		$record = $DB->get_record('ur_kaltura_zoom', ['clip_id' => $video_id]);
+		
+		//error_log('ZVM REC CHECK:'.$video_id);
+		//error_log('ZVM or KM:'.print_r($record,1));
+		
+		$source = (!$record) ? 'ZM' : 'KM';
+		
+		return $source;	
+	}
 }
