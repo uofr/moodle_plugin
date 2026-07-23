@@ -184,9 +184,14 @@ class text_filter extends \filter_kaltura_base_text_filter {
      * @return string Kaltura embed video markup.
      */
     private static function filter_kaltura_callback($link) {
+		global $CFG,$DB,$COURSE;
+
+		require_once($CFG->dirroot . '/mod/zoomvideo/classes/api.php');
+		
         $width = self::$defaultwidth;
         $height = self::$defaultheight;
         $source = '';
+		$entry_id = 0;
 
         // Convert KAF URI anchor tags into iframe markup.
         $count = count($link);
@@ -202,14 +207,82 @@ class text_filter extends \filter_kaltura_base_text_filter {
             }
 
             $source = self::$kafuri . '/browseandembed/index/media/entryid/' . $link[$count - 4] . $link[$count - 3];
+			$entry_id = $link[$count - 4];
         }
 
         // Convert v3 anchor tags into iframe markup.
         if (7 == count($link) && $link[1] == self::$apiurl) {
             $source = self::$kafuri.'/browseandembed/index/media/entryid/'.$link[4].'/playerSize/';
             $source .= self::$defaultwidth.'x'.self::$defaultheight.'/playerSkin/'.$link[3];
-        }
 
+			$entry_id = $link[4];
+        }
+		
+		//error_log('filter/kaltura/ - found entryid: '.$entry_id);
+		
+		// Check on Zoom if course has Zoom channel
+		$zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$entry_id]);
+		if ($zoomclip) {
+			$course_id = self::$pagecontext->instanceid;
+			
+			//error_log('filter/kaltura/ - found Zoom clip: '.$zoomclip->clip_id);
+			
+			// Check that course has a Zoom channel
+			$cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
+			$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course_id]);
+			
+			$zoomapi = new \mod_zoomvideo\api();
+			
+			//If no Zoom channel yet, create one
+			if (empty($zoomchannel)) {
+				
+				
+		        $owner_email = null;
+		        $teacher_role = $DB->get_record('role', ['shortname' => 'editingteacher']);
+        
+		        if ($teacher_role) {
+		            $context = context_course::instance($course_id);
+		            $sql = "SELECT u.email 
+		                    FROM {role_assignments} ra
+		                    JOIN {user} u ON ra.userid = u.id
+		                    JOIN {user_enrolments} ue ON ue.userid = u.id
+		                    JOIN {enrol} e ON e.id = ue.enrolid
+		                    WHERE ra.contextid = :contextid AND ra.roleid = :roleid
+		                    AND u.deleted = 0 AND u.suspended = 0 AND e.courseid = :courseid
+		                    ORDER BY ra.timemodified ASC";
+            
+		            $teachers = $DB->get_records_sql($sql, ['contextid' => $context->id, 'roleid' => $teacher_role->id, 'courseid' => $course_id]);
+		            if (!empty($teachers)) {
+		                $owner_email = reset($teachers)->email;
+		            }
+		        }
+				
+		        $zoom_owner_id = $zoomapi->get_user_id_by_email($owner_email);
+		        if (!$zoom_owner_id) {
+		            $zoom_owner_id = $zoomapi->get_admin_user_id();
+		        }
+				
+				$zoomapi->create_course_channel($COURSE, $zoom_owner_id);
+				
+				$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course_id]);
+			}
+			
+			if ($zoomchannel) {
+				$added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
+			
+				$adhocsynctask = \mod_zoomvideo\task\adhoc_update_channel_permissions::instance($course_id);
+				\core\task\manager::queue_adhoc_task($adhocsynctask);
+				
+				sleep(0.5); // give it a moment to let the permissions update	
+			}
+			
+			
+			$zoom_embed = "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center&channelId={$zoomchannel->value}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
+			
+			return $zoom_embed;
+			
+		}
+		
         $params = array(
             'courseid' => self::$pagecontext->instanceid,
             'height' => $height,
