@@ -220,10 +220,13 @@ class text_filter extends \filter_kaltura_base_text_filter {
 		
 		//error_log('filter/kaltura/ - found entryid: '.$entry_id);
 		
+		//limit the zoom replacement to specific courses for now
+		$zoom_courses = array();
+		$course_id = $COURSE->id;
+			
 		// Check on Zoom if course has Zoom channel
 		$zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$entry_id]);
-		if ($zoomclip) {
-			$course_id = $COURSE->id;
+		if ($zoomclip&&in_array($course_id,$zoom_courses)) {
 			
 			//error_log('filter/kaltura/ - found Zoom clip: '.$zoomclip->clip_id);
 			
@@ -281,33 +284,36 @@ class text_filter extends \filter_kaltura_base_text_filter {
 			
 			return $zoom_embed;
 			
+		} else {
+		
+	        $params = array(
+	            'courseid' => self::$pagecontext->instanceid,
+	            'height' => $height,
+	            'width' => $width,
+	            'withblocks' => 0,
+	            'source' => $source
+
+	        );
+
+	        $url = new \moodle_url('/filter/kaltura/lti_launch.php', $params);
+
+	        $iframe = \html_writer::tag('iframe', '', array(
+	            'width' => $width,
+	            'height' => $height,
+	            'class' => 'kaltura-player-iframe',
+	            'allowfullscreen' => 'true',
+	            'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *; display-capture *;',
+	            'src' => $url->out(false),
+	            'frameborder' => '0'
+	        ));
+
+	        $iframeContainer = \html_writer::tag('div', $iframe, array(
+	            'class' => 'kaltura-player-container'
+	        ));
+
+	        return $iframeContainer;
+			
 		}
 		
-        $params = array(
-            'courseid' => self::$pagecontext->instanceid,
-            'height' => $height,
-            'width' => $width,
-            'withblocks' => 0,
-            'source' => $source
-
-        );
-
-        $url = new \moodle_url('/filter/kaltura/lti_launch.php', $params);
-
-        $iframe = \html_writer::tag('iframe', '', array(
-            'width' => $width,
-            'height' => $height,
-            'class' => 'kaltura-player-iframe',
-            'allowfullscreen' => 'true',
-            'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *; display-capture *;',
-            'src' => $url->out(false),
-            'frameborder' => '0'
-        ));
-
-        $iframeContainer = \html_writer::tag('div', $iframe, array(
-            'class' => 'kaltura-player-container'
-        ));
-
-        return $iframeContainer;
     }
 }
