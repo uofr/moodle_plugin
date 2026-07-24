@@ -109,7 +109,7 @@ if ($zoomclip&&in_array($course->id,$zoom_courses)) {
 	       $teacher_role = $DB->get_record('role', ['shortname' => 'editingteacher']);
 
 	       if ($teacher_role) {
-	           $context = context_course::instance($course_id);
+	           $context = context_course::instance($course->id);
 	           $sql = "SELECT u.email 
 	                   FROM {role_assignments} ra
 	                   JOIN {user} u ON ra.userid = u.id
@@ -119,7 +119,7 @@ if ($zoomclip&&in_array($course->id,$zoom_courses)) {
 	                   AND u.deleted = 0 AND u.suspended = 0 AND e.courseid = :courseid
 	                   ORDER BY ra.timemodified ASC";
    
-	           $teachers = $DB->get_records_sql($sql, ['contextid' => $context->id, 'roleid' => $teacher_role->id, 'courseid' => $course_id]);
+	           $teachers = $DB->get_records_sql($sql, ['contextid' => $context->id, 'roleid' => $teacher_role->id, 'courseid' => $course->id]);
 	           if (!empty($teachers)) {
 	               $owner_email = reset($teachers)->email;
 	           }
@@ -132,7 +132,7 @@ if ($zoomclip&&in_array($course->id,$zoom_courses)) {
 	
 		$zoomapi->create_course_channel($COURSE, $zoom_owner_id);
 	
-		$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course_id]);
+		$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
 	}
 
    // for debugging, show the clip and channel id
