@@ -223,7 +223,7 @@ class text_filter extends \filter_kaltura_base_text_filter {
 		// Check on Zoom if course has Zoom channel
 		$zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$entry_id]);
 		if ($zoomclip) {
-			$course_id = self::$pagecontext->instanceid;
+			$course_id = $COURSE->id;
 			
 			//error_log('filter/kaltura/ - found Zoom clip: '.$zoomclip->clip_id);
 			
@@ -241,7 +241,7 @@ class text_filter extends \filter_kaltura_base_text_filter {
 		        $teacher_role = $DB->get_record('role', ['shortname' => 'editingteacher']);
         
 		        if ($teacher_role) {
-		            $context = context_course::instance($course_id);
+		            $context = \context_course::instance($course_id);
 		            $sql = "SELECT u.email 
 		                    FROM {role_assignments} ra
 		                    JOIN {user} u ON ra.userid = u.id
