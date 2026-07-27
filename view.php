@@ -86,7 +86,7 @@ $params = array(
     'height' => $kalvidres->height
 );
 
-$zoom_courses = array(1588);
+$zoom_courses = array('37619','31544','39149','31924');
 
 // for debugging, show the entry_id 
 echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidres->entry_id.'</div>-->';
