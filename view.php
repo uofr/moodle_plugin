@@ -84,7 +84,7 @@ $params = array(
     'height' => $kalvidpres->height,
 );
 
-$zoom_courses = array();
+$zoom_courses = array('37619','31544','39149','31924');
 
 // for debugging, show the entry_id 
 echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidpres->entry_id.'</div>-->';
