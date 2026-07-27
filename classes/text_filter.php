@@ -221,7 +221,7 @@ class text_filter extends \filter_kaltura_base_text_filter {
 		//error_log('filter/kaltura/ - found entryid: '.$entry_id);
 		
 		//limit the zoom replacement to specific courses for now
-		$zoom_courses = array();
+		$zoom_courses = array('37619','31544','39149','31924');
 		$course_id = $COURSE->id;
 			
 		// Check on Zoom if course has Zoom channel
