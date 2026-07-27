@@ -137,8 +137,8 @@ if ($zoomclip&&in_array($course->id,$zoom_courses)) {
 
    // for debugging, show the clip and channel id
    echo '<!-- '.print_r($zoomclip,1).' -->';
-   echo '<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>';
-   echo '<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>';
+   echo '<!--<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>-->';
+   echo '<!--<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>-->';
 
    echo '<!--<pre>course->id:'.print_r($course->id,1).'</pre>-->';
    
