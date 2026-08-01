@@ -1,0 +1,200 @@
+{{!
+    @template local_mymedia/kaltura_archive_tab
+    Polished card grid layout with an in-place Video Player Modal and Infinite Scroll.
+}}
+
+<!-- Search Bar -->
+<div class="row mb-4 mt-2">
+    <div class="col-12 col-md-6 col-lg-5">
+        <form method="get" action="zoom_media.php" class="input-group shadow-sm">
+            <input type="hidden" name="activetab" value="kaltura">
+            <input type="text" 
+                   name="search" 
+                   class="form-control border-right-0" 
+                   placeholder="Search by video title..." 
+                   value="{{search}}">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-success px-3">
+                    <i class="fa fa-search mr-1"></i> Search
+                </button>
+                {{#search}}
+                    <a href="zoom_media.php?activetab=kaltura" class="btn btn-outline-secondary d-flex align-items-center px-3" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </a>
+                {{/search}}
+            </div>
+        </form>
+    </div>
+</div>
+
+{{#has_videos}}
+<!-- Video Grid Container -->
+<div class="row" id="kaltura-card-grid">
+    {{> local_mymedia/kaltura_archive_cards }}
+</div>
+
+<!-- Infinite Scroll Sentinel & Loading Spinner -->
+<div id="kaltura-scroll-sentinel" class="text-center py-4 w-100" data-hasmore="{{#hasmore}}true{{/hasmore}}{{^hasmore}}false{{/hasmore}}">
+    <div id="kaltura-scroll-spinner" style="display: none;">
+        <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+        <div class="small text-muted mt-2">Loading more videos...</div>
+    </div>
+</div>
+{{/has_videos}}
+
+{{^has_videos}}
+<div class="alert alert-light text-center py-5 border">
+    <h5>No archived Kaltura videos found</h5>
+    <p class="text-muted mb-0">Videos migrated or downloaded from your Kaltura archive will appear here.</p>
+</div>
+{{/has_videos}}
+
+<!-- Bootstrap Video Player Modal -->
+<div class="modal fade" id="kalturaArchiveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-white text-truncate font-weight-bold pr-3" id="kalturaArchiveModalTitle"></h6>
+                <button type="button" class="close text-white opacity-1" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="position-relative bg-black" style="border-radius: 4px; overflow: hidden;">
+                    <video id="kalturaArchiveVideoPlayer" class="w-100 d-block" controls preload="none" style="max-height: 70vh; background: #000;">
+                        Your browser does not support HTML5 video.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+require(['jquery'], function($) {
+    //  Use document delegation so dynamically loaded AJAX cards trigger the modal cleanly
+    $(document).on('click', '.watch-archive-btn', function() {
+        var btn = $(this);
+        var title = btn.data('title');
+        var videoSrc = btn.data('video');
+        var posterSrc = btn.data('poster');
+        var captionSrc = btn.data('caption');
+
+        $('#kalturaArchiveModalTitle').text(title);
+
+        var videoEl = $('#kalturaArchiveVideoPlayer');
+        var videoDOM = videoEl.get(0);
+
+        // Check if Moodle's VideoJS player has initialized on this tag
+        if (typeof videojs !== 'undefined' && videojs.getPlayer('kalturaArchiveVideoPlayer')) {
+            var vjsPlayer = videojs.getPlayer('kalturaArchiveVideoPlayer');
+            vjsPlayer.poster(posterSrc || '');
+            vjsPlayer.src({ type: 'video/mp4', src: videoSrc });
+            
+            // Clear old remote text tracks
+            var oldTracks = vjsPlayer.remoteTextTracks();
+            while (oldTracks && oldTracks.length > 0) {
+                vjsPlayer.removeRemoteTextTrack(oldTracks[0]);
+            }
+
+            // Attach CC track if available
+            if (captionSrc) {
+                vjsPlayer.addRemoteTextTrack({
+                    kind: 'subtitles',
+                    label: 'English CC',
+                    srclang: 'en',
+                    src: captionSrc,
+                    default: true
+                }, false);
+            }
+
+            vjsPlayer.ready(function() {
+                vjsPlayer.play();
+            });
+        } else {
+            // Fallback for standard HTML5 Video
+            videoEl.empty();
+            videoDOM.poster = posterSrc || '';
+            videoEl.append($('<source>', { src: videoSrc, type: 'video/mp4' }));
+
+            if (captionSrc) {
+                videoEl.append($('<track>', {
+                    kind: 'subtitles',
+                    label: 'English CC',
+                    srclang: 'en',
+                    src: captionSrc,
+                    default: true
+                }));
+            }
+
+            videoDOM.load();
+            videoDOM.play().catch(function() {});
+        }
+    });
+
+    // When modal is closed, pause and reset the player
+    $('#kalturaArchiveModal').on('hidden.bs.modal', function() {
+        if (typeof videojs !== 'undefined' && videojs.getPlayer('kalturaArchiveVideoPlayer')) {
+            var vjsPlayer = videojs.getPlayer('kalturaArchiveVideoPlayer');
+            vjsPlayer.pause();
+            vjsPlayer.reset();
+        } else {
+            var videoDOM = $('#kalturaArchiveVideoPlayer').get(0);
+            videoDOM.pause();
+            $('#kalturaArchiveVideoPlayer').empty();
+        }
+    });
+
+    //  INFINITE SCROLL OBSERVER
+    var currentPage = 0;
+    var isLoading = false;
+    var sentinel = document.getElementById('kaltura-scroll-sentinel');
+    var hasMore = ($('#kaltura-scroll-sentinel').data('hasmore') === true || $('#kaltura-scroll-sentinel').data('hasmore') === 'true');
+
+    if (!sentinel || !hasMore) {
+        return;
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
+            isLoading = true;
+            currentPage++;
+            $('#kaltura-scroll-spinner').fadeIn(150);
+
+            var searchTerm = $('input[name="search"]').val() || '';
+
+            $.ajax({
+                url: M.cfg.wwwroot + '/local/mymedia/ajax_kaltura.php',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    page: currentPage,
+                    search: searchTerm
+                },
+                success: function(response) {
+                    if (response.success && response.html) {
+                        $('#kaltura-card-grid').append(response.html);
+                        hasMore = response.hasmore;
+
+                        if (!hasMore) {
+                            observer.disconnect();
+                            $('#kaltura-scroll-sentinel').remove();
+                        }
+                    } else {
+                        hasMore = false;
+                        observer.disconnect();
+                    }
+                },
+                complete: function() {
+                    isLoading = false;
+                    $('#kaltura-scroll-spinner').hide();
+                }
+            });
+        }
+    }, {
+        rootMargin: '200px' // Start loading 200px before reaching the bottom
+    });
+
+    observer.observe(sentinel);
+});
+{{/js}}
