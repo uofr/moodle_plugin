@@ -63,3 +63,26 @@
 .zoom-media-video-list .card-footer {
 	font-size: 0.85rem;
 }
+
+.kaltura-card-item {
+    position: relative;
+}
+
+.kaltura-card-item:hover,
+.kaltura-card-item:focus-within {
+    z-index: 10;
+}
+
+.kaltura-card-item .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kaltura-card-item .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+}
+
+.kaltura-card-item .card-footer {
+    background-color: #f1f3f5 !important;
+    border-top: 1px solid #e9ecef !important;
+}

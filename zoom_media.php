@@ -16,17 +16,13 @@
 
 require('../../config.php');
 
-
 require_login();
 $context = context_system::instance();
 require_capability('local/mymedia:view', $context);
 
+// Use PARAM_ALPHANUMEXT if you ever use underscores, but lowercase alpha is cleanest.
 $activetab = optional_param('activetab', 'videos', PARAM_ALPHA);
-
-if ($activetab == 'kaltura') {
-	$url = new moodle_url('/local/mymedia/lti_launch.php');
-	header('Location: '.$url);
-}
+$search = optional_param('search', '', PARAM_TEXT);
 
 $PAGE->set_context($context);
 
@@ -50,21 +46,32 @@ switch ($activetab) {
         $cansearch = has_capability('local/mymedia:searchzoomchannels', $context);
         $userzoomid = $api->get_user_id_by_email($USER->email);
         $view = new local_mymedia\output\zoom_media_tab_channels($cansearch, $userzoomid);
-    break;
+        break;
+
     case 'clips':
         $view = new local_mymedia\output\zoom_media_clips();
-    break;
+        break;
+
     case 'record':
         $view = new local_mymedia\output\zoom_media_record();
-    break;
+        break;
+
     case 'upload':
         $PAGE->requires->js(new moodle_url('/local/mymedia/js/zoom_upload.js'));
         $view = new local_mymedia\output\zoom_media_upload(); 
         break;
-		
-    default: //videos
+
+    case 'kaltura':
+        // Optional: We can include/create JS if archive grid needs custom client-side interactions.
+        // $PAGE->requires->js(new moodle_url('/local/mymedia/js/kaltura_archive.js'));
+        
+        // Pass the logged-in user's identifier to filter their archived videos.
+        $view = new local_mymedia\output\kaltura_archive_tab($USER->username, $search); 
+        break;
+        
+    default: // videos
         $view = new local_mymedia\output\zoom_media_tab_videos();
-    break;
+        break;
 }
 
 echo $OUTPUT->render($view);
