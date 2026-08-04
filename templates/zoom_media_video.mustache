@@ -11,19 +11,40 @@
             <a href="{{{play_link}}}" target="_blank">
                 <h6 class="card-title">{{video_name}}</h6>
             </a>
+			
+			
+			<p>Description: {{video_desc}}</p>
+			
+			
             <p class="card-text">
                 {{#str}} time_created, local_mymedia, {{createdrelative}} {{/str}}<br>
                 {{#str}} time_modified, local_mymedia, {{modifiedrelative}} {{/str}}
             </p>
+			
+			{{#kalturainfo}}
+			<details>
+			  <summary>Legacy Kaltura info <i class="fa fa-info-circle fa-fw" title="Information from when this video was hosted on Kaltura"></i></summary>
+			  <p class="small badge badge-info">
+			    This video was transferred from Kaltura
+			  </p>
+			  
+			  <div style="border: solid 1px #ccc; padding: 0.5rem; background-color: #fcfcfc"><p>Plays: {{kplays}}<br>
+			  Last played: <span title="{{klastplayed}}">{{klastplayed_friendly}}</span><br>
+			  Created: <span title="{{kcreated}}">{{kcreated_friendly}}</span><br>
+			  Courses: {{{kcourses}}}</p></div>
+			  
+			</details>
+			{{/kalturainfo}}
         </div>
-        <div class="card-footer">
-            <div>
-                {{#pix}} {{{sharescope}}}, local_mymedia {{/pix}}
-                {{sharescope_help}}
-            </div>
-            <div>
-                <span>{{ownership}}</span>
-            </div>
-        </div>
+        <!--<div class="card-footer">
+                    <div>
+                        {{#pix}} {{{sharescope}}}, local_mymedia {{/pix}}
+                        {{sharescope_help}}
+                    </div>
+                    <div>
+        				{{{ownershipscope}}}
+                        <span>{{ownership}}</span>
+                    </div>
+                </div>!-->
     </div>
 </div>
