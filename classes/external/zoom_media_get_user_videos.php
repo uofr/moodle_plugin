@@ -66,7 +66,16 @@ class zoom_media_get_user_videos extends external_api {
                 'sharescope'        => new external_value(PARAM_TEXT),
                 'sharescope_help'   => new external_value(PARAM_TEXT),
                 'ownership'         => new external_value(PARAM_TEXT),
-                'origin'         => new external_value(PARAM_TEXT)
+                'ownershipscope'    => new external_value(PARAM_RAW),
+                'origin'         	=> new external_value(PARAM_TEXT),
+                'video_desc'        => new external_value(PARAM_RAW),
+                'kalturainfo'       => new external_value(PARAM_BOOL),
+                'kplays'          	=> new external_value(PARAM_INT, '', VALUE_OPTIONAL),
+                'klastplayed'       => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'klastplayed_friendly'       => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'kcreated'          => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'kcreated_friendly'          => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'kcourses'          => new external_value(PARAM_RAW, '', VALUE_OPTIONAL)
             ]))
         ]);
     }

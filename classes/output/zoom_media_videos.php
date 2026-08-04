@@ -29,6 +29,7 @@ class zoom_media_videos implements \renderable, \templatable {
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
+		global $CFG,$DB;
         $data = new \stdClass();
 
         $data->next_page_token = $this->response['next_page_token'];
@@ -41,7 +42,55 @@ class zoom_media_videos implements \renderable, \templatable {
             $video['sharescope'] = self::get_share_scope($video['share_scope']);
             $video['sharescope_help'] = $video['share_scope'] ? get_string($video['sharescope'], 'local_mymedia') : '';
             $video['ownership'] = self::get_video_ownership($this->useremail, $video['owner_email']);
-			$video['origin'] = self::get_video_source($video['video_id']);
+			//$video['origin'] = self::get_video_source($video['video_id']);
+			$video['ownershipscope'] = self::get_video_ownership_ico($this->useremail, $video['owner_email']);
+			
+			$krecord = $DB->get_record('ur_kaltura_zoom', ['clip_id' => $video['video_id']]);
+			
+			$video['video_desc'] = self::limit_text($video['description'],18);//.print_r($video,1);
+			
+			error_log('Zoom desc: '.$video['video_desc']);
+			
+			if ($krecord) {
+				$video['origin'] = 'KM';
+				$video['kalturainfo'] = true;
+				
+				$video['kplays'] = $krecord->plays;
+				
+				$yqr_tz = new DateTimeZone('America/Regina');
+				
+				$video['klastplayed'] = date('M j Y, g:i A',$krecord->lastplayed);
+				$video['klastplayed_friendly'] = self::get_relative_time(date('Y-m-d\TH:i:s\Z',$krecord->lastplayed));
+				
+				$video['kcreated'] = date('M j Y, g:i A',$krecord->created);
+				$video['kcreated_friendly'] = self::get_relative_time(date('Y-m-d\TH:i:s\Z',$krecord->created));
+				
+				if (!empty($krecord->categories)) {
+					
+					preg_match('/([0-9]+)/', $krecord->categories, $matches);
+					
+					$coursecats = [];
+					
+					foreach ($matches as $match) {
+						
+						$catcourse = $DB->get_record('course', ['id' => $match]);
+						$courselink = isset($catcourse)&&!empty($catcourse->shortname) ? $catcourse->shortname : 'Invalid  Course ID - '.$match ; 
+						$coursecats[$match] = '<a href="'.$CFG->wwwroot.'/course/view.php?id='.$match.'" target="_blank" title="'.(str_contains($courselink, 'Invalid')?'Missing course':'Visit the course').'">'.$courselink.'</a>';
+					}
+					
+					$course_links = implode('<br>',$coursecats);//print_r($matches,1);
+					
+				} else {
+					$course_links = print_r($krecord->categories,1);
+				}
+				
+				$video['kcourses'] = $course_links;
+				
+			} else {
+				$video['kalturainfo'] = false;
+				$video['origin'] = 'ZM';
+			}
+			
 			//error_log('ZVM VIDEO:'.print_r($video,1));
             $data->videos[] = $video;
         }
@@ -82,7 +131,7 @@ class zoom_media_videos implements \renderable, \templatable {
                 if (intval($date_relative_array[$i] > 1)) {
                     $ago .= 's';
                 }
-                return "{$date_relative_array[$i]} $ago ago";
+                return "About {$date_relative_array[$i]} $ago ago";
             }
         }
         return '';
@@ -95,7 +144,7 @@ class zoom_media_videos implements \renderable, \templatable {
             'INVITED_MEMBERS_ONLY' => 'share_scope_invited_members_only',
             'PRIVATE' => 'share_scope_private'
         ];
-        return $sharescopes[$share_scope] ?? '';
+        return $sharescopes[$share_scope] ?? 'share_scope_anyone'; //share scope cannot be empty, but sometimes is??
     }
 
     private static function get_video_ownership($useremail, $owneremail) {
@@ -104,6 +153,24 @@ class zoom_media_videos implements \renderable, \templatable {
         }
         else {
             return get_string('shared_video', 'local_mymedia');
+        }
+    }
+	
+    private static function get_video_ownershipscope($useremail, $owneremail) {
+        if ($useremail == $owneremail) {
+            return 'owned_video';
+        }
+        else {
+            return 'shared_video';
+        }
+    }
+	
+	private static function get_video_ownership_ico($useremail, $owneremail) {
+        if ($useremail == $owneremail) {
+            return '<i class="icon fa fa-user fa-fw"></i>';
+        }
+        else {
+            return '<i class="icon fa fa-users fa-fw"></i>';
         }
     }
 	
@@ -119,4 +186,25 @@ class zoom_media_videos implements \renderable, \templatable {
 		
 		return $source;	
 	}
+	
+	private static function limit_text($text, $len) {
+        if (strlen($text) < $len) {
+            return $text;
+        }
+        $text_words = explode(' ', $text);
+        $out = null;
+
+
+        foreach ($text_words as $word) {
+            if ((strlen($word) > $len) && $out == null) {
+
+                return substr($word, 0, $len) . "...";
+            }
+            if ((strlen($out) + strlen($word)) > $len) {
+                return $out . "...";
+            }
+            $out.=" " . $word;
+        }
+        return $out;
+    }
 }
