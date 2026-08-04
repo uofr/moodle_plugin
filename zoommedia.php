@@ -48,6 +48,10 @@ $pageclass = 'kaltura-mediagallery-body';
 $PAGE->add_body_class($pageclass);
 
 echo $OUTPUT->header();
+
+// ALERT if user has no matching Zoom account??
+
+echo '<p>Be sure to stay logged in to <a href="https://uregina-ca.zoom.us"><strong>uregina-ca.zoom.us</strong></a> with your <strong>'.$USER->email.'</strong> to view videos within UR Courses</p>';
  
 // Request the launch content with an iframe tag.
 $attr = array(

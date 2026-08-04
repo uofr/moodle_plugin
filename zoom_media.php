@@ -22,11 +22,12 @@ $context = context_system::instance();
 require_capability('local/mymedia:view', $context);
 
 $activetab = optional_param('activetab', 'videos', PARAM_ALPHA);
-
+/*
 if ($activetab == 'kaltura') {
-	$url = new moodle_url('/local/mymedia/lti_launch.php');
+	$url = new moodle_url('/local/mymedia/kaltura_message.php');
 	header('Location: '.$url);
 }
+*/
 
 $PAGE->set_context($context);
 
@@ -56,6 +57,9 @@ switch ($activetab) {
     break;
     case 'record':
         $view = new local_mymedia\output\zoom_media_record();
+    break;
+	case 'kaltura':
+        $view = new local_mymedia\output\zoom_kaltura();
     break;
     case 'upload':
         $PAGE->requires->js(new moodle_url('/local/mymedia/js/zoom_upload.js'));
