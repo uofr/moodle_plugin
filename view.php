@@ -86,14 +86,12 @@ $params = array(
     'height' => $kalvidres->height
 );
 
-$zoom_courses = array('37619','31544','39149','31924');
-
 // for debugging, show the entry_id 
 echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidres->entry_id.'</div>-->';
 
 //if we have a zoom clip, use it instead
 $zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidres->entry_id]);
-if ($zoomclip&&in_array($course->id,$zoom_courses)) {
+if ($zoomclip) {
 
    $cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
 
@@ -145,11 +143,6 @@ if ($zoomclip&&in_array($course->id,$zoom_courses)) {
 	if ($zoomchannel) {
    
 	   $added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
-   
-	   $adhocsynctask = \mod_zoomvideo\task\adhoc_update_channel_permissions::instance($course->id);
-	   \core\task\manager::queue_adhoc_task($adhocsynctask);
-   
-	   sleep(0.5);
 
 	}
 
