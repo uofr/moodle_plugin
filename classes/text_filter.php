@@ -221,12 +221,12 @@ class text_filter extends \filter_kaltura_base_text_filter {
 		//error_log('filter/kaltura/ - found entryid: '.$entry_id);
 		
 		//limit the zoom replacement to specific courses for now
-		$zoom_courses = array('37619','31544','39149','31924');
+		//$zoom_courses = array('37619','31544','39149','31924');
 		$course_id = $COURSE->id;
 			
 		// Check on Zoom if course has Zoom channel
 		$zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$entry_id]);
-		if ($zoomclip&&in_array($course_id,$zoom_courses)) {
+		if ($zoomclip) {
 			
 			//error_log('filter/kaltura/ - found Zoom clip: '.$zoomclip->clip_id);
 			
@@ -273,10 +273,10 @@ class text_filter extends \filter_kaltura_base_text_filter {
 			if ($zoomchannel) {
 				$added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
 			
-				$adhocsynctask = \mod_zoomvideo\task\adhoc_update_channel_permissions::instance($course_id);
-				\core\task\manager::queue_adhoc_task($adhocsynctask);
+				//$adhocsynctask = \mod_zoomvideo\task\adhoc_update_channel_permissions::instance($course_id);
+				//\core\task\manager::queue_adhoc_task($adhocsynctask);
 				
-				sleep(0.5); // give it a moment to let the permissions update	
+				//sleep(0.5); // give it a moment to let the permissions update	
 			}
 			
 			
