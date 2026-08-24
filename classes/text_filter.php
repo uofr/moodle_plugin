@@ -228,6 +228,13 @@ class text_filter extends \filter_kaltura_base_text_filter {
 			
 			//error_log('filter/kaltura/ - found Zoom clip: '.$zoomclip->clip_id);
 			
+			//If we have a youtube reference, return youtube embed
+            if (strlen($zoomclip->clip_id)<15) {
+            
+				$ytlink = '<!-- Kaltura Youtube embed --><a href="https://www.youtube.com/watch?v='.$zoomclip->clip_id.'#d=640x480">'.$zoomclip->title.'</a>';
+				return format_text($ytlink,FORMAT_HTML);
+			}
+			
 			// Check that course has a Zoom channel
 			$cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
 			$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course_id]);
