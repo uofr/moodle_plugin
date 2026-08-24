@@ -90,62 +90,72 @@ echo '<!--<div class="badge badge-info mr-2 mb-2">Entry: '.$kalvidpres->entry_id
 //if we have a zoom clip, use it instead
 $zoomclip = $DB->get_record('ur_kaltura_zoom',['entry_id'=>$kalvidpres->entry_id]);
 if ($zoomclip) {
-
-    $cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
-
-    $zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
 	
-    $zoomapi = new \mod_zoomvideo\api();
+	//If we have a youtube reference, return youtube embed
+   if (strlen($zoomclip->clip_id)<15) {
+                    
+       $ytlink = '<div class="embed-responsive embed-responsive-16by9"><iframe class="embed-responsive-item" src="https://www.youtube.com/embed/'.$zoomclip->clip_id.'" width="640" height="360" frameborder="0" allowfullscreen=""></iframe></div>';
+       echo $ytlink;
+	   
+   } else {
+	
+	    $cf = $DB->get_record('customfield_field',['shortname'=>'zvm_channel_id']);
+
+	    $zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
+	
+	    $zoomapi = new \mod_zoomvideo\api();
    
- 	//If no Zoom channel yet, create one
- 	if (empty($zoomchannel)) {
+	 	//If no Zoom channel yet, create one
+	 	if (empty($zoomchannel)) {
 	
 	
- 	       $owner_email = null;
- 	       $teacher_role = $DB->get_record('role', ['shortname' => 'editingteacher']);
+	 	       $owner_email = null;
+	 	       $teacher_role = $DB->get_record('role', ['shortname' => 'editingteacher']);
 
- 	       if ($teacher_role) {
- 	           $context = context_course::instance($course->id);
- 	           $sql = "SELECT u.email 
- 	                   FROM {role_assignments} ra
- 	                   JOIN {user} u ON ra.userid = u.id
- 	                   JOIN {user_enrolments} ue ON ue.userid = u.id
- 	                   JOIN {enrol} e ON e.id = ue.enrolid
- 	                   WHERE ra.contextid = :contextid AND ra.roleid = :roleid
- 	                   AND u.deleted = 0 AND u.suspended = 0 AND e.courseid = :courseid
- 	                   ORDER BY ra.timemodified ASC";
+	 	       if ($teacher_role) {
+	 	           $context = context_course::instance($course->id);
+	 	           $sql = "SELECT u.email 
+	 	                   FROM {role_assignments} ra
+	 	                   JOIN {user} u ON ra.userid = u.id
+	 	                   JOIN {user_enrolments} ue ON ue.userid = u.id
+	 	                   JOIN {enrol} e ON e.id = ue.enrolid
+	 	                   WHERE ra.contextid = :contextid AND ra.roleid = :roleid
+	 	                   AND u.deleted = 0 AND u.suspended = 0 AND e.courseid = :courseid
+	 	                   ORDER BY ra.timemodified ASC";
    
- 	           $teachers = $DB->get_records_sql($sql, ['contextid' => $context->id, 'roleid' => $teacher_role->id, 'courseid' => $course->id]);
- 	           if (!empty($teachers)) {
- 	               $owner_email = reset($teachers)->email;
- 	           }
- 	       }
+	 	           $teachers = $DB->get_records_sql($sql, ['contextid' => $context->id, 'roleid' => $teacher_role->id, 'courseid' => $course->id]);
+	 	           if (!empty($teachers)) {
+	 	               $owner_email = reset($teachers)->email;
+	 	           }
+	 	       }
 	
- 	       $zoom_owner_id = $zoomapi->get_user_id_by_email($owner_email);
- 	       if (!$zoom_owner_id) {
- 	           $zoom_owner_id = $zoomapi->get_admin_user_id();
- 	       }
+	 	       $zoom_owner_id = $zoomapi->get_user_id_by_email($owner_email);
+	 	       if (!$zoom_owner_id) {
+	 	           $zoom_owner_id = $zoomapi->get_admin_user_id();
+	 	       }
 	
- 		$zoomapi->create_course_channel($COURSE, $zoom_owner_id);
+	 		$zoomapi->create_course_channel($COURSE, $zoom_owner_id);
 	
- 		$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
- 	}
+	 		$zoomchannel = $DB->get_record('customfield_data',['fieldid'=>$cf->id,'instanceid'=>$course->id]);
+	 	}
 	
-	// for debugging, show the clip and channel id
-    echo '<!-- '.print_r($zoomclip,1).' -->';
-    echo '<!--<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>-->';
-    echo '<!--<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>-->';
+		// for debugging, show the clip and channel id
+	    echo '<!-- '.print_r($zoomclip,1).' -->';
+	    echo '<!--<div class="badge badge-success mr-2 mb-2">Clip: '.$zoomclip->clip_id.'</div>-->';
+	    echo '<!--<div class="badge badge-secondary mr-2 mb-2">Channel: '.$zoomchannel->value.'</div>-->';
 
-	echo '<!--<pre>course->id:'.print_r($course->id,1).'</pre>-->';
+		echo '<!--<pre>course->id:'.print_r($course->id,1).'</pre>-->';
 	
-	if ($zoomchannel) {
+		if ($zoomchannel) {
    
-	   $added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
+		   $added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
 
+		}
+
+	    echo "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center&channelId={$zoomchannel->value}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
+	
 	}
-
-    echo "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center&channelId={$zoomchannel->value}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
-
+	
 } else {
 	// fall back to showing the kaltura video
     $renderer = $PAGE->get_renderer('mod_kalvidpres');
