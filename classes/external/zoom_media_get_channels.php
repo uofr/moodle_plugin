@@ -128,7 +128,9 @@ class zoom_media_get_channels extends external_api {
                 }
             }
         }
-
+		
+		if (empty($response['total_records'])) $response['total_records'] = 0;
+		
         $zoom_media_channels = new \local_mymedia\output\zoom_media_channels($response, $searchzoomid);
 
         return $zoom_media_channels->export_for_template($renderer);

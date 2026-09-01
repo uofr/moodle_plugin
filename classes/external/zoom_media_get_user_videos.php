@@ -102,7 +102,9 @@ class zoom_media_get_user_videos extends external_api {
 
         $api = new \mod_zoomvideo\api();
         $response = $api->get_video_list($USER->email, $params['nextpagetoken'], $params['search']);
-
+		
+		if (empty($response['total_records'])) $response['total_records'] = 0;
+		
         $zoom_media_videos = new \local_mymedia\output\zoom_media_videos($response, $USER->email);
 
         return $zoom_media_videos->export_for_template($renderer);
