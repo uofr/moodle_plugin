@@ -200,7 +200,7 @@ class zoom_media_videos implements \renderable, \templatable {
 
                 return substr($word, 0, $len) . "...";
             }
-            if ((strlen($out) + strlen($word)) > $len) {
+            if ($out !== null && (strlen($out) + strlen($word)) > $len) {
                 return $out . "...";
             }
             $out.=" " . $word;
