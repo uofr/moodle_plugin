@@ -193,12 +193,15 @@ class text_filter extends \filter_kaltura_base_text_filter {
         $source = '';
 		$entry_id = 0;
 
-        // Convert KAF URI anchor tags into iframe markup.
-        $count = count($link);
+     $count = count($link);
         if ($count > 7) {
-            // Get the height and width of the iframe.
             $properties = explode('||', $link[$count - 1]);
 
+            if (4 != count($properties)) {
+                return $link[0];
+            }
+            
+            // Now it is safe to assign the width and height
             $width = $properties[2];
             $height = $properties[3];
 
@@ -278,35 +281,47 @@ class text_filter extends \filter_kaltura_base_text_filter {
 			return $zoom_embed;
 			
 		} else {
-		
-	        $params = array(
-	            'courseid' => self::$pagecontext->instanceid,
-	            'height' => $height,
-	            'width' => $width,
-	            'withblocks' => 0,
-	            'source' => $source
+        
+            $params = array(
+                'courseid' => self::$pagecontext->instanceid,
+                'height' => $height,
+                'width' => $width,
+                'withblocks' => 0,
+                'source' => $source
+            );
 
-	        );
+            $url = new \moodle_url('/filter/kaltura/lti_launch.php', $params);
 
-	        $url = new \moodle_url('/filter/kaltura/lti_launch.php', $params);
+            $iframe = \html_writer::tag('iframe', '', array(
+                'width' => $width,
+                'height' => $height,
+                'class' => 'kaltura-player-iframe',
+                'allowfullscreen' => 'true',
+                'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *; display-capture *;',
+                'src' => $url->out(false),
+                'frameborder' => '0'
+            ));
 
-	        $iframe = \html_writer::tag('iframe', '', array(
-	            'width' => $width,
-	            'height' => $height,
-	            'class' => 'kaltura-player-iframe',
-	            'allowfullscreen' => 'true',
-	            'allow' => 'autoplay *; fullscreen *; encrypted-media *; camera *; microphone *; display-capture *;',
-	            'src' => $url->out(false),
-	            'frameborder' => '0'
-	        ));
+            $iframeContainer = \html_writer::tag('div', $iframe, array(
+                'class' => 'kaltura-player-container'
+            ));
 
-	        $iframeContainer = \html_writer::tag('div', $iframe, array(
-	            'class' => 'kaltura-player-container'
-	        ));
-
-	        return $iframeContainer;
-			
-		}
+            // --- ADMIN DEBUGGING ALERT ---
+            $admin_debug_html = '';
+            
+            // Check if the current user viewing the page is a Moodle site administrator
+            if (is_siteadmin()) {
+                $error_msg = "<strong>ZVM Filter Debug:</strong> Failed to transform Kaltura video. The required  Entry ID <code>{$entry_id}</code> and Zoom clip ID is missing from the <code>ur_kaltura_zoom</code> database table. Falling back to Kaltura standard player.";
+                
+                $admin_debug_html = \html_writer::tag('div', $error_msg, array(
+                    'class' => 'alert alert-warning small mt-2',
+                    'role'  => 'alert'
+                ));
+            }
+            
+            // Return the video player, plus the admin debug box (which will be empty for students/teachers)
+            return $iframeContainer . $admin_debug_html;
+        }
 		
     }
 }
