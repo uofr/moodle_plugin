@@ -12,10 +12,9 @@
                 <h6 class="card-title">{{video_name}}</h6>
             </a>
 			
-			
-			<p>Description: {{video_desc}}</p>
-			
-			
+			{{#video_desc}}<p>{{video_desc}}</p>{{/video_desc}}
+            {{#tags}}<p>Tags: {{{tags}}}</p>{{/tags}}
+
             <p class="card-text">
                 {{#str}} time_created, local_mymedia, {{createdrelative}} {{/str}}<br>
                 {{#str}} time_modified, local_mymedia, {{modifiedrelative}} {{/str}}
