@@ -19,11 +19,16 @@
             </div>
 
             <!-- Video Thumbnail Image -->
-            <img src="{{{thumburl}}}" 
+            {{#is_ready}}<a data-toggle="modal" 
+                        data-target="#kalturaArchiveModal"
+                        data-title="{{{title}}}"
+                        data-video="{{{videourl}}}"
+                        data-poster="{{{thumburl}}}"
+                        {{#captionurl}}data-caption="{{{captionurl}}}"{{/captionurl}}>{{/is_ready}}<img src="{{{thumburl}}}" 
                  alt="" 
                  class="position-absolute w-100 h-100" 
                  style="top: 0; left: 0; object-fit: cover;"
-                 onerror="this.style.display='none'">
+                 onerror="this.style.display='none'">{{#is_ready}}</a>{{/is_ready}}
             
             <!-- KA Source Badge (Top Left) -->
             <span class="badge badge-dark position-absolute font-weight-bold" style="top: 10px; left: 10px; opacity: 0.9; border: 1px solid rgba(255,255,255,0.2);">
