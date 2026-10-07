@@ -94,8 +94,8 @@ class kaltura_archive_tab implements renderable, templatable {
             $card->id = $row->id;
             $card->entryid = $row->entry_id;
             $card->title = !empty($row->entry_name) ? $row->entry_name : get_string('untitled', 'local_mymedia');
-            $card->timecreated = userdate($row->timecreated, get_string('strftimedateshort', 'langconfig'));
-            $card->timemodified = userdate($row->timemodified, get_string('strftimedatetimeshort', 'langconfig'));
+            $card->timecreated = userdate($row->timecreated, get_string('strftimedatetime', 'langconfig'));
+            $card->timemodified = userdate($row->timemodified, get_string('strftimedatetime', 'langconfig'));
             $card->filesize = !empty($row->filesize) ? display_size((int)$row->filesize) : '';
 
             $card->is_ready = ((int)$row->status === 1);
