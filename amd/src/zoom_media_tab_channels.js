@@ -201,26 +201,26 @@ const loadChannelInfo = async (channelIds) => {
         const ownershipSelector = `${channelSelector} ${SELECTORS.ZOOM_MEDIA_CHANNEL_OWNERSHIP}`;
         const searchZoomId = getSearchZoomId();
 
-        const onwershipRegion = document.querySelector(ownershipSelector);
-        if (!onwershipRegion) {
+        const ownershipRegion = document.querySelector(ownershipSelector);
+        if (!ownershipRegion) {
             return;
         }
 
-        onwershipRegion.innerHTML = '';
+        ownershipRegion.innerHTML = '';
         if (searchZoomId == '') {
             if (channel.owner_id == userZoomId) {
-                onwershipRegion.textContent = await getString('owned_channel', 'local_mymedia');
+                ownershipRegion.textContent = await getString('owned_channel', 'local_mymedia');
             }
             else {
-                onwershipRegion.textContent = await getString('shared_channel', 'local_mymedia');
+                ownershipRegion.textContent = await getString('shared_channel', 'local_mymedia');
             }
         }
         else {
             if (channel.owner_id == searchZoomId) {
-                onwershipRegion.textContent = await getString('user_owned_channel', 'local_mymedia', getUserSearch());
+                ownershipRegion.textContent = await getString('user_owned_channel', 'local_mymedia', getUserSearch());
             }
             else {
-                onwershipRegion.textContent = await getString('user_shared_channel', 'local_mymedia', getUserSearch());
+                ownershipRegion.textContent = await getString('user_shared_channel', 'local_mymedia', getUserSearch());
             }
         }
     });
