@@ -168,11 +168,15 @@ const loadChannels = async (renderArea, renderCallback, loadingArea, loadingCall
 
         if (userSearch == '') {
             const searchHeader = document.querySelector(SELECTORS.SEARCH_HEADER);
-            if (searchHeader) searchHeader.textContent = '';
+            if (searchHeader) { 
+                searchHeader.textContent = ''; 
+            }
         }
         else if (response.error) {
             const searchHeader = document.querySelector(SELECTORS.SEARCH_HEADER);
-            if (searchHeader) searchHeader.textContent = response.error;
+            if (searchHeader) { 
+                searchHeader.textContent = response.error; 
+            }
         }
         else {
             const searchHeader = document.querySelector(SELECTORS.SEARCH_HEADER);
@@ -180,7 +184,9 @@ const loadChannels = async (renderArea, renderCallback, loadingArea, loadingCall
             const stringComponent = 'local_mymedia';
             const stringVariables = userSearch;
             const searchHeaderText = await getString(stringKey, stringComponent, stringVariables);
-            if (searchHeader) searchHeader.textContent = searchHeaderText;
+            if (searchHeader) { 
+                searchHeader.textContent = searchHeaderText; 
+            }
         }
     }
     catch (error) {
