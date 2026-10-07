@@ -52,9 +52,9 @@ class zoom_media_get_user_videos extends external_api {
             'videos'            => new external_multiple_structure(new external_single_structure([
                 'video_id'          => new external_value(PARAM_TEXT),
                 'video_name'        => new external_value(PARAM_TEXT),
-                'description'        => new external_value(PARAM_TEXT),
-                'external_id'        => new external_value(PARAM_TEXT),
-                'notes'        => new external_value(PARAM_TEXT),
+                'description'        => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'external_id'        => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
+                'notes'        => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                 'tags'        => new external_value(PARAM_TEXT, '', VALUE_OPTIONAL),
                 'thumbnail_url'     => new external_value(PARAM_URL),
                 'video_source'      => new external_value(PARAM_TEXT),
