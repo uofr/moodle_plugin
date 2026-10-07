@@ -19,16 +19,12 @@
             </div>
 
             <!-- Video Thumbnail Image -->
-            {{#is_ready}}<a data-toggle="modal" 
-                        data-target="#kalturaArchiveModal"
-                        data-title="{{{title}}}"
-                        data-video="{{{videourl}}}"
-                        data-poster="{{{thumburl}}}"
-                        {{#captionurl}}data-caption="{{{captionurl}}}"{{/captionurl}}>{{/is_ready}}<img src="{{{thumburl}}}" 
+            <img src="{{{thumburl}}}" 
                  alt="" 
                  class="position-absolute w-100 h-100" 
                  style="top: 0; left: 0; object-fit: cover;"
-                 onerror="this.style.display='none'">{{#is_ready}}</a>{{/is_ready}}
+                 onerror="this.style.display='none'"
+				 {{#is_ready}}onclick="btn_{{{entryid}}}.click();"{{/is_ready}}>
             
             <!-- KA Source Badge (Top Left) -->
             <span class="badge badge-dark position-absolute font-weight-bold" style="top: 10px; left: 10px; opacity: 0.9; border: 1px solid rgba(255,255,255,0.2);">
@@ -67,7 +63,7 @@
         <div class="card-footer bg-light border-top py-2 px-3 d-flex justify-content-between align-items-center">
             {{#is_ready}}
                 <!-- Watch Button triggers Bootstrap Modal -->
-                <button type="button" 
+                <button type="button" id="btn_{{{entryid}}}"
                         class="btn btn-sm btn-outline-dark px-3 watch-archive-btn"
                         data-toggle="modal" 
                         data-target="#kalturaArchiveModal"
