@@ -75,13 +75,13 @@ class zoom_media_videos implements \renderable, \templatable {
 						
 						$catcourse = $DB->get_record('course', ['id' => $match]);
 						$courselink = isset($catcourse)&&!empty($catcourse->shortname) ? $catcourse->shortname : 'Invalid  Course ID - '.$match ; 
-						$coursecats[$match] = '<a href="'.$CFG->wwwroot.'/course/view.php?id='.$match.'" target="_blank" title="'.(str_contains($courselink, 'Invalid')?'Missing course':'Visit the course').'">'.$courselink.'</a>';
+						$coursecats[$match] = '<a href="'.$CFG->wwwroot.'/course/view.php?id='.$match.'" target="_top" title="'.(str_contains($courselink, 'Invalid')?'Missing course':'Visit the course').'">'.$courselink.'</a>';
 					}
 					
 					$course_links = implode('<br>',$coursecats);//print_r($matches,1);
 					
 				} else {
-					$course_links = print_r($krecord->categories,1);
+					$course_links = "";//print_r($krecord->categories,1);
 				}
 				
 				$video['kcourses'] = $course_links;
