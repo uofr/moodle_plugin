@@ -65,8 +65,8 @@ foreach ($records as $row) {
     $card->id = $row->id;
     $card->entryid = $row->entry_id;
     $card->title = !empty($row->entry_name) ? $row->entry_name : get_string('untitled', 'local_mymedia');
-    $card->timecreated = userdate($row->timecreated, get_string('strftimedateshort', 'langconfig'));
-    $card->timemodified = userdate($row->timemodified, get_string('strftimedatetimeshort', 'langconfig'));
+    $card->timecreated = userdate($row->timecreated, '%B %d %Y, %I:%M %p');
+    $card->timemodified = userdate($row->timemodified, '%B %d %Y, %I:%M %p');
     $card->filesize = !empty($row->filesize) ? display_size((int)$row->filesize) : '';
 
     $card->is_ready = ((int)$row->status === 1);
