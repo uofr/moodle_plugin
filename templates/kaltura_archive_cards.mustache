@@ -22,7 +22,7 @@
             <img src="{{{thumburl}}}" 
                  alt="" 
                  class="position-absolute w-100 h-100" 
-                 style="top: 0; left: 0; object-fit: cover;"
+                 style="top: 0; left: 0; object-fit: cover;{{#is_ready}} cursor:pointer{{/is_ready}}"
                  onerror="this.style.display='none'"
 				 {{#is_ready}}onclick="btn_{{{entryid}}}.click();"{{/is_ready}}>
             
