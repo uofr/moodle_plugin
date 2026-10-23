@@ -148,11 +148,17 @@ if ($zoomclip) {
 	
 		if ($zoomchannel) {
    
-		   $added_video = $zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
+			if ($cm->visible==1) {
+				$zoomapi->add_video_to_channel($zoomchannel->value, $zoomclip->clip_id);
+			} else {
+				$zoomapi->remove_video_from_channel($zoomchannel->value, $zoomclip->clip_id);
+			}
 
 		}
-
-	    echo "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center&channelId={$zoomchannel->value}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
+		
+		$haschannelid = ($cm->visible==1) ? '&channelId='.$zoomchannel->value : '';
+		
+	    echo "<div style=\"position: relative; width: 100%; height: 0; padding-bottom: 56.25%;\"><iframe src=\"https://zoom.us/media/embed/{$zoomclip->clip_id}?module=clips&product=video-center{$haschannelid}\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" style=\"position: absolute; width: 100%; height: 100%; top: 0; left: 0;\"></iframe></div>";
 	
 	}
 	
