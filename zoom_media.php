@@ -66,7 +66,8 @@ switch ($activetab) {
         // $PAGE->requires->js(new moodle_url('/local/mymedia/js/kaltura_archive.js'));
         
         // Pass the logged-in user's identifier to filter their archived videos.
-        $view = new local_mymedia\output\kaltura_archive_tab($USER->username, $search); 
+        //$view = new local_mymedia\output\kaltura_archive_tab($USER->username, $search); 
+        $view = new local_mymedia\output\zoom_kaltura(); 
         break;
         
     default: // videos
