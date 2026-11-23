@@ -48,8 +48,10 @@ if (!$record) {
 
 try {
     $task = new \local_mymedia\task\check_zoom_video_status();
-    $task->set_custom_data(['record_id' => $record->id]);
-    \core\task\manager::queue_adhoc_task($task);
+    // Same custom data and duplicate check as mod_zoomvideo's
+    // api::queue_transfer_check(), which may already have queued it.
+    $task->set_custom_data(['record_id' => (string)$record->id]);
+    \core\task\manager::queue_adhoc_task($task, true);
     error_log("DEBUG: Task successfully queued.");
 } catch (\Exception $e) {
     error_log("CRITICAL ERROR: Failed to queue task: " . $e->getMessage());

@@ -30,6 +30,9 @@ class zoom_media_upload implements \renderable, \templatable {
 
     protected $pendingvideos;
 
+    /** @var array large uploads still being sent to Zoom */
+    protected $pendingjobs = [];
+
     public function __construct() {
         global $DB, $USER;
         
@@ -39,6 +42,19 @@ class zoom_media_upload implements \renderable, \templatable {
                 WHERE userid = ? AND status NOT IN ('SUCCESS', 'FAILED')";
                 
         $this->pendingvideos = $DB->get_records_sql($sql, [$USER->id]);
+
+        // Large uploads (150MB+) still being sent to Zoom by mod_zoomvideo's
+        // upload_local_adhoc job have no transfer row yet, only a job row.
+        // Restore those too, so coming back to this tab mid-upload shows
+        // "Sending to Zoom..." instead of nothing. Jobs older than a day are
+        // left out (the job runner would have finished or failed by then).
+        $this->pendingjobs = [];
+        if ($DB->get_manager()->table_exists('zoomvideo_upload_jobs')) {
+            $this->pendingjobs = $DB->get_records_select('zoomvideo_upload_jobs',
+                "userid = :userid AND status IN ('QUEUED', 'IN_PROGRESS') AND timecreated > :since",
+                ['userid' => $USER->id, 'since' => time() - DAYSECS],
+                'timecreated ASC', 'id, displayname, filename');
+        }
     }
 
     public function export_for_template(\core\output\renderer_base $output) {
@@ -52,6 +68,13 @@ class zoom_media_upload implements \renderable, \templatable {
             ];
         }
         
+        foreach ($this->pendingjobs as $job) {
+            $pending_array[] = [
+                'jobid' => (string)$job->id,
+                'title' => $job->displayname ?: $job->filename,
+            ];
+        }
+
         // Pass the active transfers to the template as a JSON string
         $data->pending_transfers_json = json_encode($pending_array);
         

@@ -40,22 +40,28 @@ class check_zoom_video_status extends \core\task\adhoc_task {
         $record = $DB->get_record('zoomvideo_transfers', ['id' => $data->record_id]);
         if (!$record) return;
 
-        // Check for the 24-hour "Zombie" state
-        if ((time() - $record->timecreated) > (24 * 3600)) {
-            $DB->update_record('zoomvideo_transfers', [
-                'id' => $record->id, 
-                'status' => 'FAILED'
-            ]);
-            mtrace("DEBUG [local_mymedia]: Auto-failed record {$record->id} (24h timeout).");
-            return; 
+        // Already finished (e.g. the picker's poller or an earlier copy of
+        // this task did the transfer) -- nothing left to do.
+        if ($record->status === 'SUCCESS' || $record->status === 'FAILED') {
+            return;
         }
-        
+
+        // Older than a day: give up only if Zoom still hasn't processed it
+        // (checked below). A video Zoom finished long ago but that was never
+        // transferred -- the user left the page early -- is still transferred.
+        $expired = (time() - $record->timecreated) > (24 * 3600);
+
         $api = new \mod_zoomvideo\api();
         $video = $api->get_single_video_status($record->clip_id);
         
         mtrace("DEBUG [local_mymedia]: Checking status for " . $record->clip_id);
 
         // Handle API Failure/Not Found
+        if (!$video && $expired) {
+            $DB->set_field('zoomvideo_transfers', 'status', 'FAILED', ['id' => $record->id]);
+            mtrace("DEBUG [local_mymedia]: Auto-failed record {$record->id} (not found in Zoom, over 24h).");
+            return;
+        }
         if (!$video) {
             mtrace("DEBUG [local_mymedia]: Video not found or API error. Rescheduling.");
             $this->reschedule($data, 300); // 5 min retry
@@ -63,6 +69,16 @@ class check_zoom_video_status extends \core\task\adhoc_task {
         }
 
         // ---STATUS CHECK ---
+        // Already owned by the user (transferred some other way): just
+        // record it, a second transfer request would only be rejected.
+        $owner = $DB->get_record('user', ['id' => $record->userid], 'id, email');
+        if ($owner && !empty($video['owner_email'])
+                && strcasecmp($video['owner_email'], $owner->email) === 0) {
+            $DB->set_field('zoomvideo_transfers', 'status', 'SUCCESS', ['id' => $record->id]);
+            mtrace("DEBUG [local_mymedia]: Record {$record->id} already owned by the user, marked SUCCESS.");
+            return;
+        }
+
         if (isset($video['video_status']) && $video['video_status'] === 'COMPLETED') {
             // Zoom gives us the explicit completed flag
             $status = 'COMPLETED';
@@ -80,15 +96,26 @@ class check_zoom_video_status extends \core\task\adhoc_task {
             $admin_id = $api->get_admin_user_id();
 
             // Perform Ownership Transfer 
-            $task_id = $api->transfer_clip_ownership($record->clip_id, $target_zoom_id, $admin_id);
-            
-            if ($task_id) {
-                $DB->set_field('zoomvideo_transfers', 'task_id', $task_id, ['id' => $record->id]);
+            $task_id = ($target_zoom_id && $admin_id)
+                ? $api->transfer_clip_ownership($record->clip_id, $target_zoom_id, $admin_id) : false;
+
+            if (!$task_id) {
+                // No Zoom account for the user, or Zoom refused the transfer:
+                // shown as a failed card with Retry Transfer, not as done.
+                $DB->set_field('zoomvideo_transfers', 'status', 'FAILED', ['id' => $record->id]);
+                mtrace("DEBUG [local_mymedia]: Transfer request failed for record {$record->id}.");
+                return;
             }
-            
+
+            $DB->set_field('zoomvideo_transfers', 'task_id', $task_id, ['id' => $record->id]);
             $DB->set_field('zoomvideo_transfers', 'status', 'SUCCESS', ['id' => $record->id]);
             mtrace("DEBUG [local_mymedia]: Transfer SUCCESS for record " . $record->id);
                 
+        } else if ($expired) {
+            // Still not processed a day later: Zoom has no failed state, a
+            // file it can't process just stays PROCESSING.
+            $DB->set_field('zoomvideo_transfers', 'status', 'FAILED', ['id' => $record->id]);
+            mtrace("DEBUG [local_mymedia]: Auto-failed record {$record->id} (still processing after 24h).");
         } else {
             // Dynamic Polling Logic
             $duration = $video['duration'] ?? 0;
