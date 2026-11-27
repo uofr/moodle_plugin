@@ -29,7 +29,9 @@ namespace local_mymedia;
  * on another disk), because upload_local_adhoc deletes its file afterwards.
  *
  * Videos the bulk migration already put in Zoom (ur_kaltura_zoom, or
- * local_kaltura_migrate where that tool is installed) show "In Zoom".
+ * local_kaltura_migrate where that tool is installed) show "In Zoom". Videos
+ * migrated here are added to ur_kaltura_zoom once their clip exists
+ * (task\record_kaltura_mapping), like the bulk migration's.
  *
  * @package    local_mymedia
  * @copyright  2026 Joel Dapiawen
@@ -117,17 +119,95 @@ class kaltura_migration {
      */
     protected static function mapped_clip(string $entryid): string {
         global $DB;
-        static $hasmap = null;
-        if ($hasmap === null) {
-            $hasmap = $DB->get_manager()->table_exists(self::MAP_TABLE);
-        }
-        if (!$hasmap) {
+        if (!self::has_map_table()) {
             return '';
         }
         $clip = (string)$DB->get_field_select(self::MAP_TABLE, 'clip_id',
             "entry_id = :e AND clip_id IS NOT NULL AND clip_id <> ''", ['e' => $entryid], IGNORE_MULTIPLE);
         // Only real Zoom ids (22 characters); the map also holds YouTube ids.
         return preg_match('/^[A-Za-z0-9_-]{22}$/', $clip) ? $clip : '';
+    }
+
+    /**
+     * Whether this site has the ur_kaltura_zoom map.
+     *
+     * @return bool
+     */
+    public static function has_map_table(): bool {
+        global $DB;
+        static $hasmap = null;
+        if ($hasmap === null) {
+            $hasmap = $DB->get_manager()->table_exists(self::MAP_TABLE);
+        }
+        return $hasmap;
+    }
+
+    /**
+     * Record (or complete) the ur_kaltura_zoom row for an entry migrated from My Media.
+     *
+     * Adds a row, or fills in the clip on an existing row that has no real Zoom
+     * clip yet (empty, or a YouTube id). A row that already maps the entry to a
+     * Zoom clip is left alone. Only columns the table has are written, since it
+     * isn't created by a plugin's install.xml.
+     *
+     * @param string $entryid
+     * @param string $clipid
+     * @return string What happened, for the task log.
+     */
+    public static function record_mapping(string $entryid, string $clipid): string {
+        global $DB;
+        if (!self::has_map_table()) {
+            return 'no ' . self::MAP_TABLE . ' table';
+        }
+        $columns = $DB->get_columns(self::MAP_TABLE);
+        $now = time();
+
+        $existing = $DB->get_records(self::MAP_TABLE, ['entry_id' => $entryid], 'id ASC', 'id, clip_id');
+        foreach ($existing as $row) {
+            if (preg_match('/^[A-Za-z0-9_-]{22}$/', (string)$row->clip_id)) {
+                return ($row->clip_id === $clipid ? 'already recorded' : "already mapped to {$row->clip_id}, left alone");
+            }
+        }
+        if ($existing) {
+            $row = reset($existing);
+            $update = ['id' => $row->id, 'clip_id' => $clipid];
+            if (isset($columns['lastupdated'])) {
+                $update['lastupdated'] = $now;
+            }
+            $DB->update_record(self::MAP_TABLE, (object)$update);
+            return "clip filled in on row {$row->id}";
+        }
+
+        $archive = $DB->get_record('local_kaltura_archive', ['entry_id' => $entryid]);
+        $owner = $archive ? (string)$archive->owner_id : '';
+        $user = $owner === '' ? false : $DB->get_record_select('user', 'deleted = 0 AND (username = :u OR email = :e)',
+            ['u' => $owner, 'e' => $owner], 'id, username, email', IGNORE_MULTIPLE);
+        $values = [
+            'entry_id'    => $entryid,
+            'clip_id'     => $clipid,
+            'username'    => $user ? $user->username : $owner,
+            'email'       => $user ? (string)$user->email : (strpos($owner, '@') !== false ? $owner : ''),
+            'title'       => $archive ? (string)($archive->entry_name ?: $entryid) : $entryid,
+            'description' => '',
+            'created'     => $archive ? (int)$archive->timecreated : $now,
+            'lastupdated' => $now,
+            'plays'       => 0,
+            'lastplayed'  => 0,
+            'tags'        => $archive ? (string)$archive->tags : '',
+            'categories'  => $archive ? (string)$archive->categories : '',
+        ];
+        $record = [];
+        foreach ($values as $name => $value) {
+            if (!isset($columns[$name])) {
+                continue;
+            }
+            if (is_string($value) && !empty($columns[$name]->max_length) && $columns[$name]->max_length > 0) {
+                $value = \core_text::substr($value, 0, (int)$columns[$name]->max_length);
+            }
+            $record[$name] = $value;
+        }
+        $id = $DB->insert_record(self::MAP_TABLE, (object)$record);
+        return "added row {$id}";
     }
 
     /**
@@ -139,13 +219,15 @@ class kaltura_migration {
      */
     protected static function state_of(string $entryid): string {
         global $DB;
-        if (self::mapped_clip($entryid) !== '') {
-            return 'inzoom';
-        }
+        // A My Media migration (upload job) decides first: the map gets its clip
+        // as soon as the upload finishes, before the transfer to the owner does.
         $jobs = $DB->get_records('zoomvideo_upload_jobs', ['filename' => self::job_filename($entryid)],
             'id DESC', 'id, status, newclipid', 0, 1);
         $job = reset($jobs);
         if (!$job) {
+            if (self::mapped_clip($entryid) !== '') {
+                return 'inzoom';
+            }
             // Sites that also have the migration tool (local_kaltura_migrate, not on
             // prod): its uploads count too. transferred: 2 done, 3 failed, else in progress.
             static $hastool = null;
@@ -397,6 +479,15 @@ class kaltura_migration {
         $task->set_custom_data(['jobid' => $jobid]);
         $task->set_userid($user->id);
         \core\task\manager::queue_adhoc_task($task, true);
+
+        // Once the clip exists, record it in ur_kaltura_zoom (filter_kaltura and the
+        // Kaltura converters then use the Zoom version of this video).
+        if (self::has_map_table()) {
+            $maptask = new \local_mymedia\task\record_kaltura_mapping();
+            $maptask->set_custom_data(['jobid' => $jobid, 'entryid' => $entryid, 'started' => $now]);
+            $maptask->set_next_run_time($now + 60);
+            \core\task\manager::queue_adhoc_task($maptask, true);
+        }
 
         return ['ok' => true, 'message' => get_string('kaltura_migrate_queuedmsg', 'local_mymedia')]
             + (array)self::card_state($entryid, false);
