@@ -1,10 +1,20 @@
 <div class="col pb-4" data-item="zoom_video">
     <div class="card h-100">
         <div>
-            <span class="badge badge-primary p-1" title="{{origin}} Media" style="position:absolute; top: 1.5em; left: 1.5em;">{{origin}}</span>
-            <span class="badge badge-dark p-1" style="position:absolute; top: 1.5em; right: 1.5em;">{{friendlyduration}}</span>
-            <a href="{{{play_link}}}" target="_blank">
-                <img class="card-img-top video-card-image" src="{{thumbnail_url}}" alt="{{video_name}}">
+            <span class="badge badge-primary p-1" title="{{origin}} Media" style="position:absolute; top: 1.5em; left: 1.5em; z-index: 2;">{{origin}}</span>
+            <span class="badge badge-dark p-1" style="position:absolute; top: 1.5em; right: 1.5em; z-index: 2;">{{friendlyduration}}</span>
+            <a href="{{{play_link}}}" target="_blank" class="d-block position-relative bg-dark video-card-image card-img-top" style="overflow: hidden;">
+                <!-- Placeholder, same as the Kaltura tab: shows when there's no thumbnail or it fails to load. -->
+                <span class="position-absolute text-muted" style="top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814l-3.5-2.5z"/>
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                    </svg>
+                </span>
+                {{#thumbnail_url}}
+                <img class="position-absolute w-100 h-100" style="top: 0; left: 0; object-fit: cover;"
+                     src="{{thumbnail_url}}" alt="" onerror="this.style.display='none'">
+                {{/thumbnail_url}}
             </a>
         </div>
         <div class="card-body">
