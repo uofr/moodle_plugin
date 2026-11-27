@@ -154,6 +154,11 @@ class kaltura_archive_tab implements renderable, templatable {
                     } else {
                         $card->thumburl = $output->image_url('default_video_thumb', 'local_mymedia');
                     }
+                    // YouTube entries have no archived thumbnail: use YouTube's own
+                    // (hqdefault exists for every video, unlike maxresdefault).
+                    if ($card->is_youtube && !empty($ytid) && !((int)$row->thumb_status === 1 || file_exists($thumbfile))) {
+                        $card->thumburl = 'https://img.youtube.com/vi/' . rawurlencode($ytid) . '/hqdefault.jpg';
+                    }
 
                     $card->has_captions = ((int)$row->caption_status === 1 && (int)$row->caption_count > 0);
                     $card->caption_count = (int)$row->caption_count;
