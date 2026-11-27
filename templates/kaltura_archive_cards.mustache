@@ -26,10 +26,17 @@
                  onerror="this.style.display='none'"
 				 {{#is_ready}}onclick="btn_{{{entryid}}}.click();"{{/is_ready}}>
             
-            <!-- KA Source Badge (Top Left) -->
-            <span class="badge badge-dark position-absolute font-weight-bold" style="top: 10px; left: 10px; opacity: 0.9; border: 1px solid rgba(255,255,255,0.2);">
-                KA
-            </span>
+            <!-- Source Badge (Top Left): YouTube vs KA -->
+            {{#is_youtube}}
+                <span class="badge badge-danger position-absolute font-weight-bold" style="top: 10px; left: 10px; opacity: 0.9;">
+                    <i class="fa fa-youtube-play mr-1"></i> YouTube
+                </span>
+            {{/is_youtube}}
+            {{^is_youtube}}
+                <span class="badge badge-dark position-absolute font-weight-bold" style="top: 10px; left: 10px; opacity: 0.9; border: 1px solid rgba(255,255,255,0.2);">
+                    KA
+                </span>
+            {{/is_youtube}}
 
             <!-- Captions / Status Badge (Top Right) -->
             <div class="position-absolute" style="top: 10px; right: 10px;">
@@ -59,22 +66,66 @@
             </div>
         </div>
 
-        <!-- Card Footer Action Bar (Tinted with bg-light) -->
+        <!-- Card Footer Action Bar -->
         <div class="card-footer bg-light border-top py-2 px-3 d-flex justify-content-between align-items-center">
-            {{#is_ready}}
-                <!-- Watch Button triggers Bootstrap Modal -->
-                <button type="button" id="btn_{{{entryid}}}"
-                        class="btn btn-sm btn-outline-dark px-3 watch-archive-btn"
-                        data-toggle="modal" 
-                        data-target="#kalturaArchiveModal"
-                        data-title="{{{title}}}"
-                        data-video="{{{videourl}}}"
-                        data-poster="{{{thumburl}}}"
-                        {{#captionurl}}data-caption="{{{captionurl}}}"{{/captionurl}}>
-                    <i class="fa fa-play mr-1"></i> Watch
-                </button>
+            
+            <!-- Left Side Actions -->
+            <div class="d-flex align-items-center flex-nowrap mr-2" style="min-width: 0;">
+                {{#is_ready}}
+                    <!-- Watch Button -->
+                    <button type="button" id="btn_{{{entryid}}}"
+                            class="btn btn-sm btn-outline-dark px-3 text-nowrap flex-shrink-0 watch-archive-btn"
+                            data-toggle="modal" 
+                            data-target="#kalturaArchiveModal"
+                            data-title="{{{title}}}"
+                            data-isyoutube="{{is_youtube}}"
+                            data-video="{{{videourl}}}"
+                            data-youtubeembed="{{{youtubeembedurl}}}"
+                            data-poster="{{{thumburl}}}"
+                            {{#captionurl}}data-caption="{{{captionurl}}}"{{/captionurl}}>
+                        <i class="fa fa-play mr-1"></i> Watch
+                    </button>
 
-                <!-- Download Dropdown Menu -->
+                    <!-- Upload to Zoom Button (Only shows if NOT migrated yet) -->
+                    {{#needs_migration}}
+                        <button type="button" 
+                                class="btn btn-sm btn-primary ml-2 px-2 flex-shrink-0 migrate-zoom-btn" 
+                                data-entryid="{{entryid}}" 
+                                title="Migrate to Zoom">
+                            <i class="fa fa-cloud-upload"></i>
+                        </button>
+                    {{/needs_migration}}
+                    <span class="badge {{migration_badge}} ml-2 text-truncate migrate-zoom-status{{^migration_label}} d-none{{/migration_label}}"
+                          style="max-width: 9rem;" title="{{migration_title}}"
+                          data-entryid="{{entryid}}" data-state="{{migration_state}}"><i class="fa {{migration_icon}} mr-1 migrate-zoom-icon" aria-hidden="true"></i><span class="migrate-zoom-label">{{migration_label}}</span></span>
+                {{/is_ready}}
+                
+                {{^is_ready}}
+                    <span class="text-muted small font-italic">Archive Pending</span>
+                {{/is_ready}}
+            </div>
+
+            <!-- Right Side Dropdowns -->
+            {{#is_ready}}
+                <!-- Share Dropdown (ONLY for YouTube videos) -->
+                {{#is_youtube}}
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border text-dark dropdown-toggle px-2" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Share Options">
+                        <i class="fa fa-share-alt"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right shadow-sm">
+                        <button class="dropdown-item small py-1 copy-to-clipboard-btn" type="button" data-copy="{{{youtubeurl}}}">
+                            <i class="fa fa-link mr-2 text-primary"></i> Copy Link
+                        </button>
+                        <button class="dropdown-item small py-1 copy-to-clipboard-btn" type="button" data-copy="<iframe width='560' height='315' src='{{{youtubeembedurl}}}' frameborder='0' allowfullscreen></iframe>">
+                            <i class="fa fa-code mr-2 text-danger"></i> Copy Embed Code
+                        </button>
+                    </div>
+                </div>
+                {{/is_youtube}}
+
+                <!-- Download Dropdown (ONLY for non-YouTube files) -->
+                {{^is_youtube}}
                 <div class="dropdown">
                     <button class="btn btn-sm btn-light border text-dark dropdown-toggle px-2" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Download Options">
                         <i class="fa fa-download"></i>
@@ -93,10 +144,9 @@
                         {{/has_captions}}
                     </div>
                 </div>
+                {{/is_youtube}}
             {{/is_ready}}
-            {{^is_ready}}
-                <span class="text-muted small font-italic">Archive Pending</span>
-            {{/is_ready}}
+            
         </div>
 
     </div>

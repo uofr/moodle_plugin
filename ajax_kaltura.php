@@ -69,12 +69,51 @@ foreach ($records as $row) {
     $card->timemodified = userdate($row->timemodified, '%B %d %Y, %I:%M %p');
     $card->filesize = !empty($row->filesize) ? display_size((int)$row->filesize) : '';
 
-    $card->is_ready = ((int)$row->status === 1);
-    $card->is_pending = ((int)$row->status === 0);
-    $card->is_failed = ((int)$row->status === 2);
 
-    //$thumbfile = $CFG->dataroot . '/zoommigration/thumbnails/' . $row->entry_id . '.jpg';
-     $thumbfile = '/zoommigration/thumbnails/' . $row->entry_id . '.jpg';
+// YouTube Detection & Embed URL Generation
+    $card->is_youtube = false;
+    $card->youtubeembedurl = '';
+    
+            // Zoom migration: the "Migrate to Zoom" button and/or a status badge.
+            // Decided here from the file path, since is_youtube is set further down.
+            $migration = \local_mymedia\kaltura_migration::card_state($row->entry_id,
+                \local_mymedia\kaltura_migration::is_youtube($row));
+            $card->needs_migration = $migration->needs_migration;
+            $card->migration_label = $migration->migration_label;
+            $card->migration_badge = $migration->migration_badge;
+            $card->migration_title = $migration->migration_title;
+            $card->migration_state = $migration->migration_state;
+            $card->migration_icon = $migration->migration_icon;
+
+    if (!empty($row->filepath) && (stripos($row->filepath, 'youtube.com') !== false || stripos($row->filepath, 'youtu.be') !== false)) {
+        $card->is_youtube = true;
+        
+        // Extract the 11-character YouTube ID
+        $ytid = '';
+        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $row->filepath, $match)) {
+            $ytid = $match[1];
+        }
+        
+        if ($ytid) {
+            $card->youtubeembedurl = 'https://www.youtube.com/embed/' . $ytid . '?autoplay=1';
+            $card->youtubeurl = 'https://www.youtube.com/watch?v=' . $ytid; // <-- ADD THIS LINE
+        }
+    }
+
+    // Video download statuses. YouTube links are automatically "ready".
+    if ($card->is_youtube) {
+        $card->is_ready = true;
+        
+    } else {
+        $card->is_ready = ((int)$row->status === 1);
+    }
+    
+    $card->is_pending = (!$card->is_youtube && (int)$row->status === 0);
+    $card->is_failed = (!$card->is_youtube && (int)$row->status === 2);
+
+  
+
+    $thumbfile = \local_mymedia\kaltura_migration::archive_dir() . '/thumbnails/' . $row->entry_id . '.jpg';
 
     if ((int)$row->thumb_status === 1 || file_exists($thumbfile)) {
         $card->thumburl = new moodle_url('/local/mymedia/file.php', [

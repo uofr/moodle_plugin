@@ -60,9 +60,9 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-3">
-                <div class="position-relative bg-black" style="border-radius: 4px; overflow: hidden;">
-                    <video id="kalturaArchiveVideoPlayer" class="w-100 d-block" controls preload="none" style="max-height: 70vh; background: #000;">
+           <div class="modal-body p-3">
+                <div id="kalturaModalPlayerContainer" class="position-relative bg-black" style="border-radius: 4px; overflow: hidden; aspect-ratio: 16/9; width: 100%;">
+                    <video id="kalturaArchiveVideoPlayer" class="w-100 h-100 d-block" controls preload="none" style="background: #000;">
                         Your browser does not support HTML5 video.
                     </video>
                 </div>
@@ -73,50 +73,180 @@
 
 {{#js}}
 require(['jquery'], function($) {
+
+// Handle Copy to Clipboard for YouTube links & embeds
+    $(document).on('click', '.copy-to-clipboard-btn', function(e) {
+        e.preventDefault();
+        var btn = $(this);
+        var textToCopy = btn.data('copy');
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                // Temporarily swap button content for visual feedback
+                var originalHtml = btn.html();
+                btn.html('<i class="fa fa-check mr-2 text-success"></i> Copied!');
+                setTimeout(function() {
+                    btn.html(originalHtml);
+                }, 1500);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        } else {
+            // Fallback for older browsers
+            var tempInput = $('<input>');
+            $('body').append(tempInput);
+            tempInput.val(textToCopy).select();
+            document.execCommand('copy');
+            tempInput.remove();
+            
+            var originalHtml = btn.html();
+            btn.html('<i class="fa fa-check mr-2 text-success"></i> Copied!');
+            setTimeout(function() {
+                btn.html(originalHtml);
+            }, 1500);
+        }
+    });
+
+    // "Migrate to Zoom": queue this archived video for upload to Zoom, then
+    // follow its progress live (Queued -> Transferring -> In Zoom).
+    var MIGRATE_URL = M.cfg.wwwroot + '/local/mymedia/migrate_entry.php';
+    var MIGRATE_POLL_MS = 15000;
+    var MIGRATE_POLL_MAX = 2 * 60 * 60 * 1000; // Stop following after 2 hours; a reload resumes.
+    var MIGRATE_ACTIVE = ['queued', 'uploading', 'transferring'];
+    var migrateBtnHtml = '<i class="fa fa-cloud-upload"></i>';
+    // Same as kaltura_migration::STATE_ICONS.
+    var MIGRATE_ICONS = {queued: 'fa-spinner fa-spin', uploading: 'fa-spinner fa-spin', transferring: 'fa-spinner fa-spin',
+        inzoom: 'fa-check', failed: 'fa-exclamation-circle', transferfailed: 'fa-exclamation-circle', nozoom: 'fa-ban'};
+
+    function showMigrationState(badge, r) {
+        badge.removeClass('d-none badge-danger badge-warning badge-success badge-info badge-secondary')
+            .addClass(r.migration_badge || r.badge || 'badge-info')
+            .attr('title', r.migration_title || r.message || '')
+            .attr('data-state', r.migration_state || '');
+        badge.find('.migrate-zoom-label').text(r.migration_label || r.label || '');
+        badge.find('.migrate-zoom-icon').attr('class', 'fa ' + (MIGRATE_ICONS[r.migration_state] || '') + ' mr-1 migrate-zoom-icon');
+        if (!(r.migration_label || r.label)) {
+            badge.addClass('d-none');
+        }
+        var btn = badge.siblings('.migrate-zoom-btn');
+        if (r.needs_migration && !btn.length) {
+            $('<button type="button" class="btn btn-sm btn-primary ml-2 px-2 flex-shrink-0 migrate-zoom-btn" title="Migrate to Zoom"></button>')
+                .attr('data-entryid', badge.data('entryid')).html(migrateBtnHtml).insertBefore(badge);
+        } else if (!r.needs_migration && btn.length) {
+            btn.remove();
+        }
+    }
+
+    function followMigration(badge) {
+        if (badge.data('polling')) {
+            return;
+        }
+        badge.data('polling', true);
+        var started = Date.now();
+        var timer = setInterval(function() {
+            if (!document.body.contains(badge[0]) || Date.now() - started > MIGRATE_POLL_MAX) {
+                clearInterval(timer);
+                badge.data('polling', false);
+                return;
+            }
+            $.ajax({url: MIGRATE_URL, type: 'POST', dataType: 'json',
+                data: {action: 'status', entryid: badge.data('entryid'), sesskey: M.cfg.sesskey}
+            }).done(function(r) {
+                if (!r || !r.ok) {
+                    return; // Try again on the next tick.
+                }
+                showMigrationState(badge, r);
+                if (MIGRATE_ACTIVE.indexOf(r.migration_state) === -1) {
+                    clearInterval(timer);
+                    badge.data('polling', false);
+                }
+            });
+        }, MIGRATE_POLL_MS);
+    }
+
+    // Cards already queued or transferring (on load, and after more cards load).
+    function followActiveMigrations() {
+        $('.migrate-zoom-status').each(function() {
+            var badge = $(this);
+            if (MIGRATE_ACTIVE.indexOf(String(badge.attr('data-state'))) !== -1) {
+                followMigration(badge);
+            }
+        });
+    }
+    followActiveMigrations();
+    $(document).ajaxComplete(function(event, xhr, settings) {
+        if (settings && settings.url && settings.url.indexOf('/local/mymedia/ajax_kaltura.php') !== -1) {
+            followActiveMigrations();
+        }
+    });
+
+    $(document).on('click', '.migrate-zoom-btn', function(e) {
+        e.preventDefault();
+        var btn = $(this);
+        var badge = btn.siblings('.migrate-zoom-status');
+        if (!window.confirm('Copy this video to Zoom? It will be added to your Zoom library in the background.')) {
+            return;
+        }
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+        $.ajax({url: MIGRATE_URL, type: 'POST', dataType: 'json',
+            data: {entryid: btn.data('entryid'), sesskey: M.cfg.sesskey}
+        }).done(function(r) {
+            if (r && r.ok) {
+                btn.remove();
+                showMigrationState(badge, r);
+                if (MIGRATE_ACTIVE.indexOf(r.migration_state) !== -1) {
+                    followMigration(badge);
+                }
+            } else if (r && r.migration_state === 'nozoom') {
+                // No Zoom account to put it in: show why instead of the button.
+                showMigrationState(badge, r);
+                window.alert(r.message);
+            } else {
+                btn.prop('disabled', false).html(migrateBtnHtml);
+                window.alert((r && r.message) || 'Could not queue this video.');
+            }
+        }).fail(function() {
+            btn.prop('disabled', false).html(migrateBtnHtml);
+            window.alert('Could not queue this video. Please try again.');
+        });
+    });
+
     //  Use document delegation so dynamically loaded AJAX cards trigger the modal cleanly
-    $(document).on('click', '.watch-archive-btn', function() {
+   $(document).on('click', '.watch-archive-btn', function() {
         var btn = $(this);
         var title = btn.data('title');
-        var videoSrc = btn.data('video');
-        var posterSrc = btn.data('poster');
-        var captionSrc = btn.data('caption');
+        var isYoutube = btn.data('isyoutube');
+        var container = $('#kalturaModalPlayerContainer');
 
         $('#kalturaArchiveModalTitle').text(title);
 
-        var videoEl = $('#kalturaArchiveVideoPlayer');
-        var videoDOM = videoEl.get(0);
-
-        // Check if Moodle's VideoJS player has initialized on this tag
-        if (typeof videojs !== 'undefined' && videojs.getPlayer('kalturaArchiveVideoPlayer')) {
-            var vjsPlayer = videojs.getPlayer('kalturaArchiveVideoPlayer');
-            vjsPlayer.poster(posterSrc || '');
-            vjsPlayer.src({ type: 'video/mp4', src: videoSrc });
+        if (isYoutube || isYoutube === 'true' || isYoutube === true) {
+            var ytEmbedUrl = btn.data('youtubeembed');
             
-            // Clear old remote text tracks
-            var oldTracks = vjsPlayer.remoteTextTracks();
-            while (oldTracks && oldTracks.length > 0) {
-                vjsPlayer.removeRemoteTextTrack(oldTracks[0]);
-            }
-
-            // Attach CC track if available
-            if (captionSrc) {
-                vjsPlayer.addRemoteTextTrack({
-                    kind: 'subtitles',
-                    label: 'English CC',
-                    srclang: 'en',
-                    src: captionSrc,
-                    default: true
-                }, false);
-            }
-
-            vjsPlayer.ready(function() {
-                vjsPlayer.play();
-            });
+            // Inject YouTube Iframe
+            container.html(
+                '<iframe src="' + ytEmbedUrl + '" ' +
+                'class="w-100 h-100 border-0" ' +
+                'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ' +
+                'allowfullscreen style="aspect-ratio: 16/9;">' +
+                '</iframe>'
+            );
         } else {
-            // Fallback for standard HTML5 Video
-            videoEl.empty();
+            var videoSrc = btn.data('video');
+            var posterSrc = btn.data('poster');
+            var captionSrc = btn.data('caption');
+
+            // Inject Standard HTML5 Video Player
+            container.html(
+                '<video id="kalturaArchiveVideoPlayer" class="w-100 h-100 d-block" controls preload="none" style="background: #000;">' +
+                '<source src="' + videoSrc + '" type="video/mp4">' +
+                'Your browser does not support HTML5 video.' +
+                '</video>'
+            );
+
+            var videoEl = $('#kalturaArchiveVideoPlayer');
+            var videoDOM = videoEl.get(0);
             videoDOM.poster = posterSrc || '';
-            videoEl.append($('<source>', { src: videoSrc, type: 'video/mp4' }));
 
             if (captionSrc) {
                 videoEl.append($('<track>', {
@@ -133,17 +263,21 @@ require(['jquery'], function($) {
         }
     });
 
+   
+
     // When modal is closed, pause and reset the player
+// Clean up player / iframe when modal is closed (stops background audio/video)
     $('#kalturaArchiveModal').on('hidden.bs.modal', function() {
+        
+        // 1. If Moodle's Video.js was active, pause and dispose of it safely
         if (typeof videojs !== 'undefined' && videojs.getPlayer('kalturaArchiveVideoPlayer')) {
             var vjsPlayer = videojs.getPlayer('kalturaArchiveVideoPlayer');
             vjsPlayer.pause();
-            vjsPlayer.reset();
-        } else {
-            var videoDOM = $('#kalturaArchiveVideoPlayer').get(0);
-            videoDOM.pause();
-            $('#kalturaArchiveVideoPlayer').empty();
+            vjsPlayer.dispose(); 
         }
+
+        // 2. Clear out the container so YouTube iframes and standard videos stop playing
+        $('#kalturaModalPlayerContainer').empty();
     });
 
     //  INFINITE SCROLL OBSERVER

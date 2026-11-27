@@ -81,3 +81,25 @@ $string['upload'] = 'Upload';
 
 $string['dragdrop_prompt'] = 'Drag and drop videos here';
 $string['upload_browse_prompt'] = 'or click to browse your computer';
+
+// Kaltura tab: Migrate to Zoom.
+$string['kaltura_migrate_inzoom'] = 'In Zoom';
+$string['kaltura_migrate_inzoom_help'] = 'This video has been copied to your Zoom library.';
+$string['kaltura_migrate_transferring'] = 'Transferring';
+$string['kaltura_migrate_transferring_help'] = 'Uploaded to Zoom and being moved to your Zoom account. This usually takes a few minutes.';
+$string['kaltura_migrate_queued'] = 'Queued';
+$string['kaltura_migrate_queued_help'] = 'Waiting to be uploaded to Zoom.';
+$string['kaltura_migrate_uploading'] = 'Uploading';
+$string['kaltura_migrate_uploading_help'] = 'Being uploaded to Zoom. Large videos can take a while.';
+$string['kaltura_migrate_noowner'] = 'The owner of this video ({$a}) has no account here, so it cannot be moved to their Zoom account.';
+$string['kaltura_migrate_nofile'] = 'The archived video file could not be found, so it cannot be copied to Zoom.';
+$string['kaltura_migrate_nozoom'] = 'No Zoom account';
+$string['kaltura_migrate_nozoom_help'] = 'Videos can only be copied to Zoom once you have a Zoom account. Please contact support to have one set up.';
+$string['kaltura_migrate_transferfailed'] = 'Transfer failed';
+$string['kaltura_migrate_transferfailed_help'] = 'The video is in Zoom but could not be moved to your Zoom account. Please contact support.';
+$string['kaltura_migrate_failed'] = 'Failed';
+$string['kaltura_migrate_failed_help'] = 'The upload to Zoom failed. Use the upload button to try again.';
+$string['kaltura_migrate_unavailable'] = 'Migration to Zoom is not available on this site.';
+$string['kaltura_migrate_notfound'] = 'This archived video could not be found.';
+$string['kaltura_migrate_youtube'] = 'YouTube videos cannot be copied to Zoom.';
+$string['kaltura_migrate_queuedmsg'] = 'Queued. The video will appear in your Zoom library once it has been uploaded.';

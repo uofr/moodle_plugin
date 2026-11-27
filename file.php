@@ -38,8 +38,8 @@ $context = context_system::instance();
 if ($record->owner_id !== $USER->username && $record->owner_id !== $USER->email && !has_capability('moodle/site:config', $context)) {
     throw new moodle_exception('nopermissiontoviewpage');
 }
-//$zoommigration_dir = $CFG->dataroot . '/zoommigration';
-$zoommigration_dir = '/zoommigration';
+// /zoommigration on prod, moodledata/zoommigration on dev and local sites.
+$zoommigration_dir = \local_mymedia\kaltura_migration::archive_dir();
 $caption_dir       = $zoommigration_dir . '/captions';
 $thumb_dir         = $zoommigration_dir . '/thumbnails';
 
@@ -62,15 +62,41 @@ switch ($type) {
         break;
 
     case 'caption':
-        $extensions = ['.vtt', '.srt'];
-        foreach ($extensions as $ext) {
-            $candidate = $caption_dir . '/' . $entryid . $ext;
-            if (file_exists($candidate)) {
-                $fullpath = $candidate;
-                $filename = $entryid . $ext;
-                $mimetype = 'text/vtt';
-                break;
+        // local_kaltura_archive saves one file per caption track as
+        // <entryid>_<language>.<ext> (e.g. 0_abc12345_en.srt), mostly SRT. Older
+        // files may be plain <entryid>.<ext>. Prefer WebVTT, then English.
+        $lang = optional_param('lang', '', PARAM_ALPHANUMEXT);
+        $candidates = array_values(array_filter(array_merge(
+            glob($caption_dir . '/' . $entryid . '_*') ?: [],
+            glob($caption_dir . '/' . $entryid . '.*') ?: []
+        ), function($path) {
+            return is_file($path) && preg_match('/\.(vtt|srt)$/i', $path);
+        }));
+        $rank = function(string $path) use ($entryid, $lang): int {
+            $base = basename($path);
+            $filelang = preg_match('/^' . preg_quote($entryid, '/') . '_(.+)\.(vtt|srt)$/i', $base, $m) ? strtolower($m[1]) : '';
+            $score = 0;
+            if ($lang !== '' && $filelang === strtolower($lang)) {
+                $score += 100;
             }
+            if ($filelang === 'en') {
+                $score += 10;
+            }
+            if (preg_match('/\.vtt$/i', $base)) {
+                $score += 1;
+            }
+            return $score;
+        };
+        usort($candidates, function($a, $b) use ($rank) {
+            return $rank($b) <=> $rank($a);
+        });
+        if (!empty($candidates)) {
+            $fullpath = $candidates[0];
+            // Always serve WebVTT: it's what the download menu promises and the
+            // only format a browser <track> plays. SRT converts with a header and
+            // "." instead of "," in the timestamps.
+            $filename = preg_replace('/\.(vtt|srt)$/i', '.vtt', basename($fullpath));
+            $mimetype = 'text/vtt';
         }
         break;
 
@@ -90,6 +116,13 @@ switch ($type) {
 if (empty($fullpath) || !file_exists($fullpath)) {
     debugging("local_mymedia file not found: entryid={$entryid}, type={$type}, checked_path={$fullpath}", DEBUG_DEVELOPER);
     send_file_not_found();
+}
+
+if ($type === 'caption' && preg_match('/\.srt$/i', $fullpath)) {
+    $srt = (string)file_get_contents($fullpath);
+    $srt = preg_replace('/^\xEF\xBB\xBF/', '', str_replace(["\r\n", "\r"], "\n", $srt));
+    $vtt = "WEBVTT\n\n" . preg_replace('/(\d{2}:\d{2}:\d{2}),(\d{3})/', '$1.$2', $srt);
+    send_file($vtt, $filename, 0, 0, true, $forcedownload, $mimetype);
 }
 
 send_file($fullpath, $filename, 0, 0, false, $forcedownload, $mimetype);
